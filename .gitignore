@@ -1,0 +1,15 @@
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+.env
+data/*.db
+data/*.db-wal
+data/*.db-shm
+.coverage
+htmlcov/
+
+# Strategy document — kept local. It contains the moat analysis, the rejected-
+# alternatives reasoning and the submission draft. Public before the deadline
+# would hand a competitor the whole approach.
+custodian-problem-statement-v2.md.pdf
