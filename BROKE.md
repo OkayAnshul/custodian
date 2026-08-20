@@ -65,3 +65,42 @@ Pushed in seconds. GitHub also serves SSH on port 443 via `ssh.github.com`, whic
 **Prevention.** Diagnose hangs with `BatchMode=yes` and an explicit `ConnectTimeout` rather than waiting them out — it converts a two-minute silence into a one-line error. Default to HTTPS remotes on this network.
 
 **Lesson.** A hang is not less informative than an error, it is just slower to interrogate. Two minutes of waiting produced nothing; ten seconds of asking the right way produced the answer. Also: a partially-succeeded operation is more dangerous than a cleanly failed one, because the visible half looks like success.
+
+---
+
+## 003 — A mandate-expiry check that would pass expired mandates
+
+**Day 2 · 2026-08-22 · severity: would have moved money against a dead mandate**
+
+**What broke.** `Mandate.active_at` compared ISO-8601 timestamps as strings:
+
+```python
+return not self.revoked and self.valid_from <= moment < self.valid_until
+```
+
+Found by working the comparison by hand before writing its tests, not by a failing run.
+
+**Expected.** A mandate is active only between its start and end instants.
+
+**Actual.** Correct for every timestamp sharing one format — and quietly wrong the moment two formats meet:
+
+```
+'2026-08-22T00:00:00+05:30' > '2026-08-22T00:00:00+00:00'   # as strings
+                                                             # 5.5 hours EARLIER as instants
+```
+
+An IST-stamped `moment` compares as *later* than it actually is. A mandate that expired hours ago passes `active_at`, and the gate approves a spend against dead authority.
+
+**Symptoms.** None available. Every test would have passed, because every timestamp in the tests was already UTC. That is the whole problem: the bug is invisible until a second format arrives, and the natural second format on an Indian project is `+05:30`.
+
+**Root cause.** Two mistakes compounding. `Timestamp` was typed `min_length=20, max_length=40`, which accepts `Z`, `+05:30` and fractional seconds alike — so the type permitted the mixed input. And the comparison assumed lexicographic order matches chronological order, which for ISO-8601 holds only within a single offset and precision.
+
+**Investigation.** Traced from the other direction: the ledger writes `ts` and the gate compares `ts`, so what exactly is a `Timestamp`? The type answered "almost anything ISO-shaped", and the ordering assumption fell out immediately.
+
+**Fix.** `custodian/clock.py` defines one spelling — UTC, second precision, `+00:00`. `Timestamp` enforces it by regex at the schema boundary. `Mandate.active_at` compares parsed instants via `clock.is_before`. `format_utc` refuses naive datetimes rather than assuming UTC. The ledger stopped writing microsecond timestamps.
+
+**Why the fix works.** Two independent layers. The pattern means one instant has one byte sequence, which hashing needs anyway. Parsing means comparison stays correct even if a format slip gets past the pattern. Either alone leaves one failure mode open.
+
+**What changed to prevent recurrence.** `test_the_trap_this_module_exists_for` asserts both halves — that string comparison gets it wrong, and that `clock.is_before` gets it right. The trap is now documented by a test rather than by memory.
+
+**Lesson.** A comparison operator between two strings is not obviously a bug, which is exactly why it survives review. The tell was that the *type* was loose: a field that accepts several spellings of one value will eventually receive two of them. Tighten the type and the ordering question answers itself.

@@ -178,3 +178,83 @@ Identical scores, opposite ground truth. Under §6 as written both land in the t
 **Why.** Pydantic models *are* the data contracts, so schema-first costs nothing extra. The corpus tooling, threshold sweep and eval harness are data work that Python does in a fraction of the lines — and those are the days that would otherwise come out of the substitution scorer, which is the one component that is not plumbing. First-party SDKs exist for both Razorpay and Anthropic.
 
 **Trade-off.** The submission repo does not showcase the Kotlin record. That record is panel-round material; the submission's job is to get into the room by running.
+
+---
+
+## ADR-013 — Contracts are strict, closed and frozen by default
+
+**Date** 2026-08-22 · **Area** schemas · **Status** Accepted
+
+**Problem.** Pydantic's defaults are wrong for a trust boundary in three ways, and all three are silent.
+
+**Context.** Verified before building on it:
+
+```
+class Lax(BaseModel): amount: int
+Lax(amount=199.0).amount   ->  199        # a float, coerced, silently
+```
+
+That walks a float straight past the integer-paise guarantee and into a ledger payload, where it has no canonical form (ADR-003). Default `extra="ignore"` means an untrusted client can attach arbitrary fields and have them dropped without trace. Default mutability means an object can change after it was hashed.
+
+**Chosen.** `Contract` base sets `frozen=True`, `extra="forbid"`. `Paise`, `ScoreBp` and `Quantity` are `Field(strict=True)`.
+
+**Why.** Each is a control, and a control that has to be remembered on every model is not a control. Strictness is targeted at numerics rather than set model-wide, so enums and timestamps still parse from JSON strings normally.
+
+**Security implication.** `extra="forbid"` converts a silent drop into a visible rejection. An agent probing for accepted fields gets an error rather than an unremarked success.
+
+---
+
+## ADR-014 — One spelling of time, compared as instants
+
+**Date** 2026-08-22 · **Area** core · **Status** Accepted
+
+**Problem.** Timestamps here are compared (is this mandate live, is this snapshot stale) *and* hashed. ISO-8601 permits several spellings of one instant: `Z` and `+00:00`, `+05:30`, fractional seconds at any precision.
+
+**Context.** Both uses break, and the comparison breaks silently:
+
+```
+'2026-08-22T00:00:00+05:30' > '2026-08-22T00:00:00+00:00'   # as strings
+                                                             # 5.5 hours EARLIER as instants
+```
+
+A mandate-expiry check written on string comparison passes an expired mandate. `Mandate.active_at` was written exactly that way, and `Timestamp` was `min_length=20`, which accepted any offset.
+
+**Chosen.** `custodian.clock` defines one spelling — UTC, second precision, `+00:00` — enforced by pattern at the schema boundary. Comparisons parse to `datetime` rather than comparing text.
+
+**Why both halves.** The pattern gives hashing a single byte sequence per instant. Parsing gives comparison an answer that stays right even if a format slip gets past the pattern. Either alone leaves one of the two failure modes open.
+
+**Related.** Naive datetimes are refused by `format_utc` rather than assumed to be UTC — assuming is how a five-and-a-half-hour error gets in.
+
+---
+
+## ADR-015 — `decide()` takes one bundled input
+
+**Date** 2026-08-22 · **Area** gate · **Status** Accepted · **Refines ADR-010**
+
+**Chosen.** `decide(DecisionInput) -> Decision`, where `DecisionInput` carries request id, `evaluated_at`, intent, cart, snapshot, mandate, recorded semantic verdicts and thresholds.
+
+**Why.** Replay becomes loading one object and calling one function, with no chance of reconstructing five inputs correctly and the sixth from somewhere else. The purity boundary becomes visible — if it is not on this object, `decide()` cannot use it, and that explicitly includes the clock. And the model's position becomes structural rather than rhetorical: recorded verdicts sit in the input list beside the catalog and the mandate, so `decide()` has no client to call even if someone wanted it to.
+
+---
+
+## ADR-016 — Reason codes are a closed set; explanation is rendered, never authored
+
+**Date** 2026-08-22 · **Area** gate · **Status** Accepted
+
+**Chosen.** 48 codes in a `StrEnum`, each with one line of merchant-facing text. `DimensionResult.reason_text` renders from codes. A dimension with no reason code fails validation.
+
+**Why.** "Why did Custodian hold this order?" must be answerable without calling a model again. A free-text explanation written by an LLM is not evidence — it is a second, unverifiable model output sitting where the audit trail should be. Rendering from codes also means the eval harness can assert on *which* reason fired, not merely that something did.
+
+**Rejected.** A `reason_text` field the gate fills in prose. It reads better and proves less.
+
+---
+
+## ADR-017 — An approval carrying a blocking violation is unconstructable
+
+**Date** 2026-08-22 · **Area** gate · **Status** Accepted
+
+**Chosen.** `Decision` validates that `outcome == APPROVE` cannot coexist with any reason code in `reasons.BLOCKING`. Sixteen codes are blocking — over-mandate, over-budget, price mismatch, out-of-scope merchant, and the rest.
+
+**Why.** "If cart total > mandate limit, cannot approve" is the property test the invariant list calls for. Enforced in the type it is stronger than a test: no downstream bug, refactor or future code path can produce that object at all. The test then verifies the guard exists rather than sampling the space of ways to violate it.
+
+**Trade-off.** Business logic in a schema, which is normally worth avoiding. Justified here because it is the one invariant where being wrong means money moving against a violated constraint.

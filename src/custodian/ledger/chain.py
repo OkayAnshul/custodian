@@ -28,12 +28,12 @@ from __future__ import annotations
 import sqlite3
 import uuid
 from dataclasses import dataclass
-from datetime import datetime, timezone
 from enum import StrEnum
 from pathlib import Path
 from typing import Any, Iterator, Self
 
 from custodian.canonical import GENESIS_HASH, canonical_hash, canonical_json, is_hash
+from custodian.clock import utc_now
 
 
 class EventType(StrEnum):
@@ -188,7 +188,7 @@ class Ledger:
 
         payload = _envelope(observed, inferred)
         canonical_json(payload)  # fail here, not after the transaction opens
-        resolved_ts = ts or datetime.now(timezone.utc).isoformat()
+        resolved_ts = ts or utc_now()
         resolved_id = event_id or str(uuid.uuid4())
 
         # IMMEDIATE takes the write lock up front, so reading the head and

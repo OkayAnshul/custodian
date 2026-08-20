@@ -42,3 +42,41 @@ One entry per working session. Written as the session happens, not reconstructed
 **Next objective.** Day 2 — Pydantic data contracts (Intent, Cart, CatalogSnapshot, Mandate, Decision), SQLite storage layer, FastAPI skeleton. Razorpay spike the moment credentials land.
 
 **Confidence.** High on the primitives — they are small, fully tested, and the properties that matter (determinism, tamper-evidence, no-double-charge) are asserted rather than assumed. Unchanged on the schedule: Day 5 is gated entirely on Razorpay signup latency, which is not yet knowable.
+
+---
+
+## Day 2 — 2026-08-22
+
+**Objective.** Define every data contract before writing logic against it, and make the trust boundary visible in the types.
+
+**Completed.**
+- `schemas/types.py` — `Contract` base: frozen, `extra="forbid"`, strict numerics. `Paise`, `ScoreBp`, `Quantity`, `Timestamp`, `Digest`.
+- `clock.py` — one timestamp spelling, comparison by instant.
+- `schemas/catalog.py` — `CatalogItem` with `(base, form, category)` decomposition, `CatalogSnapshot` with a content digest, `Sanitization` that keeps flagged spans as evidence.
+- `schemas/intent.py` — structured intent, `SubstitutionPolicy` defaulting to the conservative `SAME_BASE`.
+- `schemas/cart.py` — `asserted_unit_price_paise`; the only price-bearing field, and its name carries the trust boundary.
+- `schemas/mandate.py` — the AP2/UAP envelope, modelled locally and labelled as modelled.
+- `schemas/verdict.py` — recorded model output with prompt digest and raw response.
+- `schemas/decision.py` — `Outcome`, eight `Dimension`s, `Binding`, `Decision`.
+- `schemas/decision_input.py` — the single bundled input `decide()` will take.
+- `gate/reasons.py` — 48 reason codes, closed set, each with merchant-facing text.
+- `gate/thresholds.py` — versioned, hashed, with the hold band that the sweep will trace.
+
+**Tests.** 163 passing, 95% coverage.
+
+**Decisions.** ADR-013..017. The two that carry weight: ADR-015 (one bundled `DecisionInput`, so replay is one object and one call) and ADR-017 (an approval carrying a blocking violation is unconstructable — the mandate property test enforced in the type rather than sampled by a test).
+
+**Problem encountered.** Two, both found before they could fail a run.
+
+*Pydantic coerces `199.0` to `199` silently.* Verified rather than assumed, which is why `Paise` is `strict=True`. Left alone it would have defeated ADR-001 at the exact boundary ADR-001 exists to protect.
+
+*Mandate expiry compared timestamps as strings.* Logged as `BROKE.md` 003 — it would have passed expired mandates the moment an IST-stamped timestamp arrived, and every existing test would still have been green.
+
+**Known issues.**
+- Still no `RazorpayGateway`. Signup status unchanged; the spike runs the moment credentials exist.
+- Thresholds are `v0-untuned` — stated guesses, labelled as such in the module. Real values come from the dev split of the corpus.
+- No FastAPI surface yet.
+
+**Next objective.** Day 3 — catalog ingest: unit normalisation (`250gm`, `1/4 kg`, `quarter kilo`), transliteration folding, the taxonomy lexicon that produces `(base, form, category)`, and snapshot construction.
+
+**Confidence.** High on the contracts. The two bugs found today were both in the class that does not announce itself — silent coercion and silent mis-ordering — which suggests the remaining risk is in the same class rather than in anything currently failing.
