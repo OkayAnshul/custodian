@@ -9,7 +9,7 @@ One entry per working session. Written as the session happens, not reconstructed
 **Objective.** Stand up the primitives everything else depends on, and get the payment provider off the critical path before it can block anything.
 
 **Completed.**
-- Repo scaffold, venv, `pyproject.toml`, git init (local only — no remote pushed yet).
+- Repo scaffold, venv, `pyproject.toml`, git init. Published: **https://github.com/OkayAnshul/custodian** (four commits, day 1).
 - `money.py` — integer paise, parses the decorated forms merchants actually export (`₹199`, `Rs. 1,299.50`, `199/-`, `INR 2000`), half-up rounding, Indian lakh/crore digit grouping on output.
 - `bp.py` — scores as integer basis points, all aggregation in integer arithmetic.
 - `canonical.py` — deterministic JSON + SHA-256, floats and `Decimal` rejected with the offending JSON path named.
@@ -30,7 +30,9 @@ One entry per working session. Written as the session happens, not reconstructed
 
 *Prevention.* Worked the flagship example by hand before committing to the primitive. Cheap here; expensive on day 11.
 
-**What broke.** One process failure, logged in `BROKE.md` — shipped `bp.py` without a test file and only noticed via a coverage report.
+**What broke.** Two entries in `BROKE.md`. (001) Shipped `bp.py` with no test file — 0% coverage sitting inside a green suite, caught only by running `--cov`. (002) `git push` hung for two minutes with no error: outbound port 22 is blocked on this network, so SSH git transport stalls indefinitely. Moved to HTTPS via `gh auth setup-git`.
+
+**Note on the repo.** The strategy PDF is gitignored deliberately. It carries the moat analysis, the rejected-alternatives reasoning and the submission draft; public two weeks before the deadline it hands a competitor the whole approach.
 
 **Known issues.**
 - `RazorpayGateway` does not exist. Account signup started today; which test-mode settlement flow works on a fresh self-serve account is unverified and is the Day 2 spike.

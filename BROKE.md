@@ -27,3 +27,41 @@ Entries are in the order they happened. Nothing is removed once it is fixed.
 **Prevention.** Run `pytest --cov` at the end of each session rather than at the end of the project, and treat a 0% module in a green run as a failure. Cheap now; on day 11 the same gap would surface as an unexplained replay mismatch.
 
 **Lesson.** A smoke test in a shell is a demonstration, not a test. The difference is whether it runs again tomorrow.
+
+---
+
+## 002 — `git push` hung for two minutes and died with no error
+
+**Day 1 · 2026-08-21 · severity: blocked the public repo**
+
+**What broke.** `gh repo create custodian --public --source=. --push` hung and was killed at the 2-minute timeout. No error message, no partial output — just a stall.
+
+**Expected.** Repo created, four commits pushed.
+
+**Actual.** The repo *was* created on GitHub; the push never happened. Worth noting because the failure was split — the API call over HTTPS succeeded, and only the git transport stalled. A quick glance at github.com would have shown a repo and suggested everything worked.
+
+**Symptoms.** Silent hang. Killing the command left a correctly configured `origin` remote pointing at an empty repository, which is the confusing state: everything *looks* wired up.
+
+**Investigation.** Checked in order — repo exists (yes), remote configured (yes, `git@github.com:...`), `github.com` in `known_hosts` (yes, so not a host-key prompt). That ruled out the obvious causes and left the transport itself. Ran `git ls-remote` with `BatchMode=yes` and a 10s connect timeout to force a fast, non-interactive failure:
+
+```
+ssh: connect to host github.com port 22: Connection timed out
+```
+
+**Root cause.** Outbound TCP port 22 is blocked on this network. `gh` was configured for SSH git operations (`Git operations protocol: ssh`), so every push would hang until TCP gave up — well past any timeout worth waiting through. Campus networks commonly block 22; this is a network policy, not a misconfiguration.
+
+**Fix.** `gh auth setup-git` to register `gh` as the git credential helper, then repoint the remote at HTTPS:
+
+```bash
+gh auth setup-git
+git remote set-url origin https://github.com/OkayAnshul/custodian.git
+git push -u origin main
+```
+
+Pushed in seconds. GitHub also serves SSH on port 443 via `ssh.github.com`, which is the alternative if SSH keys are specifically wanted.
+
+**Why the fix works.** HTTPS on 443 is not blocked, and the `gh` token already carries `repo` scope, so no separate credential is needed.
+
+**Prevention.** Diagnose hangs with `BatchMode=yes` and an explicit `ConnectTimeout` rather than waiting them out — it converts a two-minute silence into a one-line error. Default to HTTPS remotes on this network.
+
+**Lesson.** A hang is not less informative than an error, it is just slower to interrogate. Two minutes of waiting produced nothing; ten seconds of asking the right way produced the answer. Also: a partially-succeeded operation is more dangerous than a cleanly failed one, because the visible half looks like success.
