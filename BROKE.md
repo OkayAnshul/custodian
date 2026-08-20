@@ -104,3 +104,29 @@ An IST-stamped `moment` compares as *later* than it actually is. A mandate that 
 **What changed to prevent recurrence.** `test_the_trap_this_module_exists_for` asserts both halves — that string comparison gets it wrong, and that `clock.is_before` gets it right. The trap is now documented by a test rather than by memory.
 
 **Lesson.** A comparison operator between two strings is not obviously a bug, which is exactly why it survives review. The tell was that the *type* was loose: a field that accepts several spellings of one value will eventually receive two of them. Tighten the type and the ordering question answers itself.
+
+---
+
+## 004 — `¼ kg` normalised to 4000g
+
+**Day 3 · 2026-08-23 · severity: silent 16× error on every pack size written with a vulgar fraction**
+
+**What broke.** `parse_measure("¼ kg")` returned 4000g instead of 250g. No exception — a confident wrong answer.
+
+**Expected.** `¼ kg`, `1/4 kg`, `250gm`, `quarter kilo` and `pav kilo` all normalise to `250g`.
+
+**Actual.** Every other spelling gave 250g. The unicode one gave 4000g.
+
+**Symptoms.** Caught by printing a set of all spellings and seeing two values where there should have been one. A per-item assertion would have passed on thirteen of fourteen cases.
+
+**Root cause.** Ordering. `_normalise_text` ran `unicodedata.normalize("NFKC", …)` *first*, then replaced vulgar fractions. But NFKC has already rewritten `¼` by then — into `1⁄4`, using U+2044 FRACTION SLASH rather than ASCII `/`. So the replacement table never matched, and the quantity regex, which knows only about `/`, matched the trailing `4` as the entire quantity: `4 × 1000 = 4000`.
+
+**Investigation.** One line: `unicodedata.normalize("NFKC", "¼")` → `'1⁄4'`. The character that comes back looks like a slash and is not one.
+
+**Fix.** Expand vulgar fractions *before* NFKC, and map U+2044 and U+2215 to ASCII `/` afterwards as a second line of defence for a fraction that arrives already expanded.
+
+**Why the fix works.** The two passes now cover both entry points — the glyph form and the expanded form — rather than one pass that assumed the glyph would survive to meet it.
+
+**What changed to prevent recurrence.** `test_every_spelling_of_a_quarter_kilo_is_the_same_quantity` parametrises all fourteen spellings against one expected value, so any single spelling drifting is a failure. `test_the_vulgar_fraction_trap` asserts the NFKC behaviour directly, so the reason is documented where it broke.
+
+**Lesson.** A normalisation step is a rewrite, and a rewrite invalidates assumptions made about the text before it. The bug was not in either operation — both were correct — it was in believing the input to the second was the input to the first. Order normalisation passes from most specific to most general, and assert the invariant across the whole equivalence class rather than case by case.

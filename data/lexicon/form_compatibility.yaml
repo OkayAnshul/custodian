@@ -1,0 +1,36 @@
+# How well one form substitutes for another, given the same base ingredient.
+#
+# This table is the deterministic answer to the question §6's lexical primitive
+# cannot decide. Jaccard scores "coconut milk -> coconut cream" and
+# "coconut milk -> almond milk" identically at 0.3333; here the first is a
+# listed form pair at 8500 and the second never reaches this table at all,
+# because its base changed. See ADR-007.
+#
+# Scores are basis points. A pair absent from this table does not score zero —
+# it escalates, which is the point: an unlisted pair is a thing we have not
+# judged, not a thing we have judged badly.
+#
+# Only same-base pairs belong here. Substituting butter for ghee, or groundnut
+# oil for sunflower oil, is an identity change and lives in taxonomy.yaml's
+# base_equivalence — a form rule must never be able to authorise one.
+version: form-v1
+
+pairs:
+  - {forms: [milk, cream], score_bp: 8500, note: "Thicker and richer; behaves the same in cooking. The Thai-curry case."}
+  - {forms: [milk, powder], score_bp: 6000, note: "Reconstitutable, but the buyer has to do it and the texture differs."}
+  - {forms: [cream, powder], score_bp: 5000, note: "Two steps away from the original."}
+  - {forms: [ground, powder], score_bp: 9500, note: "Near-synonyms in Indian retail; often the same product."}
+  - {forms: [whole, ground], score_bp: 7500, note: "Same spice, different preparation. Fine unless the recipe wants whole."}
+  - {forms: [whole, powder], score_bp: 7000, note: "As above, one step further."}
+  - {forms: [whole, seed], score_bp: 9000, note: "For spices these are usually the same thing described differently."}
+  - {forms: [seed, ground], score_bp: 7500, note: ""}
+  - {forms: [seed, powder], score_bp: 7000, note: ""}
+  - {forms: [fresh, dried], score_bp: 5000, note: "Materially different in water content and potency."}
+  - {forms: [fresh, paste], score_bp: 6500, note: "Common substitution for ginger and garlic; acceptable, not identical."}
+  - {forms: [paste, powder], score_bp: 6000, note: ""}
+  - {forms: [fresh, leaf], score_bp: 8000, note: "For herbs, usually the same purchase."}
+  - {forms: [leaf, dried], score_bp: 6000, note: ""}
+  - {forms: [block, flakes], score_bp: 8000, note: "Paneer and cheese; grating is the buyer's step."}
+  - {forms: [liquid, powder], score_bp: 5500, note: ""}
+  - {forms: [flour, whole], score_bp: 4000, note: "Atta is not wheat grain. Milling is not a step a buyer takes."}
+  - {forms: [sauce, paste], score_bp: 6000, note: "Concentration differs; quantity would need adjusting."}

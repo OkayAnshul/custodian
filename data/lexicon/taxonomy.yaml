@@ -1,0 +1,134 @@
+# Taxonomy lexicon: how a product name becomes (base, form, category).
+#
+# Hand-authored and sized to one merchant's catalog. This file plus
+# form_compatibility.yaml are where the India-specific judgment lives — the
+# transliteration folds, the base/form split, the category placements. A generic
+# guardrail wrapper has none of it, and it is not derivable from a repo.
+#
+# Both files are versioned and their version travels in every CatalogSnapshot,
+# so a replayed decision can attribute a difference to a lexicon change.
+version: lex-v1
+
+# Marketing filler that carries no identity. Stripped before matching so
+# "Aashirvaad Select Sharbati Atta" reduces to "atta".
+brands:
+  - aashirvaad, amul, dabur, tata, fortune, saffola, nestle, maggi, britannia
+  - mtr, everest, catch, mdh, patanjali, mother dairy, nandini, id, gowardhan
+  - daawat, india gate, kohinoor, 24 mantra, organic tattva, bb royal, fresho
+noise:
+  - select, sharbati, premium, special, classic, fresh, pure, natural, best
+  - quality, superior, choice, gold, plus, extra, value, family, economy
+  - pack, packet, refill, pouch, tetra, combo, super, saver, daily, farm
+
+# Forms: the shape a base ingredient takes. A form token in a name that also
+# contains a distinct base is read as the form, not the base.
+forms:
+  liquid:     [liquid, plain]
+  milk:       [milk, doodh, dood]
+  cream:      [cream, malai]
+  powder:     [powder, powdered, pdr, churna]
+  ground:     [ground, pisa, pissa]
+  whole:      [whole, sabut, saboot, khada]
+  seed:       [seed, seeds, beej, dana]
+  flour:      [flour, atta, aata, maida, besan, suji, sooji, rava]
+  oil:        [oil, tel, tail]
+  ghee:       [ghee, gheee]
+  butter:     [butter, makkhan, makhan]
+  paste:      [paste, lep]
+  sauce:      [sauce, chutney]
+  block:      [block, slab, bar, cube]
+  flakes:     [flakes, shredded, grated, desiccated, kasa]
+  leaf:       [leaf, leaves, patta, patti]
+  dried:      [dried, dry, sukha, sookha]
+  fresh:      [fresh, taaza, taza, hara]
+  curd:       [curd, dahi, yoghurt, yogurt]
+  extract:    [extract, essence, concentrate]
+
+# Bases: the ingredient identity. `default_form` applies when the name names the
+# base but no form — "Amul Milk" is base=milk, form=liquid.
+bases:
+  coconut:    {aliases: [coconut, nariyal, nariyel, khopra], category: dairy-alt, default_form: whole}
+  almond:     {aliases: [almond, badam], category: nuts, default_form: whole}
+  cashew:     {aliases: [cashew, kaju], category: nuts, default_form: whole}
+  soy:        {aliases: [soy, soya, soyabean], category: dairy-alt, default_form: whole}
+  milk:       {aliases: [milk, doodh], category: dairy, default_form: liquid}
+  curd:       {aliases: [curd, dahi, yoghurt, yogurt], category: dairy, default_form: curd}
+  cream:      {aliases: [cream, malai], category: dairy, default_form: cream}
+  paneer:     {aliases: [paneer, cottage cheese], category: dairy, default_form: block}
+  cheese:     {aliases: [cheese, chiz], category: dairy, default_form: block}
+  butter:     {aliases: [butter, makkhan, makhan], category: dairy, default_form: butter}
+  ghee:       {aliases: [ghee], category: dairy, default_form: ghee}
+  wheat:      {aliases: [wheat, gehu, gehun, atta, aata], category: staples, default_form: flour}
+  refined-wheat: {aliases: [maida, refined flour], category: staples, default_form: flour}
+  semolina:   {aliases: [semolina, suji, sooji, rava], category: staples, default_form: flour}
+  rice:       {aliases: [rice, chawal, chaval, basmati], category: staples, default_form: whole}
+  gram:       {aliases: [gram, chana, chhana, besan, chickpea], category: pulses, default_form: whole}
+  pigeon-pea: {aliases: [toor, tur, arhar, tuvar, pigeon pea], category: pulses, default_form: whole}
+  mung:       {aliases: [moong, mung, green gram], category: pulses, default_form: whole}
+  red-lentil: {aliases: [masoor, red lentil], category: pulses, default_form: whole}
+  black-gram: {aliases: [urad, urd, black gram], category: pulses, default_form: whole}
+  kidney-bean: {aliases: [rajma, kidney bean], category: pulses, default_form: whole}
+  sugar:      {aliases: [sugar, cheeni, chini, shakkar, shakar], category: staples, default_form: whole}
+  jaggery:    {aliases: [jaggery, gud, gur], category: staples, default_form: block}
+  salt:       {aliases: [salt, namak], category: staples, default_form: whole}
+  tea:        {aliases: [tea, chai, chaipatti], category: beverages, default_form: leaf}
+  coffee:     {aliases: [coffee, kaapi], category: beverages, default_form: powder}
+  honey:      {aliases: [honey, shahad, shehad], category: staples, default_form: liquid}
+  sunflower:  {aliases: [sunflower, surajmukhi], category: cooking-oil, default_form: oil}
+  mustard:    {aliases: [mustard, sarson, rai], category: spices, default_form: seed}
+  sesame:     {aliases: [sesame, til], category: spices, default_form: seed}
+  groundnut:  {aliases: [groundnut, peanut, moongphali, mungfali], category: cooking-oil, default_form: oil}
+  turmeric:   {aliases: [turmeric, haldi], category: spices, default_form: powder}
+  cumin:      {aliases: [cumin, jeera, zeera], category: spices, default_form: seed}
+  coriander:  {aliases: [coriander, dhania, dhaniya], category: spices, default_form: seed}
+  chilli:     {aliases: [chilli, chili, mirch, mirchi, lal mirch], category: spices, default_form: powder}
+  black-pepper: {aliases: [black pepper, kali mirch, pepper], category: spices, default_form: whole}
+  cardamom:   {aliases: [cardamom, elaichi, ilaichi], category: spices, default_form: whole}
+  cinnamon:   {aliases: [cinnamon, dalchini, dalcheeni], category: spices, default_form: whole}
+  clove:      {aliases: [clove, laung, lavang], category: spices, default_form: whole}
+  fenugreek:  {aliases: [fenugreek, methi], category: spices, default_form: seed}
+  asafoetida: {aliases: [asafoetida, hing], category: spices, default_form: powder}
+  garam-masala: {aliases: [garam masala], category: spices, default_form: powder}
+  onion:      {aliases: [onion, pyaz, pyaaz, kanda], category: produce, default_form: fresh}
+  potato:     {aliases: [potato, aloo, alu], category: produce, default_form: fresh}
+  tomato:     {aliases: [tomato, tamatar], category: produce, default_form: fresh}
+  ginger:     {aliases: [ginger, adrak], category: produce, default_form: fresh}
+  garlic:     {aliases: [garlic, lehsun, lahsun], category: produce, default_form: fresh}
+  lemon:      {aliases: [lemon, lime, nimbu, neembu], category: produce, default_form: fresh}
+  basil:      {aliases: [basil, tulsi], category: produce, default_form: leaf}
+  lemongrass: {aliases: [lemongrass, lemon grass], category: produce, default_form: fresh}
+  galangal:   {aliases: [galangal, kulanjan], category: produce, default_form: fresh}
+  thai-curry: {aliases: [thai curry, red curry, green curry], category: condiments, default_form: paste}
+  fish-sauce: {aliases: [fish sauce, nam pla], category: condiments, default_form: sauce}
+  soy-sauce:  {aliases: [soy sauce, soya sauce], category: condiments, default_form: sauce}
+  vinegar:    {aliases: [vinegar, sirka], category: condiments, default_form: liquid}
+  wok:        {aliases: [wok, kadai, kadhai], category: cookware, default_form: whole}
+
+# Category depends on (base, form), not base alone: coconut milk is a dairy
+# alternative, coconut oil is a cooking oil, desiccated coconut is baking.
+category_rules:
+  - {base: coconut, form: oil, category: cooking-oil}
+  - {base: coconut, form: flakes, category: baking}
+  - {base: coconut, form: milk, category: dairy-alt}
+  - {base: coconut, form: cream, category: dairy-alt}
+  - {base: almond, form: milk, category: dairy-alt}
+  - {base: soy, form: milk, category: dairy-alt}
+  - {base: mustard, form: oil, category: cooking-oil}
+  - {base: sesame, form: oil, category: cooking-oil}
+  - {base: gram, form: flour, category: staples}
+  - {base: milk, form: powder, category: dairy}
+
+# Bases that genuinely stand in for one another. Deliberately short: a base
+# change is normally a different product, and this table is the narrow set of
+# exceptions where Indian cooking treats two identities as interchangeable.
+#
+# Kept separate from form compatibility because they answer different questions.
+# "Coconut milk -> coconut cream" is one ingredient in another shape. "Sunflower
+# oil -> groundnut oil" is a different ingredient serving the same purpose. A
+# single table conflating them would let a form rule authorise an identity change.
+base_equivalence:
+  - {bases: [sunflower, groundnut], score_bp: 8000, note: "Neutral cooking oils; interchangeable for most Indian cooking."}
+  - {bases: [butter, ghee], score_bp: 6500, note: "Widely substituted; smoke point and water content differ."}
+  - {bases: [curd, cream], score_bp: 4500, note: "Sourness differs. Acceptable in some dishes only."}
+  - {bases: [wheat, refined-wheat], score_bp: 3000, note: "Atta and maida behave differently. Listed low rather than omitted, on purpose."}
+  - {bases: [gram, mung], score_bp: 3000, note: "Different pulses. Listed so the low score is a stated judgment, not an absent entry."}

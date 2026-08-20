@@ -80,3 +80,39 @@ One entry per working session. Written as the session happens, not reconstructed
 **Next objective.** Day 3 — catalog ingest: unit normalisation (`250gm`, `1/4 kg`, `quarter kilo`), transliteration folding, the taxonomy lexicon that produces `(base, form, category)`, and snapshot construction.
 
 **Confidence.** High on the contracts. The two bugs found today were both in the class that does not announce itself — silent coercion and silent mis-ordering — which suggests the remaining risk is in the same class rather than in anything currently failing.
+
+---
+
+## Day 3 — 2026-08-23
+
+**Objective.** Turn messy Indian merchant text into the `(base, form, category)` triple ADR-007 rests on.
+
+**Completed.**
+- `ingest/units.py` — `250gm`, `1/4 kg`, `¼ kg`, `quarter kilo`, `pav kilo` all normalise to `250g`. Transliterated Hindi quantity words (`pav`, `aadha`, `sawa`, `dedh`, `paune`, `dhai`) included; a generic normaliser has no entry for them. Everything reduces to integer grams, millilitres or pieces.
+- `ingest/text.py` — price extraction from product names, punctuation and filler removal, longest-phrase-first so `garam masala` survives `gram`.
+- `ingest/taxonomy.py` + `data/lexicon/` — 56 bases, 20 form groups, 24 form-compatibility pairs, 5 base-equivalence pairs. Hand-authored and versioned; the version travels in every snapshot.
+
+**Tests.** 83 new (246 total), all passing.
+
+**Decisions.**
+- Transliteration folded into the alias lists rather than a separate `translit.py` pass. `doodh` and `milk` are two spellings of one identity, so they belong on one entry; a separate layer is a second lookup that can disagree with the first.
+- Base equivalence split from form compatibility (see below).
+
+**Problem encountered — an incoherence in my own lexicon.** The first draft put `[butter, ghee]`, `[oil, ghee]` and `[block, liquid]` in the *form* compatibility table. Those are identity changes, not shape changes, so they sat in a table that could never be consulted for them — and worse, had the placement resolved differently they would have let a form rule authorise a base change, which is precisely what ADR-007 exists to prevent.
+
+*Fix.* Two tables answering two questions. `form_compatibility` is same-base, different-shape (coconut milk → coconut cream). `base_equivalence` is the deliberately short list of identities Indian cooking treats as interchangeable (sunflower ↔ groundnut oil, butter ↔ ghee). Unlisted in either escalates.
+
+**What broke.** `BROKE.md` 004 — `¼ kg` normalised to 4000g, a silent 16× error, because NFKC rewrites `¼` to `1⁄4` with U+2044 FRACTION SLASH before the vulgar-fraction table could match it.
+
+**Verified.** The flagship pair now resolves deterministically in both directions, with no model involved:
+- `coconut milk → coconut cream` — same base, listed form pair at 8500bp, faithful
+- `coconut milk → almond milk` — base changed, no recorded relationship, `SUBST_BASE_CHANGED`
+
+**Known issues.**
+- Razorpay: unchanged, still no credentials. Day 5 is Aug 25.
+- No sanitizer yet, no loader, no snapshot builder — Day 4.
+- Lexicon covers one merchant's likely catalog. Coverage against the real messy source is unmeasured until the loader exists.
+
+**Next objective.** Day 4 — the messy catalog source and loader, the ingest sanitizer, the intent parser (model position #1), and the deliberately naive buyer agent.
+
+**Confidence.** High on the primitive. The claim ADR-007 makes is now demonstrated by a test that also asserts the premise — that Jaccard scores both flagship cases identically at 0.3333 — so the argument for the deviation is reproducible rather than asserted.
