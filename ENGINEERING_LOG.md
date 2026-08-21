@@ -116,3 +116,37 @@ One entry per working session. Written as the session happens, not reconstructed
 **Next objective.** Day 4 — the messy catalog source and loader, the ingest sanitizer, the intent parser (model position #1), and the deliberately naive buyer agent.
 
 **Confidence.** High on the primitive. The claim ADR-007 makes is now demonstrated by a test that also asserts the premise — that Jaccard scores both flagship cases identically at 0.3333 — so the argument for the deviation is reproducible rather than asserted.
+
+---
+
+## Day 4 — 2026-08-24
+
+**Objective.** A real messy catalog, ingested end to end, with the attack surface closed on the way in.
+
+**Completed.**
+- `data/catalog/kirana_export.csv` — 70 rows of realistic mess: 5 rows with an empty price column, 4 with the price inside the item name, 11 with no category, 6 spellings of "in stock", 25 raw category strings folding to 14.
+- `ingest/sanitizer.py` — rules only, five detection classes. Detected payloads suppress the whole field; hidden characters are stripped in place.
+- `ingest/loader.py` — price resolution (field > name > mrp), stock spellings, taxonomy-derived categories, and a `LoadReport` recording every resolution it had to make.
+- `ingest/snapshot.py` — content-addressed snapshots and the narrow agent feed.
+- `tests/fixtures/adversarial.py` — 14 frozen injections and 6 benign lookalikes, as inert strings with no runner.
+
+**Tests.** 58 new (304 total), all passing.
+
+**Result.** 70/70 rows build; 69/70 place. The one holdout is the glitter pens, which should not place — it is not a grocery, and it is the scope-creep case for the demo.
+
+**Problems encountered.** Three, all found by running against the real data rather than against fixtures.
+
+*Bilingual names failed to place.* `BROKE.md` 005. Counting alias hits rather than distinct identities read "Basmati Chawal" as an ambiguity. The tell was that improving the lexicon made it *more* likely to fire, not less.
+
+*Sanitizer false positive.* A bare `you must/should` pattern flagged "You must try this with fresh coriander!" — ordinary marketing copy — and suppressing a legitimate product's whole description is a direct cost to the merchant. Every attack it caught was already covered by the action-specific patterns, so it bought false positives and no coverage. Removed, with the reasoning left in the source. This is why `BENIGN_LOOKALIKES` is graded alongside the injections: catching attacks is half the measurement.
+
+*Self-referential snapshot digest.* `snapshot_id` is derived from the content hash, and the content hash included `snapshot_id` — so naming a snapshot changed the digest that produced the name. `digest()` now excludes it: the id is a name for the content, not part of it.
+
+**Known issues.**
+- **Razorpay: still no credentials, and Day 5 is tomorrow.** The gateway Protocol means nothing else is blocked, but the checkpoint itself cannot be met without an account.
+- Intent parser (model position #1) and the naive buyer agent are not built — the remainder of Day 4.
+- `ANTHROPIC_API_KEY` is not set in this environment either, so the parser will need the same treatment as payments: an interface with a recorded-fixture implementation, so the gate can be built and tested without a live key.
+
+**Next objective.** Intent parser behind an interface, naive buyer agent, then Day 5's end-to-end loop.
+
+**Confidence.** High on ingest — it runs against real messy data rather than a fixture, and the failures it found were the useful kind. Lower on the schedule: two of the last three days\' problems were found only by running against real inputs, and the payment path still has no real input to run against.

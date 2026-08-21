@@ -50,6 +50,8 @@ bases:
   coconut:    {aliases: [coconut, nariyal, nariyel, khopra], category: dairy-alt, default_form: whole}
   almond:     {aliases: [almond, badam], category: nuts, default_form: whole}
   cashew:     {aliases: [cashew, kaju], category: nuts, default_form: whole}
+  raisin:     {aliases: [raisin, raisins, kishmish, kismis], category: nuts, default_form: dried}
+  milk-powder: {aliases: [dairy whitener, milk powder, milkpowder], category: dairy, default_form: powder}
   soy:        {aliases: [soy, soya, soyabean], category: dairy-alt, default_form: whole}
   milk:       {aliases: [milk, doodh], category: dairy, default_form: liquid}
   curd:       {aliases: [curd, dahi, yoghurt, yogurt], category: dairy, default_form: curd}

@@ -1,0 +1,71 @@
+sku,item_name,price,mrp,stock,category,description
+SKU001,Dabur Coconut Milk 400ml,,199,in stock,,Rich and creamy coconut milk for curries
+SKU002, Coconut Cream 200 ml ,145,145,Y,Dairy Alternatives,Thick coconut cream
+SKU003,Almond Milk 1 ltr Unsweetened,₹ 289.00,299,yes,dairy alternatives,
+SKU004,Amul Taaza Toned Milk 500ml,28,28,1,Dairy,
+SKU005,Amul Fresh Cream 200ml,Rs.72,75,in stock,Dairy,Fresh dairy cream
+SKU006,Nestle Everyday Dairy Whitener 400gm ₹235,,235,Y,,Milk powder for tea and coffee
+SKU007,Mother Dairy Dahi 400gm,52,55,yes,Dairy,Thick set curd
+SKU008,Amul Butter 100g,58,58,IN STOCK,dairy,
+SKU009,Amul Pure Ghee 1L,610,625,y,Dairy,
+SKU010,Paneer Fresh 200 gm,89,89,1,dairy,Soft cottage cheese
+SKU011,Aashirvaad Select Sharbati Atta 5kg,285,299,in stock,Staples,Whole wheat flour
+SKU012,maida 1kg,48,50,Y,,Refined flour
+SKU013,Suji / Rava 500gm,34,35,yes,staples,
+SKU014,India Gate Basmati Chawal 1kg,168,175,in stock,Staples,Long grain basmati rice
+SKU015,rice pav kilo loose,42,,Y,,
+SKU016,Toor Dal 1kg,142,150,yes,Pulses,Pigeon pea split
+SKU017,Moong Dal Dhuli 500 gm,78,80,1,pulses,
+SKU018,Chana Dal aadha kilo,62,65,in stock,Pulses,
+SKU019,Masoor Dal 1 kg,96,99,Y,pulses,Red lentil
+SKU020,Rajma Chitra 500gm,118,120,yes,Pulses,Kidney beans
+SKU021,Urad Dal Sabut 500g,105,110,y,pulses,
+SKU022,Besan 1kg,84,88,in stock,Staples,Gram flour
+SKU023,Tata Namak 1kg,28,28,Y,,Iodised salt
+SKU024,Sugar / Cheeni 1kg,46,48,yes,Staples,
+SKU025,Organic Gud 500gm ₹95,,95,in stock,,Jaggery block
+SKU026,Dabur Honey 250gm,199,215,Y,Staples,Pure natural honey
+SKU027,Fortune Sunflower Oil 1L,152,165,yes,Cooking Oil,Refined sunflower oil
+SKU028,Mustard Oil / Sarson ka Tel 1 ltr,178,185,in stock,cooking oil,
+SKU029,Groundnut Oil 1L,215,225,Y,Cooking Oil,
+SKU030,Coconut Oil 500ml,168,175,yes,,Cold pressed
+SKU031,Til Oil 250 ml,138,140,1,cooking oil,Sesame oil
+SKU032,Everest Haldi Powder 100gm,42,45,in stock,Spices,Turmeric powder
+SKU033,jeera whole 100 g,68,70,Y,spices,Cumin seeds
+SKU034,Dhania Powder 100gm ₹38,,38,yes,,Coriander powder
+SKU035,Dhania Sabut 100g,44,45,in stock,Spices,Whole coriander seeds
+SKU036,Lal Mirch Powder 100 gm,58,60,Y,spices,Red chilli powder
+SKU037,Sabut Kali Mirch 50g,112,115,yes,Spices,Whole black pepper
+SKU038,Elaichi Hari 25 gm,178,185,in stock,spices,Green cardamom
+SKU039,Dalchini 50g,42,45,Y,Spices,Cinnamon sticks
+SKU040,Laung 25gm,88,90,yes,spices,Cloves
+SKU041,Methi Dana 100g,26,28,in stock,Spices,Fenugreek seeds
+SKU042,Hing Powder 25 gm,95,98,Y,spices,Asafoetida
+SKU043,MDH Garam Masala 100 gm,78,80,yes,Spices,
+SKU044,Rai / Sarson 100g,22,25,in stock,spices,Mustard seeds
+SKU045,Onion / Pyaz 1kg,38,,Y,Produce,
+SKU046,aloo 1 kg,32,,yes,produce,Potatoes
+SKU047,Tamatar 500gm,24,,in stock,Produce,
+SKU048,fresh adrak 250gm,45,,Y,produce,Ginger root
+SKU049,Lehsun 250 g,62,,yes,Produce,Garlic
+SKU050,Nimbu 250gm,35,,in stock,produce,Lemons
+SKU051,Hara Dhania 100g,15,,Y,Produce,Fresh coriander leaves
+SKU052,Tulsi Patta fresh 50g,28,,yes,,Holy basil leaves
+SKU053,Lemongrass fresh 100 gm,55,,in stock,Produce,
+SKU054,Galangal 100g,95,,Y,produce,Thai ginger
+SKU055,Thai Red Curry Paste 200g,245,255,yes,Condiments,Authentic Thai red curry paste
+SKU056,Thai Green Curry Paste 200 gm,245,255,in stock,condiments,
+SKU057,Fish Sauce 300ml,198,205,Y,Condiments,Nam pla
+SKU058,Soya Sauce 200ml,88,90,yes,condiments,
+SKU059,Sirka 500 ml,42,45,in stock,Condiments,White vinegar
+SKU060,Tata Tea Gold 500gm,285,295,Y,Beverages,
+SKU061,chai patti 250g,142,145,yes,beverages,Loose leaf tea
+SKU062,Nescafe Classic Coffee 100 gm,320,335,in stock,Beverages,
+SKU063,Kaju 250gm ₹385,,385,Y,,Whole cashews
+SKU064,Badam 250 g,398,410,yes,Nuts,Almonds
+SKU065,Kishmish 250gm,145,150,in stock,nuts,Raisins
+SKU066,Desiccated Coconut 100g,62,65,Y,,Grated dry coconut
+SKU067,Nariyal Powder 200 gm,88,90,yes,Baking,Coconut powder
+SKU068,Hawkins Kadhai 30cm,1450,1599,in stock,Cookware,Heavy bottom wok
+SKU069,Steel Kadai 24 cm,890,950,Y,cookware,
+SKU070,Sparkle Glitter Pens 5 nos,120,125,yes,Stationery,Assorted colours

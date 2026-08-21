@@ -130,3 +130,45 @@ An IST-stamped `moment` compares as *later* than it actually is. A mandate that 
 **What changed to prevent recurrence.** `test_every_spelling_of_a_quarter_kilo_is_the_same_quantity` parametrises all fourteen spellings against one expected value, so any single spelling drifting is a failure. `test_the_vulgar_fraction_trap` asserts the NFKC behaviour directly, so the reason is documented where it broke.
 
 **Lesson.** A normalisation step is a rewrite, and a rewrite invalidates assumptions made about the text before it. The bug was not in either operation — both were correct — it was in believing the input to the second was the input to the first. Order normalisation passes from most specific to most general, and assert the invariant across the whole equivalence class rather than case by case.
+
+---
+
+## 005 — Bilingual product names failed to place
+
+**Day 4 · 2026-08-24 · severity: silently unplaceable on the most common Indian naming pattern**
+
+**What broke.** Ingesting the real 70-row export, eight items came back `base=UNKNOWN`. Among them: `India Gate Basmati Chawal 1kg`, `Sugar / Cheeni 1kg`, `Onion / Pyaz 1kg`, `Mustard Oil / Sarson ka Tel 1 ltr`.
+
+**Expected.** `rice`, `sugar`, `onion`, `mustard`.
+
+**Actual.** `UNKNOWN` for all four — which routes every substitution involving them to escalation, so the deterministic layer abstains on staples it should settle instantly.
+
+**Symptoms.** No error. Ingest reported 70/70 items built and 62/70 placed, and the eight unplaced looked like an ordinary lexicon-coverage gap. It was only on reading the list that the pattern showed: every one of them named the product twice, once in English and once transliterated.
+
+**Root cause.** `_disambiguate` counted alias *hits* rather than distinct *identities*:
+
+```python
+distinct = [(alias, key) for alias, key in base_hits if alias not in form_aliases]
+if len(distinct) > 1:
+    return UNKNOWN, UNKNOWN
+```
+
+"Basmati Chawal" matches two aliases — `basmati` and `chawal` — that both map to base `rice`. The guard was written for genuine ambiguity ("coconut almond blend", two different identities) and could not tell that apart from two spellings agreeing on one identity. Which is worse than a coverage gap, because Indian listings name products bilingually as a matter of course: the richer the transliteration coverage in the lexicon, the *more* items this broke.
+
+**Investigation.** Printed the unplaced list rather than the count. Four of eight shared an obvious shape; adding the aliases would not have helped, since the aliases were already there and were the cause.
+
+**Fix.** Collapse hits to identities before counting:
+
+```python
+candidates = {key for _, key in distinct}
+if len(candidates) > 1:
+    return UNKNOWN, UNKNOWN
+```
+
+Also found in the same run: the embedded price was still in the name when placement ran, so `Nestle Everyday Dairy Whitener 400gm ₹235` was matching against residue containing `₹235`. `place()` now strips the price first.
+
+**Why the fix works.** Agreement and ambiguity are now distinguished by what the aliases mean rather than how many of them fired. `coconut almond blend` still resolves to `UNKNOWN` — two identities, no way to pick — which the test asserts alongside the bilingual cases.
+
+**What changed to prevent recurrence.** `test_bilingual_names_place_correctly` covers four real rows from the export, and the ingest test asserts the exact unplaced list rather than a count, so any new item silently dropping out is a failure rather than a number moving.
+
+**Lesson.** The guard was correct for the case it was written against and wrong for a case that looks identical from inside the function. The tell was that improving the lexicon made the failure *more* likely, not less — when adding correct data makes things worse, the bug is in what the code does with agreement.

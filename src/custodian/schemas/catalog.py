@@ -108,8 +108,16 @@ class CatalogSnapshot(Contract):
         return self
 
     def digest(self) -> Digest:
-        """Content hash. Two snapshots with the same content hash identically."""
-        return canonical_hash(self.canonical())
+        """Content hash of the catalog itself.
+
+        ``snapshot_id`` is excluded. It is a name for the content, not part of
+        it — and since the id is derived from this digest, including it would
+        make the hash self-referential: naming a snapshot would change the
+        digest that produced the name.
+        """
+        content = self.canonical()
+        content.pop("snapshot_id", None)
+        return canonical_hash(content)
 
     def find(self, item_id: str) -> CatalogItem | None:
         """Look up by id. Returns ``None`` rather than raising: an item the

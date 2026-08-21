@@ -26,7 +26,7 @@ from typing import Final, Self
 
 import yaml
 
-from custodian.ingest.text import remove_phrases, strip_punctuation
+from custodian.ingest.text import find_price, remove_phrases, strip_punctuation
 from custodian.ingest.units import Measure, find_measure
 from custodian.schemas.catalog import UNKNOWN
 
@@ -127,6 +127,11 @@ class Taxonomy:
         measure = None
         text = strip_punctuation((name or "").lower())
 
+        # Strip an embedded price before anything else: "₹235" left in the name
+        # is a token the matcher has to step over, and its digits can be read as
+        # a quantity by the measure parser.
+        if (priced := find_price(text)) is not None:
+            text = priced[1]
         if (found := find_measure(text)) is not None:
             measure, text = found
         text = remove_phrases(text, self._filler)
@@ -163,9 +168,15 @@ class Taxonomy:
         form_aliases = {alias for alias, _ in form_hits}
         distinct = [(alias, key) for alias, key in base_hits if alias not in form_aliases]
 
-        if len(distinct) > 1:
-            # "coconut almond blend" — two candidate identities, no way to pick.
-            # UNKNOWN escalates, which is the correct answer to an ambiguity.
+        # Two aliases of one identity are agreement, not ambiguity. Indian
+        # merchant listings name products bilingually as a matter of course —
+        # "Onion / Pyaz", "Sugar / Cheeni", "India Gate Basmati Chawal" — and
+        # counting alias hits rather than distinct identities read every one of
+        # those as a conflict. See BROKE.md 005.
+        candidates = {key for _, key in distinct}
+        if len(candidates) > 1:
+            # "coconut almond blend" — two genuinely different identities, no way
+            # to pick. UNKNOWN escalates, which is the right answer to ambiguity.
             return UNKNOWN, UNKNOWN
         if distinct:
             base = distinct[0][1]
