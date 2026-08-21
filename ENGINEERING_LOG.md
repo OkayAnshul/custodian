@@ -213,3 +213,47 @@ chain intact      : 4 events
 **Next objective.** The gate. Binding, deterministic checks, the substitution scorer over the attribute tables, and the pure `decide()` everything so far exists to make possible.
 
 **Confidence.** Materially higher than yesterday. The riskiest unknown in the plan is closed, it was wrong in the way it was flagged as likely to be wrong, and the fix is now guarded by tests that hit the real API on every run.
+
+---
+
+## Day 6 — 2026-08-26
+
+**Objective.** The gate. Binding, deterministic checks, the substitution scorer over the attribute tables, and the pure `decide()`.
+
+**Completed.**
+- `gate/substitution.py` — attribute scoring with `SubstitutionTables` as an explicit input (ADR-021). Weakest attribute governs: a perfect base cannot carry an incompatible form.
+- `gate/binding.py` — cart line back to requested item, re-derived rather than trusted. Category proximity separates *bad substitute* (bound, unfaithful) from *unrequested item* (bound to nothing) — a distinction no total-based check can make.
+- `gate/deterministic.py` — six checks that reject on their own authority.
+- `gate/scope.py` — scope creep scored by value, not count.
+- `gate/confidence.py` — coverage and margin, computed. Never a model's self-report.
+- `gate/decide.py` — `decide()` and `escalations()`.
+
+**Tests.** 35 new (387 total).
+
+**Verified.** Eight scenarios against the real catalog:
+
+```
+clean order                        APPROVE   no model asked
+coconut milk -> coconut cream      APPROVE   no model asked
+coconut milk -> ALMOND milk        REJECT    no model asked
+unrequested wok, inside budget     HOLD      SCOPE_CREEP FAIL
+forged price (₹99 for ₹199)        REJECT    charged ₹698, not ₹498
+over budget                        REJECT
+quantity inflated x6               HOLD
+turmeric whole -> powder           HOLD      escalates line l1, confidence 21.97%
+```
+
+Both flagship cases are settled by arithmetic with zero escalations, which is ADR-007's claim demonstrated rather than argued.
+
+**What broke.** `BROKE.md` 007, and it is the worst one so far: the gate **approved an order with a failed dimension**. Almond milk for coconut milk scored 34% on substitution and approved at 85% overall, because seven passing dimensions outvoted the one that mattered. I had written "a constraint that can be outvoted by a good average is not a constraint" as a comment inside the very function where exactly that happened. Fixed structurally (ADR-020) rather than by re-tuning weights.
+
+**Two smaller finds.** `SUBST_BASE_CHANGED` was carrying two different claims — an unrelated identity swap and a *permitted* equivalence — so it could not be made blocking without refusing legitimate substitutions; split into `SUBST_BASE_UNRELATED`. And a schema invariant caught that a threshold-driven `HOLD` has every dimension passing and therefore nothing to point at, which produced `disposition_codes` (ADR-022) and finally gave the two orphaned outcome-level reason codes a use.
+
+**Known issues.**
+- No ledger integration for decisions yet, and no replay path — Day 7.
+- No API surface. No re-confirmation flow.
+- Thresholds still `v0-untuned`. The corpus starts Day 8.
+
+**Next objective.** Wire `decide()` to the ledger, build replay, and the re-confirmation path.
+
+**Confidence.** The gate does what it should on eight hand-built scenarios, which is not the same as being calibrated. Today\'s bug is the argument for the corpus: it was found by looking at output, not by a test, and eight scenarios is not a measurement.

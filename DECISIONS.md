@@ -288,3 +288,45 @@ A mandate-expiry check written on string comparison passes an expired mandate. `
 **Why.** The thresholds are `v0-untuned` and the gate is not finished. A live key reaching this code would move real money on a decision the project itself does not yet claim is calibrated. The failure mode is a copied `.env` or a mis-set CI variable — neither of which announces itself — and refusing at construction is cheaper than trusting configuration to be right.
 
 **Trade-off.** Anyone taking this to production must delete a line, which is the intended amount of friction.
+
+---
+
+## ADR-020 — A failed dimension caps the outcome, whatever the average says
+
+**Date** 2026-08-26 · **Area** gate · **Status** Accepted
+
+**Problem.** Alignment is a weighted aggregate across eight dimensions. An aggregate can carry a failure past a threshold: an unrequested ₹1,450 wok scored 32% on scope creep and the order still reached 90.8% overall (BROKE.md 007).
+
+**Options.** (1) Re-tune weights until failures dominate. (2) Maintain a list of blocking reason codes. (3) A structural rule on dimension status.
+
+**Chosen.** (3), on top of (2). Any dimension with status `FAIL` or `UNCERTAIN` caps the outcome at `HOLD`; blocking codes still reject outright.
+
+**Why.** Weights decide how much a dimension contributes to a score. They should not decide whether a failure counts — that is a separate question, and conflating them means every future weight change silently re-litigates which violations can be ignored. (2) alone depends on someone remembering to register each new code; (3) covers dimensions that do not exist yet.
+
+**Trade-off.** The aggregate score no longer determines the outcome by itself, which makes the threshold sweep a sweep over *approvals among clean carts* rather than over all carts. That is the more honest curve anyway: the interesting question is how often a legitimate order gets held, not how often a violation can be averaged away.
+
+---
+
+## ADR-021 — Substitution tables are an input, not a lookup
+
+**Date** 2026-08-26 · **Area** gate · **Status** Accepted
+
+**Problem.** `decide()` must be pure, but substitution scoring depends on the hand-authored compatibility tables, which live on disk.
+
+**Chosen.** `SubstitutionTables` — an immutable value object extracted from the lexicon and passed to `decide()` alongside the `DecisionInput`.
+
+**Why.** Reading a file inside `decide()` would make the decision depend on the filesystem's state at call time, and replaying it a week later would silently use a newer lexicon. As an explicit argument, the tables are visibly part of what produced the decision, and `snapshot.lexicon_version` records which version to reconstruct on replay.
+
+**Rejected.** Embedding the table values into `DecisionInput` itself. It preserves the one-object-one-call shape, but copies the whole compatibility matrix into every ledger entry to record a fact one version string already captures.
+
+---
+
+## ADR-022 — Outcome-level reasons are separate from dimension reasons
+
+**Date** 2026-08-26 · **Area** gate · **Status** Accepted
+
+**Context.** Found by a schema invariant: a cart can pass every dimension and still fail to clear the approve threshold, or clear it with too little confidence. `Decision` refused to build, because it requires a refusal to say why and every dimension was passing.
+
+**Chosen.** `Decision.disposition_codes` — reasons attributable to the outcome rather than to any dimension. `ALIGNMENT_BELOW_APPROVE_THRESHOLD`, `CONFIDENCE_BELOW_THRESHOLD`, `HARD_CONSTRAINT_VIOLATED`.
+
+**Why.** "Everything checked out individually, and not by enough overall" is a real and actionable answer. Forcing it into a dimension would attribute an aggregate property to whichever axis happened to score lowest, which is a fabricated explanation.

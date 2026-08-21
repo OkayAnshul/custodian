@@ -53,6 +53,7 @@ class ReasonCode(StrEnum):
     SUBST_FORM_COMPATIBLE = "SUBST_FORM_COMPATIBLE"
     SUBST_FORM_INCOMPATIBLE = "SUBST_FORM_INCOMPATIBLE"
     SUBST_BASE_CHANGED = "SUBST_BASE_CHANGED"
+    SUBST_BASE_UNRELATED = "SUBST_BASE_UNRELATED"
     SUBST_POLICY_FORBIDS = "SUBST_POLICY_FORBIDS"
     SUBST_FORM_UNLISTED = "SUBST_FORM_UNLISTED"          # escalates
     SUBST_BASE_UNKNOWN = "SUBST_BASE_UNKNOWN"            # escalates
@@ -116,6 +117,7 @@ EXPLANATION: Final[dict[ReasonCode, str]] = {
     ReasonCode.SUBST_FORM_COMPATIBLE: "A substitution kept the same base ingredient in a compatible form.",
     ReasonCode.SUBST_FORM_INCOMPATIBLE: "A substitution changed the form in a way that does not preserve intent.",
     ReasonCode.SUBST_BASE_CHANGED: "A substitution changed the base ingredient.",
+    ReasonCode.SUBST_BASE_UNRELATED: "A substitution swapped in a different ingredient entirely.",
     ReasonCode.SUBST_POLICY_FORBIDS: "A substitution was made that the human's substitution policy does not permit.",
     ReasonCode.SUBST_FORM_UNLISTED: "A substitution pairs two forms with no recorded relationship.",
     ReasonCode.SUBST_BASE_UNKNOWN: "An item could not be placed in the catalog taxonomy.",
@@ -161,6 +163,7 @@ BLOCKING: Final[frozenset[ReasonCode]] = frozenset({
     ReasonCode.MANDATE_CATEGORY_NOT_ALLOWED,
     ReasonCode.MANDATE_CURRENCY_MISMATCH,
     ReasonCode.SUBST_POLICY_FORBIDS,
+    ReasonCode.SUBST_BASE_UNRELATED,
     ReasonCode.HARD_CONSTRAINT_VIOLATED,
 })
 

@@ -139,6 +139,14 @@ class Decision(Contract):
     #: Cart lines the deterministic layer could not settle alone.
     escalated_line_ids: tuple[Identifier, ...] = ()
 
+    #: Reasons that belong to the outcome rather than to any one dimension.
+    #:
+    #: A cart can pass every individual check and still not clear the approve
+    #: threshold, or clear it with too little confidence. Those are real reasons
+    #: and they are not attributable to a dimension, so they live here — without
+    #: them, a threshold-driven hold would be a refusal with nothing to point at.
+    disposition_codes: tuple[ReasonCode, ...] = ()
+
     @model_validator(mode="after")
     def _every_dimension_is_reported(self) -> "Decision":
         reported = [d.dimension for d in self.dimensions]
@@ -164,23 +172,35 @@ class Decision(Contract):
     def _a_refusal_says_why(self) -> "Decision":
         if self.outcome is Outcome.APPROVE:
             return self
+        if self.disposition_codes:
+            return self
         if all(d.status is DimensionStatus.PASS for d in self.dimensions):
-            raise ValueError(f"{self.outcome} with every dimension passing gives the merchant nothing to act on")
+            raise ValueError(
+                f"{self.outcome} with every dimension passing and no disposition code "
+                "gives the merchant nothing to act on"
+            )
         return self
 
     @property
     def reason_codes(self) -> tuple[ReasonCode, ...]:
-        """Every code raised, in dimension order."""
-        return tuple(code for d in self.dimensions for code in d.reason_codes)
+        """Every code raised — dimension reasons first, then the disposition."""
+        return tuple(code for d in self.dimensions for code in d.reason_codes) + self.disposition_codes
 
     @property
     def reason_text(self) -> str:
-        return " ".join(d.reason_text for d in self.dimensions if d.status is not DimensionStatus.PASS) or (
-            "Every check passed."
-        )
+        parts = [d.reason_text for d in self.dimensions if d.status is not DimensionStatus.PASS]
+        parts += [explain(code) for code in self.disposition_codes]
+        return " ".join(parts) or "Every check passed."
 
-    def dimension(self, name: Dimension) -> DimensionResult:
+    def dimension(self, name: Dimension | str) -> DimensionResult:
+        """Look up one dimension. Accepts the enum or its string form.
+
+        Coerced rather than compared with `is`: Dimension is a StrEnum, so
+        callers reasonably pass "SUBSTITUTION", and an identity check silently
+        fails to match it.
+        """
+        wanted = Dimension(name)
         for result in self.dimensions:
-            if result.dimension is name:
+            if result.dimension is wanted:
                 return result
         raise KeyError(name)  # unreachable: _every_dimension_is_reported

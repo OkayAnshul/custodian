@@ -210,3 +210,39 @@ payment.capture           -> (payment_id, amount, data)  <- takes a payment, not
 **What changed to prevent recurrence.** `RazorpayGateway` is in the shared contract fixture, so twelve tests now run against the live API on every run with credentials present. The interface can no longer drift from the provider without something going red.
 
 **Lesson.** I designed the interface from the SDK's method names and my expectation of what a payment gateway looks like, then built a fake that agreed with me. Both were self-consistent and both were wrong. The spike was scheduled for Day 1-2 precisely because this was the highest-risk unknown — and it stayed unknown for four days because a green suite felt like evidence. A fake is only worth what the real implementation's agreement with it is worth, and that agreement has to be run, not assumed.
+
+---
+
+## 007 — The gate approved an order with a failed dimension
+
+**Day 6 · 2026-08-26 · severity: the exact failure this project exists to prevent**
+
+**What broke.** Running the demo scenarios for the first time:
+
+```
+DEMO 3 — almond milk offered for coconut milk
+  APPROVE   alignment 85.04%   confidence 83.40%
+    SUBSTITUTION  FAIL  34.17%  BASE_CHANGED
+```
+
+An `APPROVE` carrying a failed dimension. Also `DEMO 4`, where an unrequested ₹1,450 wok scored 32% on scope creep and approved at 90.80% overall.
+
+**Expected.** A cart containing the wrong ingredient does not approve.
+
+**Actual.** The failure was real, scored correctly, reported correctly — and then averaged away. Substitution carries weight 5 of 22, so a zero on it still leaves the weighted mean above the 80% approve threshold. Seven passing dimensions outvoted the one that mattered.
+
+**Symptoms.** None from the test suite, which did not exist yet for the gate. The dimension breakdown printed the failure plainly and the outcome line said APPROVE two lines above it.
+
+**Root cause.** Two mistakes, one structural and one specific.
+
+The structural one: `_outcome` consulted only the aggregate and a list of blocking reason codes. Weights are meant to decide how much a dimension *contributes*, not whether a *failure counts*. I had written the comment "a constraint that can be outvoted by a good average is not a constraint" inside that very function, and then implemented a function where exactly that happens.
+
+The specific one: `SUBST_BASE_CHANGED` was not in `BLOCKING`, and could not simply be added — the same code fires for a *permitted* equivalence (sunflower oil for groundnut oil under an `EQUIVALENT` policy), so making it blocking would refuse legitimate substitutions. Two different claims were sharing one code.
+
+**Fix.** A new code, `SUBST_BASE_UNRELATED`, for "different identity, no recorded relationship", which is blocking; `SUBST_BASE_CHANGED` stays informational. And a structural guard in `_outcome`: any dimension with status `FAIL` or `UNCERTAIN` caps the outcome at `HOLD`, whatever the average says.
+
+**Why the fix works.** The guard does not depend on anyone maintaining a list correctly. A new dimension added later, or a new failure mode in an existing one, is covered by construction rather than by remembering to register its codes.
+
+**What changed to prevent recurrence.** `test_a_failed_dimension_can_never_be_outvoted_by_a_good_average` asserts both halves — that the aggregate still reads above the approve threshold, *and* that the outcome is nonetheless not `APPROVE`. A test that only checked the outcome would pass again if someone later re-tuned the weights until the average dipped, which would look like a fix and would not be one.
+
+**Lesson.** The scoring was right and the reporting was right; the composition was wrong. Decomposed scores make a system explainable, and they also create a place for a failure to be quietly outvoted — the decomposition needs a rule about which dimensions can veto, and that rule cannot be "whichever ones someone remembered to list". Also: I wrote the correct principle as a comment and then failed to implement it. A comment stating an invariant is a claim, and claims belong in tests.
