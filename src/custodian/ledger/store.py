@@ -17,6 +17,7 @@ a hundred and twenty times.
 from __future__ import annotations
 
 import sqlite3
+import threading
 from pathlib import Path
 from typing import Any, Self
 
@@ -56,16 +57,18 @@ class ArtifactStore:
         self._conn = connection
         self._conn.row_factory = sqlite3.Row
         self._conn.executescript(_SCHEMA)
+        #: See Ledger — one connection, several server threads.
+        self._lock = threading.RLock()
 
     @classmethod
     def open(cls, path: str | Path) -> Self:
-        conn = sqlite3.connect(str(path), isolation_level=None)
+        conn = sqlite3.connect(str(path), isolation_level=None, check_same_thread=False)
         conn.execute("PRAGMA journal_mode=WAL")
         return cls(conn)
 
     @classmethod
     def in_memory(cls) -> Self:
-        return cls(sqlite3.connect(":memory:", isolation_level=None))
+        return cls(sqlite3.connect(":memory:", isolation_level=None, check_same_thread=False))
 
     def close(self) -> None:
         self._conn.close()
@@ -82,24 +85,28 @@ class ArtifactStore:
         Passing it here keeps one artifact under one name.
         """
         digest = digest or canonical_hash(body)
-        self._conn.execute(
-            "INSERT OR IGNORE INTO artifacts (digest, kind, body, stored_at) VALUES (?, ?, ?, ?)",
-            (digest, kind, canonical_json(body), utc_now()),
-        )
+        with self._lock:
+            self._conn.execute(
+                "INSERT OR IGNORE INTO artifacts (digest, kind, body, stored_at)"
+                " VALUES (?, ?, ?, ?)",
+                (digest, kind, canonical_json(body), utc_now()),
+            )
         return digest
 
     def get(self, digest: str) -> dict[str, Any]:
         import json
 
-        row = self._conn.execute(
-            "SELECT body FROM artifacts WHERE digest = ?", (digest,)
-        ).fetchone()
+        with self._lock:
+            row = self._conn.execute(
+                "SELECT body FROM artifacts WHERE digest = ?", (digest,)
+            ).fetchone()
         if row is None:
             raise ArtifactMissing(f"no artifact {digest[:16]}… in the store")
         return json.loads(row["body"])
 
     def __len__(self) -> int:
-        return self._conn.execute("SELECT COUNT(*) AS n FROM artifacts").fetchone()["n"]
+        with self._lock:
+            return self._conn.execute("SELECT COUNT(*) AS n FROM artifacts").fetchone()["n"]
 
     # --- decision inputs ---------------------------------------------------
 

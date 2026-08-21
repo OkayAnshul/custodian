@@ -26,6 +26,7 @@ Recording time and deciding on time are different things.
 from __future__ import annotations
 
 import sqlite3
+import threading
 import uuid
 from dataclasses import dataclass
 from enum import StrEnum
@@ -144,11 +145,16 @@ class Ledger:
         self._conn = connection
         self._conn.row_factory = sqlite3.Row
         self._conn.executescript(_SCHEMA)
+        # A sqlite3 connection is not thread-safe, and a server runs sync
+        # handlers on a threadpool. BEGIN IMMEDIATE makes concurrent *writers*
+        # safe against each other; this makes concurrent users of one connection
+        # object safe. Both are needed — neither substitutes for the other.
+        self._lock = threading.RLock()
 
     @classmethod
     def open(cls, path: str | Path) -> Self:
         """Open (or create) a ledger file. WAL mode for concurrent readers."""
-        conn = sqlite3.connect(str(path), isolation_level=None)
+        conn = sqlite3.connect(str(path), isolation_level=None, check_same_thread=False)
         conn.execute("PRAGMA journal_mode=WAL")
         conn.execute("PRAGMA foreign_keys=ON")
         return cls(conn)
@@ -156,14 +162,15 @@ class Ledger:
     @classmethod
     def in_memory(cls) -> Self:
         """An ephemeral ledger, for tests."""
-        return cls(sqlite3.connect(":memory:", isolation_level=None))
+        return cls(sqlite3.connect(":memory:", isolation_level=None, check_same_thread=False))
 
     def close(self) -> None:
         self._conn.close()
 
     def head(self) -> str:
         """Hash of the most recent event, or ``GENESIS_HASH`` if empty."""
-        row = self._conn.execute("SELECT hash FROM ledger ORDER BY seq DESC LIMIT 1").fetchone()
+        with self._lock:
+            row = self._conn.execute("SELECT hash FROM ledger ORDER BY seq DESC LIMIT 1").fetchone()
         return row["hash"] if row else GENESIS_HASH
 
     def append(
@@ -193,35 +200,37 @@ class Ledger:
 
         # IMMEDIATE takes the write lock up front, so reading the head and
         # writing the successor cannot interleave with another appender and
-        # fork the chain.
-        self._conn.execute("BEGIN IMMEDIATE")
-        try:
-            prev_hash = self.head()
-            digest = compute_hash(
-                prev_hash=prev_hash,
-                event_id=resolved_id,
-                request_id=request_id,
-                ts=resolved_ts,
-                event_type=event_type,
-                payload=payload,
-            )
-            cursor = self._conn.execute(
-                "INSERT INTO ledger (event_id, request_id, ts, event_type, payload, prev_hash, hash)"
-                " VALUES (?, ?, ?, ?, ?, ?, ?)",
-                (
-                    resolved_id,
-                    request_id,
-                    resolved_ts,
-                    str(event_type),
-                    canonical_json(payload),
-                    prev_hash,
-                    digest,
-                ),
-            )
-            self._conn.execute("COMMIT")
-        except Exception:
-            self._conn.execute("ROLLBACK")
-            raise
+        # fork the chain. The mutex covers the same window against threads
+        # sharing this connection object.
+        with self._lock:
+            self._conn.execute("BEGIN IMMEDIATE")
+            try:
+                prev_hash = self.head()
+                digest = compute_hash(
+                    prev_hash=prev_hash,
+                    event_id=resolved_id,
+                    request_id=request_id,
+                    ts=resolved_ts,
+                    event_type=event_type,
+                    payload=payload,
+                )
+                cursor = self._conn.execute(
+                    "INSERT INTO ledger (event_id, request_id, ts, event_type, payload,"
+                    " prev_hash, hash) VALUES (?, ?, ?, ?, ?, ?, ?)",
+                    (
+                        resolved_id,
+                        request_id,
+                        resolved_ts,
+                        str(event_type),
+                        canonical_json(payload),
+                        prev_hash,
+                        digest,
+                    ),
+                )
+                self._conn.execute("COMMIT")
+            except Exception:
+                self._conn.execute("ROLLBACK")
+                raise
 
         return LedgerEvent(
             seq=cursor.lastrowid,
@@ -236,18 +245,22 @@ class Ledger:
 
     def read(self, request_id: str) -> list[LedgerEvent]:
         """Every event for one request, in order."""
-        rows = self._conn.execute(
-            "SELECT * FROM ledger WHERE request_id = ? ORDER BY seq", (request_id,)
-        ).fetchall()
+        with self._lock:
+            rows = self._conn.execute(
+                "SELECT * FROM ledger WHERE request_id = ? ORDER BY seq", (request_id,)
+            ).fetchall()
         return [_row_to_event(row) for row in rows]
 
     def scan(self) -> Iterator[LedgerEvent]:
         """The whole chain, oldest first."""
-        for row in self._conn.execute("SELECT * FROM ledger ORDER BY seq"):
+        with self._lock:
+            rows = self._conn.execute("SELECT * FROM ledger ORDER BY seq").fetchall()
+        for row in rows:
             yield _row_to_event(row)
 
     def __len__(self) -> int:
-        return self._conn.execute("SELECT COUNT(*) AS n FROM ledger").fetchone()["n"]
+        with self._lock:
+            return self._conn.execute("SELECT COUNT(*) AS n FROM ledger").fetchone()["n"]
 
 
 def _row_to_event(row: sqlite3.Row) -> LedgerEvent:

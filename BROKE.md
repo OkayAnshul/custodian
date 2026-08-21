@@ -274,3 +274,32 @@ The curve is now real — `substitution_faithful_bp` from 50% to 95% moves subst
 **What changed to prevent recurrence.** `test_the_threshold_is_a_dial_with_a_measurable_cost` asserts the curve is monotonic and that its ends differ, so a sweep that silently collapses fails the build.
 
 **Lesson.** A blanket `except Exception: continue` inside a loop that exists to skip invalid inputs will also skip a bug in how the inputs are built, and the output is indistinguishable. And measuring correctness where you only have drafted labels is a dead end — the fix was not better labels, it was finding the question that could be answered without them.
+
+---
+
+## 009 — The ledger could not be used from a web server
+
+**Day 9 · 2026-08-29 · severity: the API did not work at all**
+
+**What broke.** The first request to `POST /v1/checkout/verify` raised:
+
+```
+sqlite3.ProgrammingError: SQLite objects created in a thread can only be used
+in that same thread.
+```
+
+**Expected.** A decision.
+
+**Actual.** Every write failed. The ledger had been correct for eight days in tests and could not survive being called from a server.
+
+**Root cause.** `Ledger` and `ArtifactStore` open one connection at construction. FastAPI runs synchronous handlers on a threadpool, so the connection was created on the startup thread and used from a worker. Python's `sqlite3` refuses that by default, and rightly — a connection object is not thread-safe.
+
+I had reasoned about concurrency once, on Day 1, and concluded `BEGIN IMMEDIATE` was sufficient. It is, for the problem I was thinking about: two *writers* racing to read the head and append a successor, which would fork the chain. It does nothing about two threads using one connection object, which is a different problem with a similar description. Having solved the first one, I stopped looking.
+
+**Fix.** `check_same_thread=False` on every connection, plus a `threading.RLock` held across the read-head-then-append window and every other statement. Both mechanisms stay: `BEGIN IMMEDIATE` protects the chain against concurrent writers, and the mutex protects the connection object against concurrent users. Neither substitutes for the other.
+
+**Why the fix works.** The lock makes the compound operation atomic within a process. `BEGIN IMMEDIATE` makes it atomic across processes and connections. The chain's invariant — every event's `prev_hash` is its predecessor's `hash` — needs both to hold under a server.
+
+**What changed to prevent recurrence.** `tests/test_api.py` drives every route through `TestClient`, which uses the same threadpool a real server does. A ledger that cannot be called from a handler now fails the suite rather than the demo.
+
+**Lesson.** "I thought about concurrency here" is not the same as "I thought about *this* concurrency here". The Day 1 reasoning was correct and complete for the failure mode I had named, and naming one failure mode is what stopped me finding the second. The tell was that all my tests called the ledger from the thread that made it — every one of them, without exception, which should itself have been suspicious.
