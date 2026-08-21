@@ -68,6 +68,7 @@ def agent_feed(snapshot: CatalogSnapshot) -> list[dict[str, object]]:
         {
             "item_id": item.item_id,
             "name": item.name,
+            "description": item.description,
             "price_paise": item.price_paise,
             "in_stock": item.in_stock,
             "category": item.category,
@@ -76,4 +77,20 @@ def agent_feed(snapshot: CatalogSnapshot) -> list[dict[str, object]]:
         }
         for item in snapshot.items
         if item.in_stock
+    ]
+
+
+def unsanitised_feed(snapshot: CatalogSnapshot) -> list[dict[str, object]]:
+    """The feed a merchant would expose *without* Custodian. Demo baseline only.
+
+    Identical to ``agent_feed`` except that it carries the merchant's original
+    description, sanitizer findings and all. It exists for exactly one purpose:
+    showing what a naive buyer does when nobody has cleaned the catalog, so the
+    defence can be measured against a baseline rather than asserted.
+
+    Never serve this from the API. It is the "before" half of a comparison.
+    """
+    return [
+        dict(entry, description=item.raw_description)
+        for entry, item in zip(agent_feed(snapshot), (i for i in snapshot.items if i.in_stock))
     ]

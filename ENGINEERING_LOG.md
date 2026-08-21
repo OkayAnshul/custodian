@@ -149,4 +149,31 @@ One entry per working session. Written as the session happens, not reconstructed
 
 **Next objective.** Intent parser behind an interface, naive buyer agent, then Day 5's end-to-end loop.
 
+### Day 4, continued — intent parser and reference buyer
+
+**Completed.**
+- `intent/prompt.py` — the one prompt in the system, versioned and hashed. It deliberately does *not* ask the model to categorise items: category and base come from the same lexicon the catalog is normalised against, and a model-assigned category would be a second, disagreeing opinion about what a word means.
+- `intent/parser.py` — `IntentParser` Protocol, `ParseResult` carrying model id, prompt digest and raw response, and a deterministic `resolve` step that places the model's words through the taxonomy.
+- `intent/recorded.py` — fixture parser keyed on prompt digest, so a fixture recorded under an older prompt version cannot silently satisfy a current request.
+- `intent/claude.py` — the live parser. Structured outputs via `output_config.format`, adaptive thinking, `claude-opus-5`.
+- `agent/buyer.py` — the naive reference buyer.
+- `CatalogItem` gained `description` and `raw_description`; `unsanitised_feed` added as the demo baseline.
+
+**Tests.** 28 new (332 total).
+
+**Checked rather than recalled.** Loaded the Claude API reference before writing SDK code, which corrected two things I would have got wrong from memory: the default model is `claude-opus-5` (I was going to reach for Sonnet on cost grounds — that is the user's call, not mine, and this is one call per request), and structured output goes through `output_config.format`, not the deprecated `output_format` parameter.
+
+**The buyer agent is naive on purpose, and the choice carries an argument.** It matches items by Jaccard overlap on product names — precisely the primitive ADR-007 rejected for the gate. So the agent will offer almond milk for coconut milk, because token overlap scores that identically to coconut cream. The agent's failure and the gate's correctness come from the same example, which makes the demo one story rather than two.
+
+**Problem found.** The loader sanitised each description and then discarded the result — `CatalogItem` had no description field at all, so the cleaned copy went nowhere and the agent feed carried no product text. Found only when building `unsanitised_feed` and discovering there was nothing to contrast against. Both fields added: `description` (sanitised, reaches the agent) and `raw_description` (evidence, never served).
+
+**Verified — the baseline the attack demo measures against.** Same catalog, same agent, one poisoned description telling it to add a ₹1,450 wok:
+
+```
+CUSTODIAN OFF: [coconut milk, Hawkins Kadhai]  -> ₹1,649.00
+CUSTODIAN ON : [coconut milk]                  -> ₹199.00
+```
+
+The instructed addition is `satisfies_line_id=None`, so even when it does get through, it traces to nothing in the request — scope creep by construction rather than by detection.
+
 **Confidence.** High on ingest — it runs against real messy data rather than a fixture, and the failures it found were the useful kind. Lower on the schedule: two of the last three days\' problems were found only by running against real inputs, and the payment path still has no real input to run against.

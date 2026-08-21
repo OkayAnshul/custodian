@@ -108,7 +108,8 @@ def _build_item(row: dict[str, str], tax: Taxonomy, report: LoadReport) -> Catal
         return None
     price_paise, embedded_price = price
 
-    description = sanitize(row.get("description") or "")
+    raw_description = (row.get("description") or "").strip()
+    description = sanitize(raw_description)
     if not description.clean:
         report.issues.append(
             LoadIssue(sku, "SANITIZER_FLAG", f"{[str(f) for f in description.finding.flags]}")
@@ -133,6 +134,8 @@ def _build_item(row: dict[str, str], tax: Taxonomy, report: LoadReport) -> Catal
         raw_name=raw_name,
         price_paise=price_paise,
         in_stock=(row.get("stock") or "").strip().lower() in _IN_STOCK,
+        description=description.clean_text,
+        raw_description=raw_description,
         base=placement.base,
         form=placement.form,
         category=placement.category,

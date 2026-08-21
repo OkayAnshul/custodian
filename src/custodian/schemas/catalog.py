@@ -63,6 +63,12 @@ class CatalogItem(Contract):
     price_paise: Paise
     in_stock: bool
 
+    #: Merchant copy after sanitisation. This is what reaches the agent.
+    description: str = Field(default="", max_length=2_048)
+    #: What the merchant actually wrote, kept as evidence. Never served to an
+    #: agent — handing back the text that was stripped would defeat stripping it.
+    raw_description: str = Field(default="", max_length=4_096)
+
     #: Attribute decomposition — the substitution primitive. See ADR-007.
     base: str = Field(default=UNKNOWN, max_length=64)
     form: str = Field(default=UNKNOWN, max_length=64)

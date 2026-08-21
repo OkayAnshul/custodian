@@ -132,8 +132,8 @@ def test_a_row_without_a_sku_or_name_is_refused():
 def test_the_feed_exposes_only_what_a_buyer_needs(ingested):
     snapshot, _ = ingested
     entry = agent_feed(snapshot)[0]
-    assert set(entry) == {"item_id", "name", "price_paise", "in_stock", "category",
-                          "unit_quantity", "unit"}
+    assert set(entry) == {"item_id", "name", "description", "price_paise", "in_stock",
+                          "category", "unit_quantity", "unit"}
 
 
 def test_the_feed_never_hands_back_the_text_that_was_stripped(ingested):
@@ -141,6 +141,7 @@ def test_the_feed_never_hands_back_the_text_that_was_stripped(ingested):
     snapshot, _ = ingested
     for entry in agent_feed(snapshot):
         assert "raw_name" not in entry
+        assert "raw_description" not in entry
         assert "sanitization" not in entry
 
 
