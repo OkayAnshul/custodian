@@ -10,6 +10,13 @@ Idempotency is part of the interface, not an implementation detail. An agent
 that retries a settlement must not be able to pay twice, and "we won't retry" is
 not a control. Replaying a key with the *same* arguments returns the original
 result; replaying it with different arguments is a caller bug and raises.
+
+The three-step shape — create an order, observe an authorised payment against
+it, then capture — is not an abstraction we chose. It is what the provider
+actually does, established by a live spike against test-mode credentials rather
+than assumed from the shape of the SDK. An order that nobody has paid has zero
+payments on it and nothing to capture; a gateway interface that lets you capture
+an order directly is describing a provider that does not exist. See BROKE.md 006.
 """
 
 from __future__ import annotations
@@ -20,6 +27,13 @@ from typing import Protocol, runtime_checkable
 
 
 class PaymentStatus(StrEnum):
+    """Where a payment is in the provider's lifecycle.
+
+    ``AUTHORIZED`` is the state that matters: the money is committed by the payer
+    but not yet taken. It is the last point at which a merchant can decline to
+    charge, which is precisely where a purpose check belongs.
+    """
+
     CREATED = "CREATED"
     AUTHORIZED = "AUTHORIZED"
     CAPTURED = "CAPTURED"
@@ -52,6 +66,9 @@ class OrderRef:
     amount_paise: int
     currency: str
     receipt: str
+    #: Where the payer completes this order, when the provider offers a hosted
+    #: page. ``None`` for gateways that have no such concept.
+    payment_url: str | None = None
 
     def as_observed(self) -> dict[str, object]:
         """The ledger-safe view: what the gateway told us, nothing derived."""
@@ -60,6 +77,7 @@ class OrderRef:
             "amount_paise": self.amount_paise,
             "currency": self.currency,
             "receipt": self.receipt,
+            "payment_url": self.payment_url,
         }
 
 
@@ -76,6 +94,11 @@ class PaymentRef:
     @property
     def settled(self) -> bool:
         return self.status is PaymentStatus.CAPTURED
+
+    @property
+    def currency_or_inr(self) -> str:
+        """Currency for a capture call. One merchant, one currency, by scope."""
+        return "INR"
 
     def as_observed(self) -> dict[str, object]:
         return {
@@ -102,11 +125,25 @@ class PaymentGateway(Protocol):
         """Reserve an order for ``amount_paise``. Idempotent on ``idempotency_key``."""
         ...
 
-    def capture(self, order: OrderRef, *, idempotency_key: str) -> PaymentRef:
-        """Move the money.
+    def payment_for(self, order: OrderRef) -> PaymentRef | None:
+        """The payment on ``order``, in whatever state the provider holds it.
 
-        Idempotent on ``idempotency_key``. An order that has already been
-        captured raises ``AlreadyCaptured`` even under a fresh key.
+        ``None`` is the ordinary answer for an order nobody has paid yet — not an
+        error. The state is returned rather than filtered because whether a paid
+        order arrives ``AUTHORIZED`` or already ``CAPTURED`` depends on the
+        merchant account's auto-capture setting, and a method that only ever
+        returned authorised payments would silently report "unpaid" for a
+        perfectly settled order on an auto-capture account.
+        """
+        ...
+
+    def capture(self, payment: PaymentRef, *, idempotency_key: str) -> PaymentRef:
+        """Take an authorised payment.
+
+        Captures exactly ``payment.amount_paise`` — the caller must have already
+        checked that against the gate's verified total. Idempotent on
+        ``idempotency_key``; a payment already captured raises ``AlreadyCaptured``
+        even under a fresh key.
         """
         ...
 

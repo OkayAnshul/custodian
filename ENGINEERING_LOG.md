@@ -177,3 +177,39 @@ CUSTODIAN ON : [coconut milk]                  -> ₹199.00
 The instructed addition is `satisfies_line_id=None`, so even when it does get through, it traces to nothing in the request — scope creep by construction rather than by detection.
 
 **Confidence.** High on ingest — it runs against real messy data rather than a fixture, and the failures it found were the useful kind. Lower on the schedule: two of the last three days\' problems were found only by running against real inputs, and the payment path still has no real input to run against.
+
+---
+
+## Day 5 — 2026-08-25 — **CHECKPOINT MET**
+
+**Objective.** Razorpay credentials arrived. Run the Day 1-2 spike that had been blocked since the start, then close the end-to-end loop.
+
+**The spike found the thing spikes are for.** `PaymentGateway` had `create_order` then `capture(order)`. That path does not exist. Razorpay is `order → (a human pays) → authorized payment → capture(payment_id, amount)`, and an unpaid order has zero payments on it. `FakeGateway` had been passing the full contract for four days against an interface I had imagined. Logged as `BROKE.md` 006 — a fake that satisfies a contract the real provider cannot is worse than no fake.
+
+Two further findings from the same session, both measured rather than assumed: `reference_id` is capped at 40 characters (a Custodian request id has no such cap, so the gateway shortens by deterministic digest), and payment-link creation is rate limited where order creation is not — six orders in a burst succeeded, the fourth link did not. The first implementation used links as the per-order primitive, which would have made a provider rate limit a property of the system.
+
+**Completed.**
+- `payments/gateway.py` reshaped to the provider's actual lifecycle; `FakeGateway.simulate_payer` added for the human step.
+- `payments/razorpay_client.py` — live gateway on the Orders API, explicit rate-limit backoff, and a construction-time refusal of any non-`rzp_test_` key (ADR-019).
+- Contract suite parametrised over both implementations. **12 tests now run against the live Razorpay API**; 5 skip with a stated reason because no API call makes a payment happen.
+- `scripts/settlement_demo.py` — the whole loop, end to end.
+
+**Tests.** 352 total. 12 of them live.
+
+**Verified — the Day 5 checkpoint, four days early.** Messy catalog → feed → intent → cart → server-side re-derivation → real Razorpay test-mode order → hash-chained ledger. The agent deliberately understates one line, and the control already holds:
+
+```
+agent asserted    : ₹696.00
+Custodian derived : ₹896.00   <- the order is created for this
+order             : order_TSQ9ta0SoImmRF   (real, test mode)
+chain intact      : 4 events
+```
+
+**Known issues.**
+- Completing the payment still needs a human on the hosted page with a test card. That is a property of the provider, not a gap in the build, and it is stated rather than worked around.
+- The mandate envelope remains modelled locally — Reserve Pay is not reachable from a self-serve test account.
+- `decide()` does not exist yet. Day 5 does arithmetic; the gate is Days 6-8.
+
+**Next objective.** The gate. Binding, deterministic checks, the substitution scorer over the attribute tables, and the pure `decide()` everything so far exists to make possible.
+
+**Confidence.** Materially higher than yesterday. The riskiest unknown in the plan is closed, it was wrong in the way it was flagged as likely to be wrong, and the fix is now guarded by tests that hit the real API on every run.

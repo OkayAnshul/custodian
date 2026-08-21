@@ -7,6 +7,11 @@ credentials.
 
 ``fail_order_ids`` makes settlement failure reproducible, which the recovery
 path and the demo's failure story both need.
+
+``simulate_payer`` stands in for the step a human performs on a hosted checkout
+page. It exists because the real lifecycle has a gap in it that no API call
+closes — see ``gateway.PaymentGateway`` — and pretending otherwise here would
+mean the fake passed a contract the real gateway could not.
 """
 
 from __future__ import annotations
@@ -35,7 +40,8 @@ class FakeGateway:
     _orders: dict[str, OrderRef] = field(default_factory=dict, repr=False)
     _payments: dict[str, PaymentRef] = field(default_factory=dict, repr=False)
     _idempotency: dict[str, tuple[str, object]] = field(default_factory=dict, repr=False)
-    _captured_orders: set[str] = field(default_factory=set, repr=False)
+    _captured: set[str] = field(default_factory=set, repr=False)
+    _authorized_by_order: dict[str, str] = field(default_factory=dict, repr=False)
 
     @property
     def name(self) -> str:
@@ -71,43 +77,67 @@ class FakeGateway:
         if (replayed := self._replay(idempotency_key, fingerprint)) is not None:
             return replayed  # type: ignore[return-value]
 
+        order_id = f"order_fake_{len(self._orders) + 1:06d}"
         order = OrderRef(
-            order_id=f"order_fake_{len(self._orders) + 1:06d}",
+            order_id=order_id,
             amount_paise=amount_paise,
             currency=currency,
             receipt=receipt,
+            payment_url=f"https://fake.invalid/pay/{order_id}",
         )
         self._orders[order.order_id] = order
         self._idempotency[idempotency_key] = (fingerprint, order)
         return order
 
-    def capture(self, order: OrderRef, *, idempotency_key: str) -> PaymentRef:
-        if not idempotency_key:
-            raise PaymentError("idempotency_key is required")
+    def simulate_payer(self, order: OrderRef, *, amount_paise: int | None = None) -> PaymentRef:
+        """Stand in for a human completing checkout. Tests and demos only.
+
+        ``amount_paise`` defaults to the order amount; passing a different value
+        models an underpayment, which the capture path must refuse.
+        """
         if order.order_id not in self._orders:
             raise PaymentError(f"unknown order: {order.order_id}")
+        payment = PaymentRef(
+            payment_id=f"pay_fake_{len(self._payments) + 1:06d}",
+            order_id=order.order_id,
+            amount_paise=order.amount_paise if amount_paise is None else amount_paise,
+            status=PaymentStatus.AUTHORIZED,
+        )
+        self._payments[payment.payment_id] = payment
+        self._authorized_by_order[order.order_id] = payment.payment_id
+        return payment
 
-        fingerprint = self._fingerprint(order.order_id, order.amount_paise)
+    def payment_for(self, order: OrderRef) -> PaymentRef | None:
+        payment_id = self._authorized_by_order.get(order.order_id)
+        return self._payments[payment_id] if payment_id else None
+
+    def capture(self, payment: PaymentRef, *, idempotency_key: str) -> PaymentRef:
+        if not idempotency_key:
+            raise PaymentError("idempotency_key is required")
+        if payment.payment_id not in self._payments:
+            raise PaymentError(f"unknown payment: {payment.payment_id}")
+
+        fingerprint = self._fingerprint(payment.payment_id, payment.amount_paise)
         if (replayed := self._replay(idempotency_key, fingerprint)) is not None:
             return replayed  # type: ignore[return-value]
 
         # A fresh idempotency key must not be a second route to the same money.
-        if order.order_id in self._captured_orders:
-            raise AlreadyCaptured(f"order {order.order_id} has already been captured")
+        if payment.payment_id in self._captured:
+            raise AlreadyCaptured(f"payment {payment.payment_id} has already been captured")
 
-        failed = order.order_id in self.fail_order_ids
-        payment = PaymentRef(
-            payment_id=f"pay_fake_{len(self._payments) + 1:06d}",
-            order_id=order.order_id,
-            amount_paise=order.amount_paise,
+        failed = payment.order_id in self.fail_order_ids
+        captured = PaymentRef(
+            payment_id=payment.payment_id,
+            order_id=payment.order_id,
+            amount_paise=payment.amount_paise,
             status=PaymentStatus.FAILED if failed else PaymentStatus.CAPTURED,
             failure_reason="simulated gateway failure" if failed else None,
         )
-        self._payments[payment.payment_id] = payment
-        self._idempotency[idempotency_key] = (fingerprint, payment)
-        if payment.settled:
-            self._captured_orders.add(order.order_id)
-        return payment
+        self._payments[captured.payment_id] = captured
+        self._idempotency[idempotency_key] = (fingerprint, captured)
+        if captured.settled:
+            self._captured.add(captured.payment_id)
+        return captured
 
     def fetch(self, payment_id: str) -> PaymentRef:
         if payment_id not in self._payments:

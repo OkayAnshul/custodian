@@ -172,3 +172,41 @@ Also found in the same run: the embedded price was still in the name when placem
 **What changed to prevent recurrence.** `test_bilingual_names_place_correctly` covers four real rows from the export, and the ingest test asserts the exact unplaced list rather than a count, so any new item silently dropping out is a failure rather than a number moving.
 
 **Lesson.** The guard was correct for the case it was written against and wrong for a case that looks identical from inside the function. The tell was that improving the lexicon made the failure *more* likely, not less — when adding correct data makes things worse, the bug is in what the code does with agreement.
+
+---
+
+## 006 — The payment interface described a provider that does not exist
+
+**Day 5 · 2026-08-25 · severity: the Day 5 checkpoint was built on a wrong assumption**
+
+**What broke.** `PaymentGateway` had `create_order(...)` then `capture(order)`. Against real Razorpay test-mode credentials, there is no such path. An order nobody has paid has zero payments on it and nothing to capture.
+
+**Expected.** Create an order, capture it, money moves.
+
+**Actual.** Razorpay is `order → (a human pays on a hosted page) → authorized payment → capture(payment_id, amount)`. The gap in the middle is not an API call. No server-side call makes a payment happen.
+
+**Symptoms.** None from the test suite — `FakeGateway` passed the whole contract, because the fake implemented the interface I had imagined rather than the one the provider offers. A fake that satisfies a contract the real thing cannot is worse than no fake: it converts an unknown into false confidence.
+
+**Investigation.** Probed the live API directly rather than reading the SDK's shape and inferring:
+
+```
+order.create              -> status=created, amount_paid=0
+order.payments(order_id)  -> count=0        <- nothing to capture
+payment.capture           -> (payment_id, amount, data)  <- takes a payment, not an order
+```
+
+**Fix.** Reshaped the Protocol around what the provider does: `create_order` → `payment_for(order) -> PaymentRef | None` → `capture(payment)`. `FakeGateway` gained `simulate_payer`, which stands in for the human step and is named so it cannot be mistaken for something the live gateway can do. The five contract tests past authorisation now skip on Razorpay with a stated reason instead of silently not existing.
+
+`payment_for` returns whatever state the provider holds rather than filtering for `AUTHORIZED`, because auto-capture is an account setting — a method that only returned authorised payments would report "unpaid" for a perfectly settled order.
+
+**Two further findings from the same spike.**
+
+*`reference_id` is capped at 40 characters.* A Custodian receipt is a request id with no such cap. Shortened inside the gateway by deterministic digest — deterministic because an idempotent retry must produce the same reference, and truncation would collide two long receipts sharing a prefix. A provider's field length should not reach back and dictate our own identifiers.
+
+*Payment Links are rate limited; Orders are not.* Measured, not guessed: six order creations in a burst all succeeded, three payment-link creations succeeded and the fourth returned "Too many requests". The first implementation used links as the per-order primitive, which made a provider rate limit a property of the system. Now orders are the primitive and a link is minted only when a human actually needs to pay. Razorpay also reports rate limiting as a `BadRequestError` — a 400-class exception — so the SDK's own backoff, which keys on status class, does not catch it; the gateway retries it explicitly, since a request refused before anything happened is the one failure that is unambiguously safe to retry.
+
+**Why the fix works.** The interface now has the same shape as the thing behind it, and the asymmetry it cannot remove is marked rather than hidden. `simulate_payer` exists on exactly one implementation, and every test that depends on it says so.
+
+**What changed to prevent recurrence.** `RazorpayGateway` is in the shared contract fixture, so twelve tests now run against the live API on every run with credentials present. The interface can no longer drift from the provider without something going red.
+
+**Lesson.** I designed the interface from the SDK's method names and my expectation of what a payment gateway looks like, then built a fake that agreed with me. Both were self-consistent and both were wrong. The spike was scheduled for Day 1-2 precisely because this was the highest-risk unknown — and it stayed unknown for four days because a green suite felt like evidence. A fake is only worth what the real implementation's agreement with it is worth, and that agreement has to be run, not assumed.

@@ -258,3 +258,33 @@ A mandate-expiry check written on string comparison passes an expired mandate. `
 **Why.** "If cart total > mandate limit, cannot approve" is the property test the invariant list calls for. Enforced in the type it is stronger than a test: no downstream bug, refactor or future code path can produce that object at all. The test then verifies the guard exists rather than sampling the space of ways to violate it.
 
 **Trade-off.** Business logic in a schema, which is normally worth avoiding. Justified here because it is the one invariant where being wrong means money moving against a violated constraint.
+
+---
+
+## ADR-018 — The payment interface has the provider's shape, not ours
+
+**Date** 2026-08-25 · **Area** payments · **Status** Accepted · **Supersedes part of ADR-008**
+
+**Problem.** ADR-008 put the provider behind a Protocol so that signup latency could not block the build. It worked — but the Protocol was designed before any live call had been made, and it was wrong.
+
+**Context.** Established against live test-mode credentials: Razorpay is `order → (human pays) → authorized payment → capture(payment_id, amount)`. There is no call that turns an order into a payment. The original `capture(order)` described a provider that does not exist, and `FakeGateway` implemented it faithfully, so the whole contract suite was green against an imagined API.
+
+**Chosen.** `create_order` → `payment_for(order) -> PaymentRef | None` → `capture(payment)`, with `FakeGateway.simulate_payer` standing in for the human step.
+
+**Why the asymmetry is marked rather than removed.** Five contract tests cannot run against Razorpay, because completing a payment needs a person on a hosted page. They skip with a stated reason. The alternative — inventing a live path so the suite looks symmetrical — would restore exactly the false confidence that hid this bug for four days.
+
+**Related decision — Orders, not Payment Links.** Links yield a payable URL from a server call alone, which is attractive for a headless demo. Measured: six order creations in a burst succeed; the fourth payment-link creation returns "Too many requests". Using links per order would make a provider rate limit a property of the system, so orders are the primitive and a link is minted only when someone actually needs to pay.
+
+**Security implication.** The order is created for the gate's re-derived total, never for the agent's asserted one. Demonstrated end to end on day 5: an agent asserting ₹99 for a ₹199 item produced a ₹896 order, not ₹696.
+
+---
+
+## ADR-019 — Refuse a live Razorpay key at construction
+
+**Date** 2026-08-25 · **Area** payments, security · **Status** Accepted
+
+**Chosen.** `RazorpayGateway.__post_init__` raises unless the key id begins `rzp_test_`.
+
+**Why.** The thresholds are `v0-untuned` and the gate is not finished. A live key reaching this code would move real money on a decision the project itself does not yet claim is calibrated. The failure mode is a copied `.env` or a mis-set CI variable — neither of which announces itself — and refusing at construction is cheaper than trusting configuration to be right.
+
+**Trade-off.** Anyone taking this to production must delete a line, which is the intended amount of friction.
