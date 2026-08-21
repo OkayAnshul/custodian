@@ -1,6 +1,8 @@
 # What broke
 
-Kept from day 1, because the submission form's twelfth field asks what broke and how you got out, and a file written honestly on day 15 reads like fiction.
+Kept from the first hour, because the submission form's twelfth field asks what broke and how you got out, and a file written honestly at the end reads like fiction.
+
+Dates are all **2026-08-21**: the whole build happened in four sittings on one day. The "plan phase" numbers map to the problem statement's fifteen-day plan, not to calendar days — see the note at the top of `ENGINEERING_LOG.md`.
 
 Entries are in the order they happened. Nothing is removed once it is fixed.
 
@@ -8,7 +10,7 @@ Entries are in the order they happened. Nothing is removed once it is fixed.
 
 ## 001 — Shipped a module with no tests and did not notice
 
-**Day 1 · 2026-08-21 · severity: process, not runtime**
+**Plan phase 1 · 2026-08-21 · severity: process, not runtime**
 
 **What broke.** `bp.py` (basis-point scores) went in with a passing smoke test typed into the shell and no test file. The suite was green — 74 passing — because nothing was importing it yet.
 
@@ -32,7 +34,7 @@ Entries are in the order they happened. Nothing is removed once it is fixed.
 
 ## 002 — `git push` hung for two minutes and died with no error
 
-**Day 1 · 2026-08-21 · severity: blocked the public repo**
+**Plan phase 1 · 2026-08-21 · severity: blocked the public repo**
 
 **What broke.** `gh repo create custodian --public --source=. --push` hung and was killed at the 2-minute timeout. No error message, no partial output — just a stall.
 
@@ -70,7 +72,7 @@ Pushed in seconds. GitHub also serves SSH on port 443 via `ssh.github.com`, whic
 
 ## 003 — A mandate-expiry check that would pass expired mandates
 
-**Day 2 · 2026-08-22 · severity: would have moved money against a dead mandate**
+**Plan phase 2 · 2026-08-21 · severity: would have moved money against a dead mandate**
 
 **What broke.** `Mandate.active_at` compared ISO-8601 timestamps as strings:
 
@@ -109,7 +111,7 @@ An IST-stamped `moment` compares as *later* than it actually is. A mandate that 
 
 ## 004 — `¼ kg` normalised to 4000g
 
-**Day 3 · 2026-08-23 · severity: silent 16× error on every pack size written with a vulgar fraction**
+**Plan phase 3 · 2026-08-21 · severity: silent 16× error on every pack size written with a vulgar fraction**
 
 **What broke.** `parse_measure("¼ kg")` returned 4000g instead of 250g. No exception — a confident wrong answer.
 
@@ -135,7 +137,7 @@ An IST-stamped `moment` compares as *later* than it actually is. A mandate that 
 
 ## 005 — Bilingual product names failed to place
 
-**Day 4 · 2026-08-24 · severity: silently unplaceable on the most common Indian naming pattern**
+**Plan phase 4 · 2026-08-21 · severity: silently unplaceable on the most common Indian naming pattern**
 
 **What broke.** Ingesting the real 70-row export, eight items came back `base=UNKNOWN`. Among them: `India Gate Basmati Chawal 1kg`, `Sugar / Cheeni 1kg`, `Onion / Pyaz 1kg`, `Mustard Oil / Sarson ka Tel 1 ltr`.
 
@@ -177,7 +179,7 @@ Also found in the same run: the embedded price was still in the name when placem
 
 ## 006 — The payment interface described a provider that does not exist
 
-**Day 5 · 2026-08-25 · severity: the Day 5 checkpoint was built on a wrong assumption**
+**Plan phase 5 · 2026-08-21 · severity: the Day 5 checkpoint was built on a wrong assumption**
 
 **What broke.** `PaymentGateway` had `create_order(...)` then `capture(order)`. Against real Razorpay test-mode credentials, there is no such path. An order nobody has paid has zero payments on it and nothing to capture.
 
@@ -209,13 +211,13 @@ payment.capture           -> (payment_id, amount, data)  <- takes a payment, not
 
 **What changed to prevent recurrence.** `RazorpayGateway` is in the shared contract fixture, so twelve tests now run against the live API on every run with credentials present. The interface can no longer drift from the provider without something going red.
 
-**Lesson.** I designed the interface from the SDK's method names and my expectation of what a payment gateway looks like, then built a fake that agreed with me. Both were self-consistent and both were wrong. The spike was scheduled for Day 1-2 precisely because this was the highest-risk unknown — and it stayed unknown for four days because a green suite felt like evidence. A fake is only worth what the real implementation's agreement with it is worth, and that agreement has to be run, not assumed.
+**Lesson.** I designed the interface from the SDK's method names and my expectation of what a payment gateway looks like, then built a fake that agreed with me. Both were self-consistent and both were wrong. The spike was scheduled first precisely because this was the highest-risk unknown — and it stayed unknown through four phases of work because a green suite felt like evidence. A fake is only worth what the real implementation's agreement with it is worth, and that agreement has to be run, not assumed.
 
 ---
 
 ## 007 — The gate approved an order with a failed dimension
 
-**Day 6 · 2026-08-26 · severity: the exact failure this project exists to prevent**
+**Plan phase 6 · 2026-08-21 · severity: the exact failure this project exists to prevent**
 
 **What broke.** Running the demo scenarios for the first time:
 
@@ -251,7 +253,7 @@ The specific one: `SUBST_BASE_CHANGED` was not in `BLOCKING`, and could not simp
 
 ## 008 — A flat sweep that looked like a finding
 
-**Day 8 · 2026-08-28 · severity: would have been reported as a result**
+**Plan phase 8 · 2026-08-21 · severity: would have been reported as a result**
 
 **What broke.** The first threshold sweep produced a completely flat curve, and the alignment sweep produced no rows at all. Flatness is a legitimate outcome, so it read as one: "no threshold changes anything here."
 
@@ -279,7 +281,7 @@ The curve is now real — `substitution_faithful_bp` from 50% to 95% moves subst
 
 ## 009 — The ledger could not be used from a web server
 
-**Day 9 · 2026-08-29 · severity: the API did not work at all**
+**Plan phase 9 · 2026-08-21 · severity: the API did not work at all**
 
 **What broke.** The first request to `POST /v1/checkout/verify` raised:
 
@@ -290,7 +292,7 @@ in that same thread.
 
 **Expected.** A decision.
 
-**Actual.** Every write failed. The ledger had been correct for eight days in tests and could not survive being called from a server.
+**Actual.** Every write failed. The ledger had been correct in tests since the first hour of the build and could not survive being called from a server.
 
 **Root cause.** `Ledger` and `ArtifactStore` open one connection at construction. FastAPI runs synchronous handlers on a threadpool, so the connection was created on the startup thread and used from a worker. Python's `sqlite3` refuses that by default, and rightly — a connection object is not thread-safe.
 
@@ -308,7 +310,7 @@ I had reasoned about concurrency once, on Day 1, and concluded `BEGIN IMMEDIATE`
 
 ## 010 — I put three of my own labels in the corpus and marked them human
 
-**Day 9 · 2026-08-29 · severity: the integrity control, defeated by the person who built it**
+**Plan phase 9 · 2026-08-21 · severity: the integrity control, defeated by the person who built it**
 
 **What broke.** Testing the new review tool, I wrote a `decisions.txt` with three made-up calls to check the round-trip — including `benign-003: REJECT`, chosen specifically to disagree with the draft so I could see the "differs from the draft" counter move. It worked. Then I rebuilt the corpus expecting a clean slate, and `merge_reviews` correctly preserved all three as `HUMAN`.
 
@@ -328,4 +330,32 @@ And the label provenance design recorded *whether* a judgment had been made, not
 
 **Why the fix works.** A label now carries the name of whoever made the call. A reviewer who does not know this history can see, per case, that a judgment was attributed to someone — and an unattributed one cannot exist.
 
-**Lesson.** The person most likely to fabricate a label is whoever is closest to wanting the number to look good, and on a solo project that is always the same person. I had been careful about this for two days in the design and careless about it for one minute in a test, which is roughly the ratio that matters. A control that only binds when you remember it is applying to you is not a control — which is the same lesson as BROKE.md 007, arriving from a completely different direction.
+**Lesson.** The person most likely to fabricate a label is whoever is closest to wanting the number to look good, and on a solo project that is always the same person. I had been careful about this through every design decision that touched it and careless about it for one minute in a test, which is roughly the ratio that matters. A control that only binds when you remember it is applying to you is not a control — which is the same lesson as BROKE.md 007, arriving from a completely different direction.
+
+---
+
+## 011 — I fabricated the project timeline
+
+**2026-08-21 (found 2026-08-22) · severity: the one class of error this project cannot afford**
+
+**What broke.** `ENGINEERING_LOG.md` carried nine entries headed `Day 1 — 2026-08-21` through `Day 9 — 2026-08-29`. `BROKE.md` and `DECISIONS.md` carried matching dates. Every commit in the repository is timestamped **2026-08-21**, and seven of those nine dates had not yet happened.
+
+**Expected.** A log that records when the work was done.
+
+**Actual.** A log that recorded when the *plan* said the work would be done, written in the past tense, spread across a week that did not occur. Anyone running `git log` finds the contradiction in one command.
+
+**Symptoms.** None from anything automated. The dates were plausible, monotonic, and matched the fifteen-day schedule in the problem statement exactly — which is precisely why they read as real.
+
+**Root cause.** I worked through the plan's phases in one sitting and labelled each phase with the calendar date the plan assigned it, rather than the date it happened. There was no moment of deciding to misrepresent anything; the plan said Day 3 and the plan's Day 3 was 23 August, so the heading said 23 August. Once the first heading was written that way, the remaining eight followed the pattern without the question being asked again.
+
+**Investigation.** Found by comparing the log's headings against `git log --date=format:'%Y-%m-%d'`. Every commit: 21 August, 03:45 to 21:31, four sittings, seventeen hours and forty-six minutes elapsed.
+
+**Fix.** Headings now read `Day N (plan phase) — sitting K, 2026-08-21 HH:MM`, so the plan-phase numbering is kept — it is genuinely how the work was organised — while the dates are the real ones. `BROKE.md` and `DECISIONS.md` dates corrected to 21 August. An unmissable note at the top of the log states the compression outright. Duration claims that had inherited the fiction — "the fake passed for four days", "the ledger was correct for eight days" — were reworded to describe phases of work rather than elapsed days, which is both true and a sharper statement of the lesson.
+
+**Why the fix works.** The record now agrees with the commit history, which is the only timeline anyone can independently check.
+
+**Why this is the worst entry in this file.** Everything Custodian claims rests on the idea that its evidence is honest — that a number in the README was measured, that a decision replays because it was tested, that a drafted label is marked as drafted. A fabricated timeline in the same repository does not just misstate one fact; it gives a reader a reason to discount all the others, including the ones that are carefully true. Technical weaknesses are survivable in a way this is not.
+
+**What changed to prevent recurrence.** The note at the top of the log makes the compression a stated property of the document rather than something a reader must infer. More generally: a date in a document is a claim, and the same rule applies to it as to a number in a README — if it was not observed, it does not get written down as though it was.
+
+**Lesson.** Nothing here was a lie in the moment; it was a plan being transcribed as a record, one heading at a time, with the distinction never surfacing. That is how most fabricated evidence actually gets made. The tell was available the whole time and cost one command to check — and I only ran it because someone asked whether things were working.

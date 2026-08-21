@@ -100,9 +100,9 @@ Fixed structurally rather than by re-tuning weights: any `FAIL` or `UNCERTAIN` c
 
 **30s.** Behind a four-method Protocol. The fake and the real Razorpay client pass one contract suite; twelve of those tests run against the live test-mode API.
 
-**The bug worth volunteering.** `BROKE.md` 006. The Protocol had `create_order` then `capture(order)`. Razorpay is `order → a human pays → authorized payment → capture`. An unpaid order has zero payments and nothing to capture. `FakeGateway` passed the whole contract for four days against an API I had *imagined*.
+**The bug worth volunteering.** `BROKE.md` 006. The Protocol had `create_order` then `capture(order)`. Razorpay is `order → a human pays → authorized payment → capture`. An unpaid order has zero payments and nothing to capture. `FakeGateway` passed the whole contract, through every phase up to that point, against an API I had *imagined*.
 
-**The lesson to state.** A fake that satisfies a contract the real thing can't is worse than no fake — it converts an unknown into false confidence. The spike was scheduled for day one precisely because this was the riskiest unknown, and it stayed unknown for four days because a green suite felt like evidence.
+**The lesson to state.** A fake that satisfies a contract the real thing can't is worse than no fake — it converts an unknown into false confidence. The spike was scheduled first precisely because this was the riskiest unknown, and it stayed unknown until real credentials forced the question, because a green suite felt like evidence.
 
 **Two controls against double payment, because there are two failure modes.** An idempotency key protects a retry. It does nothing against an untrusted client generating a fresh key — so capture also refuses an order already paid. A control an agent walks around by changing one string isn't a control.
 

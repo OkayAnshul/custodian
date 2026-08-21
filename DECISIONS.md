@@ -3,6 +3,8 @@
 Every engineering decision that would otherwise exist only in chat history.
 Format is trimmed to the fields that carry weight; a field with nothing to say is omitted rather than filled with "none".
 
+Every decision below was made on **2026-08-21**, the single day this was built. An earlier version of this file spread the dates across 21–30 August to match the plan's day numbering; that was wrong and is corrected.
+
 ---
 
 ## ADR-001 — Money is integer paise
@@ -183,7 +185,7 @@ Identical scores, opposite ground truth. Under §6 as written both land in the t
 
 ## ADR-013 — Contracts are strict, closed and frozen by default
 
-**Date** 2026-08-22 · **Area** schemas · **Status** Accepted
+**Date** 2026-08-21 · **Area** schemas · **Status** Accepted
 
 **Problem.** Pydantic's defaults are wrong for a trust boundary in three ways, and all three are silent.
 
@@ -206,7 +208,7 @@ That walks a float straight past the integer-paise guarantee and into a ledger p
 
 ## ADR-014 — One spelling of time, compared as instants
 
-**Date** 2026-08-22 · **Area** core · **Status** Accepted
+**Date** 2026-08-21 · **Area** core · **Status** Accepted
 
 **Problem.** Timestamps here are compared (is this mandate live, is this snapshot stale) *and* hashed. ISO-8601 permits several spellings of one instant: `Z` and `+00:00`, `+05:30`, fractional seconds at any precision.
 
@@ -229,7 +231,7 @@ A mandate-expiry check written on string comparison passes an expired mandate. `
 
 ## ADR-015 — `decide()` takes one bundled input
 
-**Date** 2026-08-22 · **Area** gate · **Status** Accepted · **Refines ADR-010**
+**Date** 2026-08-21 · **Area** gate · **Status** Accepted · **Refines ADR-010**
 
 **Chosen.** `decide(DecisionInput) -> Decision`, where `DecisionInput` carries request id, `evaluated_at`, intent, cart, snapshot, mandate, recorded semantic verdicts and thresholds.
 
@@ -239,7 +241,7 @@ A mandate-expiry check written on string comparison passes an expired mandate. `
 
 ## ADR-016 — Reason codes are a closed set; explanation is rendered, never authored
 
-**Date** 2026-08-22 · **Area** gate · **Status** Accepted
+**Date** 2026-08-21 · **Area** gate · **Status** Accepted
 
 **Chosen.** 48 codes in a `StrEnum`, each with one line of merchant-facing text. `DimensionResult.reason_text` renders from codes. A dimension with no reason code fails validation.
 
@@ -251,7 +253,7 @@ A mandate-expiry check written on string comparison passes an expired mandate. `
 
 ## ADR-017 — An approval carrying a blocking violation is unconstructable
 
-**Date** 2026-08-22 · **Area** gate · **Status** Accepted
+**Date** 2026-08-21 · **Area** gate · **Status** Accepted
 
 **Chosen.** `Decision` validates that `outcome == APPROVE` cannot coexist with any reason code in `reasons.BLOCKING`. Sixteen codes are blocking — over-mandate, over-budget, price mismatch, out-of-scope merchant, and the rest.
 
@@ -263,7 +265,7 @@ A mandate-expiry check written on string comparison passes an expired mandate. `
 
 ## ADR-018 — The payment interface has the provider's shape, not ours
 
-**Date** 2026-08-25 · **Area** payments · **Status** Accepted · **Supersedes part of ADR-008**
+**Date** 2026-08-21 · **Area** payments · **Status** Accepted · **Supersedes part of ADR-008**
 
 **Problem.** ADR-008 put the provider behind a Protocol so that signup latency could not block the build. It worked — but the Protocol was designed before any live call had been made, and it was wrong.
 
@@ -271,7 +273,7 @@ A mandate-expiry check written on string comparison passes an expired mandate. `
 
 **Chosen.** `create_order` → `payment_for(order) -> PaymentRef | None` → `capture(payment)`, with `FakeGateway.simulate_payer` standing in for the human step.
 
-**Why the asymmetry is marked rather than removed.** Five contract tests cannot run against Razorpay, because completing a payment needs a person on a hosted page. They skip with a stated reason. The alternative — inventing a live path so the suite looks symmetrical — would restore exactly the false confidence that hid this bug for four days.
+**Why the asymmetry is marked rather than removed.** Five contract tests cannot run against Razorpay, because completing a payment needs a person on a hosted page. They skip with a stated reason. The alternative — inventing a live path so the suite looks symmetrical — would restore exactly the false confidence that hid this bug through four phases of work.
 
 **Related decision — Orders, not Payment Links.** Links yield a payable URL from a server call alone, which is attractive for a headless demo. Measured: six order creations in a burst succeed; the fourth payment-link creation returns "Too many requests". Using links per order would make a provider rate limit a property of the system, so orders are the primitive and a link is minted only when someone actually needs to pay.
 
@@ -281,7 +283,7 @@ A mandate-expiry check written on string comparison passes an expired mandate. `
 
 ## ADR-019 — Refuse a live Razorpay key at construction
 
-**Date** 2026-08-25 · **Area** payments, security · **Status** Accepted
+**Date** 2026-08-21 · **Area** payments, security · **Status** Accepted
 
 **Chosen.** `RazorpayGateway.__post_init__` raises unless the key id begins `rzp_test_`.
 
@@ -293,7 +295,7 @@ A mandate-expiry check written on string comparison passes an expired mandate. `
 
 ## ADR-020 — A failed dimension caps the outcome, whatever the average says
 
-**Date** 2026-08-26 · **Area** gate · **Status** Accepted
+**Date** 2026-08-21 · **Area** gate · **Status** Accepted
 
 **Problem.** Alignment is a weighted aggregate across eight dimensions. An aggregate can carry a failure past a threshold: an unrequested ₹1,450 wok scored 32% on scope creep and the order still reached 90.8% overall (BROKE.md 007).
 
@@ -309,7 +311,7 @@ A mandate-expiry check written on string comparison passes an expired mandate. `
 
 ## ADR-021 — Substitution tables are an input, not a lookup
 
-**Date** 2026-08-26 · **Area** gate · **Status** Accepted
+**Date** 2026-08-21 · **Area** gate · **Status** Accepted
 
 **Problem.** `decide()` must be pure, but substitution scoring depends on the hand-authored compatibility tables, which live on disk.
 
@@ -323,7 +325,7 @@ A mandate-expiry check written on string comparison passes an expired mandate. `
 
 ## ADR-022 — Outcome-level reasons are separate from dimension reasons
 
-**Date** 2026-08-26 · **Area** gate · **Status** Accepted
+**Date** 2026-08-21 · **Area** gate · **Status** Accepted
 
 **Context.** Found by a schema invariant: a cart can pass every dimension and still fail to clear the approve threshold, or clear it with too little confidence. `Decision` refused to build, because it requires a refusal to say why and every dimension was passing.
 
@@ -335,7 +337,7 @@ A mandate-expiry check written on string comparison passes an expired mandate. `
 
 ## ADR-023 — Re-confirmation records authority; it does not rewrite the decision
 
-**Date** 2026-08-27 · **Area** gate, ledger · **Status** Accepted
+**Date** 2026-08-21 · **Area** gate, ledger · **Status** Accepted
 
 **Problem.** A held order that a human approves has to become settleable. The obvious implementation is to change the decision to `APPROVE`.
 
@@ -349,7 +351,7 @@ A mandate-expiry check written on string comparison passes an expired mandate. `
 
 ## ADR-024 — A rejection cannot be re-confirmed
 
-**Date** 2026-08-27 · **Area** gate, security · **Status** Accepted
+**Date** 2026-08-21 · **Area** gate, security · **Status** Accepted
 
 **Chosen.** `reconfirm()` raises on a request whose decision was `REJECT`. Only `HOLD` can be confirmed past.
 
@@ -361,7 +363,7 @@ A mandate-expiry check written on string comparison passes an expired mandate. `
 
 ## ADR-025 — Evidence is content-addressed and stored beside the chain
 
-**Date** 2026-08-27 · **Area** ledger · **Status** Accepted
+**Date** 2026-08-21 · **Area** ledger · **Status** Accepted
 
 **Problem.** A replayable decision must name every input it used. Writing the catalog snapshot into each ledger row copies seventy items per decision and makes the chain unreadable.
 
@@ -375,7 +377,7 @@ A mandate-expiry check written on string comparison passes an expired mandate. `
 
 ## ADR-026 — The payment amount is verified again at capture
 
-**Date** 2026-08-29 · **Area** payments, security · **Status** Accepted
+**Date** 2026-08-21 · **Area** payments, security · **Status** Accepted
 
 **Problem.** Every check in the gate asks whether the *cart* was right. None of them asks whether the *payment in front of us* is the one that cart authorised. Between opening an order and capturing it, three things can differ: the authority may have lapsed, the payer may have committed a different amount, and the payment may not correspond to this decision at all.
 
@@ -391,7 +393,7 @@ A mandate-expiry check written on string comparison passes an expired mandate. `
 
 ## ADR-027 — A reviewed label names who reviewed it
 
-**Date** 2026-08-29 · **Area** evaluation, integrity · **Status** Accepted
+**Date** 2026-08-21 · **Area** evaluation, integrity · **Status** Accepted
 
 **Context.** While testing the review tool I applied three labels of my own invention to see the round-trip work. `merge_reviews` did its job and preserved them, and the corpus then carried three cases marked `HUMAN` whose calls I had made — including one that deliberately disagreed with the draft. Removed immediately, but the corpus had briefly contained exactly the circularity the whole label-provenance design exists to prevent.
 
@@ -405,7 +407,7 @@ A mandate-expiry check written on string comparison passes an expired mandate. `
 
 ## ADR-028 — A same-base substitution cannot reject, and arguably should
 
-**Date** 2026-08-30 · **Area** gate · **Status** Open — recorded, not resolved
+**Date** 2026-08-21 · **Area** gate · **Status** Open — recorded, not resolved
 
 **Found by.** Working the benign-divergence labels case by case. `mustard seeds → mustard oil` is the same base and an entirely different ingredient: seeds pop in hot oil for a tadka, and oil does not. `whole almonds → almond milk` is the same shape of failure. Neither can reject.
 
@@ -421,7 +423,7 @@ A mandate-expiry check written on string comparison passes an expired mandate. `
 
 ## ADR-029 — A model's second pass on judgment labels is recorded, not counted
 
-**Date** 2026-08-30 · **Area** evaluation, integrity · **Status** Accepted
+**Date** 2026-08-21 · **Area** evaluation, integrity · **Status** Accepted
 
 **Context.** Asked directly to review the 30 drafted benign-divergence labels, I did — and the result is a lesson rather than a number.
 

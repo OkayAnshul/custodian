@@ -4,7 +4,7 @@ One entry per working session. Written as the session happens, not reconstructed
 
 ---
 
-## Day 1 — 2026-08-21
+## Day 1 (plan phase) — sitting 1, 2026-08-21 03:45–04:11
 
 **Objective.** Stand up the primitives everything else depends on, and get the payment provider off the critical path before it can block anything.
 
@@ -41,11 +41,11 @@ One entry per working session. Written as the session happens, not reconstructed
 
 **Next objective.** Day 2 — Pydantic data contracts (Intent, Cart, CatalogSnapshot, Mandate, Decision), SQLite storage layer, FastAPI skeleton. Razorpay spike the moment credentials land.
 
-**Confidence.** High on the primitives — they are small, fully tested, and the properties that matter (determinism, tamper-evidence, no-double-charge) are asserted rather than assumed. Unchanged on the schedule: Day 5 is gated entirely on Razorpay signup latency, which is not yet knowable.
+**Confidence.** High on the primitives — they are small, fully tested, and the properties that matter (determinism, tamper-evidence, no-double-charge) are asserted rather than assumed. Unchanged on the schedule: the settlement checkpoint is gated entirely on Razorpay signup latency, which is not yet knowable.
 
 ---
 
-## Day 2 — 2026-08-22
+## Day 2 (plan phase) — sitting 1, 2026-08-21 03:45–04:11
 
 **Objective.** Define every data contract before writing logic against it, and make the trust boundary visible in the types.
 
@@ -83,7 +83,7 @@ One entry per working session. Written as the session happens, not reconstructed
 
 ---
 
-## Day 3 — 2026-08-23
+## Day 3 (plan phase) — sitting 1, 2026-08-21 03:45–04:11
 
 **Objective.** Turn messy Indian merchant text into the `(base, form, category)` triple ADR-007 rests on.
 
@@ -109,7 +109,7 @@ One entry per working session. Written as the session happens, not reconstructed
 - `coconut milk → almond milk` — base changed, no recorded relationship, `SUBST_BASE_CHANGED`
 
 **Known issues.**
-- Razorpay: unchanged, still no credentials. Day 5 is Aug 25.
+- Razorpay: unchanged, still no credentials. The settlement checkpoint cannot be met without them.
 - No sanitizer yet, no loader, no snapshot builder — Day 4.
 - Lexicon covers one merchant's likely catalog. Coverage against the real messy source is unmeasured until the loader exists.
 
@@ -119,7 +119,7 @@ One entry per working session. Written as the session happens, not reconstructed
 
 ---
 
-## Day 4 — 2026-08-24
+## Day 4 (plan phase) — sitting 2, 2026-08-21 10:40–10:49
 
 **Objective.** A real messy catalog, ingested end to end, with the attack surface closed on the way in.
 
@@ -143,7 +143,7 @@ One entry per working session. Written as the session happens, not reconstructed
 *Self-referential snapshot digest.* `snapshot_id` is derived from the content hash, and the content hash included `snapshot_id` — so naming a snapshot changed the digest that produced the name. `digest()` now excludes it: the id is a name for the content, not part of it.
 
 **Known issues.**
-- **Razorpay: still no credentials, and Day 5 is tomorrow.** The gateway Protocol means nothing else is blocked, but the checkpoint itself cannot be met without an account.
+- **Razorpay: still no credentials.** The gateway Protocol means nothing else is blocked, but the settlement checkpoint itself cannot be met without an account.
 - Intent parser (model position #1) and the naive buyer agent are not built — the remainder of Day 4.
 - `ANTHROPIC_API_KEY` is not set in this environment either, so the parser will need the same treatment as payments: an interface with a recorded-fixture implementation, so the gate can be built and tested without a live key.
 
@@ -180,11 +180,11 @@ The instructed addition is `satisfies_line_id=None`, so even when it does get th
 
 ---
 
-## Day 5 — 2026-08-25 — **CHECKPOINT MET**
+## Day 5 (plan phase) — sitting 3, 2026-08-21 18:03–18:04 — **CHECKPOINT MET**
 
 **Objective.** Razorpay credentials arrived. Run the Day 1-2 spike that had been blocked since the start, then close the end-to-end loop.
 
-**The spike found the thing spikes are for.** `PaymentGateway` had `create_order` then `capture(order)`. That path does not exist. Razorpay is `order → (a human pays) → authorized payment → capture(payment_id, amount)`, and an unpaid order has zero payments on it. `FakeGateway` had been passing the full contract for four days against an interface I had imagined. Logged as `BROKE.md` 006 — a fake that satisfies a contract the real provider cannot is worse than no fake.
+**The spike found the thing spikes are for.** `PaymentGateway` had `create_order` then `capture(order)`. That path does not exist. Razorpay is `order → (a human pays) → authorized payment → capture(payment_id, amount)`, and an unpaid order has zero payments on it. `FakeGateway` had been passing the full contract, through every phase up to that point, against an interface I had imagined. Logged as `BROKE.md` 006 — a fake that satisfies a contract the real provider cannot is worse than no fake.
 
 Two further findings from the same session, both measured rather than assumed: `reference_id` is capped at 40 characters (a Custodian request id has no such cap, so the gateway shortens by deterministic digest), and payment-link creation is rate limited where order creation is not — six orders in a burst succeeded, the fourth link did not. The first implementation used links as the per-order primitive, which would have made a provider rate limit a property of the system.
 
@@ -196,7 +196,7 @@ Two further findings from the same session, both measured rather than assumed: `
 
 **Tests.** 352 total. 12 of them live.
 
-**Verified — the Day 5 checkpoint, four days early.** Messy catalog → feed → intent → cart → server-side re-derivation → real Razorpay test-mode order → hash-chained ledger. The agent deliberately understates one line, and the control already holds:
+**Verified — the settlement checkpoint met.** Messy catalog → feed → intent → cart → server-side re-derivation → real Razorpay test-mode order → hash-chained ledger. The agent deliberately understates one line, and the control already holds:
 
 ```
 agent asserted    : ₹696.00
@@ -216,7 +216,7 @@ chain intact      : 4 events
 
 ---
 
-## Day 6 — 2026-08-26
+## Day 6 (plan phase) — sitting 3, 2026-08-21 18:21
 
 **Objective.** The gate. Binding, deterministic checks, the substitution scorer over the attribute tables, and the pure `decide()`.
 
@@ -260,7 +260,7 @@ Both flagship cases are settled by arithmetic with zero escalations, which is AD
 
 ---
 
-## Day 7 — 2026-08-27
+## Day 7 (plan phase) — sitting 3, 2026-08-21 18:30
 
 **Objective.** Wire the gate to the ledger, build replay, and the re-confirmation path.
 
@@ -306,9 +306,9 @@ Replay under a deliberately drifted lexicon version refuses rather than quietly 
 
 ---
 
-## Day 8 — 2026-08-28
+## Day 8 (plan phase) — sitting 3, 2026-08-21 18:42
 
-**Objective.** The corpus, the harness, and the sweep. Started two days early, as planned — thresholds cannot be chosen without data.
+**Objective.** The corpus, the harness, and the sweep. Brought forward ahead of the plan's ordering, deliberately — thresholds cannot be chosen without data.
 
 **Completed.**
 - `eval/corpus/schema.py` — cases with **label provenance as a typed field**. `BENIGN_DIVERGENCE` cannot be `DERIVED`; the schema refuses to build it, so the integrity constraint is enforced rather than remembered.
@@ -357,7 +357,7 @@ The adversarial catch rate does not move across any dial. Every attack in this c
 
 ---
 
-## Day 9 — 2026-08-29 — the surface, the documents, and one hole
+## Day 9 (plan phase) — sitting 3–4, 2026-08-21 18:47–21:31 — the surface, the documents, and one hole
 
 **Objective.** API, viewer, README, and a hostile pass over what a judge would attack.
 

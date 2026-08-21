@@ -58,17 +58,21 @@ No vector store, no RAG, no agent framework. The sanitizer is rules rather than 
 
 ## Field 12 — what broke and how you got out
 
-Ten entries in `BROKE.md`, written as they happened. Three worth the space:
+Eleven entries in `BROKE.md`, written as they happened. Three worth the space — and a fourth that matters more than any of them:
 
 **The gate approved an order with a failed dimension.** Almond milk offered for coconut milk scored 34% on substitution, and seven passing dimensions carried the weighted mean to 85%, so it approved — the exact failure the project exists to prevent. I had written *"a constraint that can be outvoted by a good average is not a constraint"* as a comment inside the function where precisely that happened.
 
 Fixed structurally rather than by re-tuning weights: any dimension at `FAIL` or `UNCERTAIN` caps the outcome at hold. Weights decide how much a dimension *contributes*; they do not decide whether a failure *counts*. A blocking-code list depends on someone registering each new code; a status rule covers dimensions that do not exist yet. The test asserts both halves — that the aggregate still reads above the approve threshold, *and* that it still cannot approve — because a test checking only the outcome would pass again if someone later tuned the weights until the average dipped.
 
-**The payment interface described a provider that does not exist.** It had `create_order` then `capture(order)`. Razorpay is `order → a human pays → authorized payment → capture`, and an unpaid order has zero payments on it. My fake had been passing the full contract suite for four days against an API I had imagined. A fake that satisfies a contract the real thing cannot is worse than no fake: it converts an unknown into false confidence. The spike was scheduled for day one because this was the riskiest unknown, and it stayed unknown for four days because a green suite felt like evidence.
+**The payment interface described a provider that does not exist.** It had `create_order` then `capture(order)`. Razorpay is `order → a human pays → authorized payment → capture`, and an unpaid order has zero payments on it. My fake had been passing the full contract suite, through every phase of the build to that point, against an API I had imagined. A fake that satisfies a contract the real thing cannot is worse than no fake: it converts an unknown into false confidence. The spike was scheduled first because this was the riskiest unknown, and it stayed unknown until real credentials forced the question, because a green suite felt like evidence.
 
 **I defeated my own integrity control.** The corpus separates labels that follow from construction from labels that need human judgment, and the second kind are meant to stay marked as drafts. Testing the review tool, I wrote three made-up calls to watch the round-trip work, rebuilt, and the merge logic correctly preserved them — leaving three labels I had invented, marked as human-reviewed, inside the one class whose whole design exists to keep machine labels out of the numbers. The provenance field recorded *whether* a judgment was made, not *whose*. A reviewed label now names its reviewer and the schema refuses an unattributed one.
 
-The through-line in all three: I had reasoned correctly about a failure mode, and having named one, stopped looking for the neighbouring one. A control that only binds when you remember it applies to you is not a control.
+**I fabricated the project timeline.** The engineering log carried nine dated entries spread across 21–29 August. Every commit in the repository is timestamped 21 August — the whole build was four sittings in one day. I had labelled each phase with the calendar date the plan assigned it rather than the date it happened, in the past tense, and once the first heading was written that way the rest followed without the question being asked again. Found by comparing the log against `git log`, which cost one command, and which I only ran because someone asked whether things were working.
+
+Corrected: headings now name the plan phase and the real sitting, and a note at the top of the log states the compression outright. This is the worst entry in the file. Everything Custodian claims rests on its evidence being honest — that a number was measured, that a decision replays because it was tested, that a drafted label is marked as drafted. A fabricated timeline in the same repository gives a reader a reason to discount all of that, including the parts that are carefully true.
+
+The through-line in the first three: I had reasoned correctly about a failure mode, and having named one, stopped looking for the neighbouring one. The fourth is a different failure and a worse one — not a gap in reasoning but a plan quietly transcribed as a record, which is how most fabricated evidence actually gets made.
 
 ---
 
