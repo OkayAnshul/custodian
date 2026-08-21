@@ -1,0 +1,47 @@
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install
+        run: pip install -e ".[dev]"
+
+      # Live Razorpay tests are marked `live` and skip without credentials, so
+      # CI exercises everything that does not need a secret. The contract suite
+      # still runs against FakeGateway, which enforces the same rules.
+      - name: Tests
+        run: pytest -q --cov=custodian --cov-report=term
+
+      # The corpus is a regression suite: a change that alters a graded outcome
+      # fails here rather than being noticed the next time someone runs the eval.
+      - name: Corpus
+        run: python -m eval.harness --all
+
+      - name: Threshold sweep
+        run: python -m eval.sweep --split ALL
+
+      # The demo is the submission's main artifact. If it stops running, that
+      # should be a red build and not a discovery on the day.
+      - name: Demo
+        run: python scripts/demo.py
+
+      # cases.yaml is generated. If it drifts from build.py the corpus in the
+      # repo is not the corpus the code produces, and every number is suspect.
+      - name: Corpus is not stale
+        run: |
+          cp eval/corpus/cases.yaml /tmp/committed.yaml
+          python -m eval.corpus.build
+          diff -q /tmp/committed.yaml eval/corpus/cases.yaml \
+            || (echo "::error::cases.yaml is out of date — run python -m eval.corpus.build"; exit 1)

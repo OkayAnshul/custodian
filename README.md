@@ -177,13 +177,17 @@ The adversarial catch rate **does not move across any dial**. Every attack in th
 ## 7. Running it
 
 ```bash
-python3 -m venv .venv && .venv/bin/pip install -e ".[dev]"
+make install                           # or: python3 -m venv .venv && .venv/bin/pip install -e ".[dev]"
+make test                              # 437 tests, +12 with Razorpay credentials
+make demo                              # all six demo scenarios
+make eval sweep                        # the corpus and the threshold curve
+make serve                             # http://127.0.0.1:8000
 
-.venv/bin/pytest                       # 430 tests
+# or directly:
+.venv/bin/pytest                       # 437 tests
 .venv/bin/python -m eval.harness --all # the corpus
 .venv/bin/python -m eval.sweep         # the threshold curve
 .venv/bin/python scripts/demo.py       # all six demo scenarios
-.venv/bin/uvicorn custodian.api.app:app --reload   # then open http://127.0.0.1:8000
 ```
 
 Live Razorpay settlement needs test-mode credentials in `.env`:
@@ -240,6 +244,7 @@ Stated plainly, because a reviewer will find them anyway and the honest version 
 | [`EVALUATION.md`](EVALUATION.md) | The corpus, what it measures, and how to review the drafted labels |
 | [`LIMITATIONS.md`](LIMITATIONS.md) | What is modelled, unfinished, out of scope, or deliberate |
 | [`DEMO.md`](DEMO.md) | Four-minute script, every number produced live |
+| [`DEFENSE.md`](DEFENSE.md) | Panel-round notes — the reasoning under each answer, not the answers |
 
 `BROKE.md` is worth reading first. Three entries are the interesting kind:
 
