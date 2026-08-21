@@ -171,3 +171,20 @@ def test_the_index_lists_decisions(client):
 def test_an_unknown_request_renders_a_404_page(client):
     response = client.get("/view/nope")
     assert response.status_code == 404 and "No such request" in response.text
+
+
+def test_capture_refuses_an_order_nobody_has_paid(client):
+    """No API call makes a payment happen, so capture must not assume one did."""
+    verify(client, CLEAN_CART)
+    assert client.post("/v1/checkout/settle/req-1").json()["order"]["amount_paise"] == 64_300
+
+    response = client.post("/v1/checkout/capture/req-1")
+    assert response.status_code == 409
+    assert "nobody has paid" in response.json()["detail"]
+
+
+def test_capture_without_an_open_order_is_refused(client):
+    verify(client, CLEAN_CART)
+    response = client.post("/v1/checkout/capture/req-1")
+    assert response.status_code == 409
+    assert "no order open" in response.json()["detail"]

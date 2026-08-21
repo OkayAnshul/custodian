@@ -20,7 +20,7 @@ from fastapi.responses import HTMLResponse, JSONResponse
 from custodian.api import view
 from custodian.clock import utc_now
 from custodian.gate.semantic import RecordedScorer
-from custodian.gate.service import Custodian
+from custodian.gate.service import AmountMismatch, Custodian
 from custodian.gate.substitution import SubstitutionTables
 from custodian.gate.thresholds import DEFAULT
 from custodian.ingest.snapshot import agent_feed, ingest_csv
@@ -32,6 +32,7 @@ from custodian.ledger.store import ArtifactStore
 from custodian.ledger.verify import verify_chain
 from custodian.money import format_inr
 from custodian.payments.fake import FakeGateway
+from custodian.payments.gateway import PaymentError
 from custodian.schemas.cart import Cart, CartLine
 from custodian.schemas.mandate import Mandate
 
@@ -70,7 +71,8 @@ def create_app(*, db_path: Path | None = None, gateway=None) -> FastAPI:
         "custodian": Custodian(ledger=ledger, store=store, tables=tables, scorer=RecordedScorer()),
         "gateway": gateway or FakeGateway(),
         "snapshot": None,
-        "seen": {},  # idempotency key -> request_id
+        "seen": {},    # idempotency key -> request_id
+        "orders": {},  # request_id -> OrderRef, for the capture step
     }
 
     def snapshot():
@@ -157,14 +159,8 @@ def create_app(*, db_path: Path | None = None, gateway=None) -> FastAPI:
             raise HTTPException(409, str(authority))
 
         gateway = state["gateway"]
-        order = gateway.create_order(
-            amount_paise=authority.amount_paise, currency="INR", receipt=request_id,
-            idempotency_key=f"{request_id}:order",
-        )
-        state["custodian"].ledger.append(
-            EventType.PAYMENT_INITIATED, request_id,
-            observed={"gateway": gateway.name, **order.as_observed()},
-        )
+        order = state["custodian"].open_order(request_id, gateway)
+        state["orders"][request_id] = order
         return {
             "request_id": request_id, "basis": authority.basis,
             "amount_paise": authority.amount_paise,
@@ -172,6 +168,23 @@ def create_app(*, db_path: Path | None = None, gateway=None) -> FastAPI:
             "order": order.as_observed(),
             "payment_url": getattr(gateway, "payment_link_for", lambda _o: None)(order),
         }
+
+    @app.post("/v1/checkout/capture/{request_id}", tags=["checkout"])
+    def capture(request_id: str) -> dict[str, Any]:
+        """Take the payment — only if it presents the amount that was approved."""
+        order = state["orders"].get(request_id)
+        if order is None:
+            raise HTTPException(409, f"no order open for {request_id}")
+        try:
+            payment = state["custodian"].capture(request_id, state["gateway"], order)
+        except PermissionError as exc:
+            raise HTTPException(409, str(exc)) from exc
+        except AmountMismatch as exc:
+            raise HTTPException(409, str(exc)) from exc
+        except PaymentError as exc:
+            raise HTTPException(409, str(exc)) from exc
+        return {"request_id": request_id, "payment": payment.as_observed(),
+                "settled": payment.settled}
 
     # --- the record --------------------------------------------------------
 

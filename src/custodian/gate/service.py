@@ -29,6 +29,7 @@ from custodian.gate.binding import bind
 from custodian.gate.decide import decide, escalations
 from custodian.gate.semantic import ScoringError, SemanticScorer
 from custodian.gate.substitution import SubstitutionTables
+from custodian.payments.gateway import AlreadyCaptured, OrderRef, PaymentError, PaymentRef
 from custodian.gate.thresholds import Thresholds
 from custodian.ledger.chain import EventType, Ledger, LedgerEvent
 from custodian.ledger.store import ArtifactStore
@@ -53,6 +54,10 @@ class Authority:
     def __str__(self) -> str:
         verb = "may settle" if self.allowed else "may not settle"
         return f"{verb} ({self.basis}): {self.reason}"
+
+
+class AmountMismatch(PaymentError):
+    """A payment arrived for an amount no decision approved."""
 
 
 @dataclass
@@ -245,3 +250,77 @@ class Custodian:
             actor = granted[-1].observed.get("actor", "unknown")
             return Authority(True, "RECONFIRMED", amount, f"held, then confirmed by {actor}")
         return Authority(False, "HELD", amount, "held pending re-confirmation")
+
+    # --- settlement --------------------------------------------------------
+
+    def open_order(self, request_id: str, gateway) -> OrderRef:
+        """Create an order for the amount Custodian derived.
+
+        Refuses unless settlement is authorised. The amount is the gate's own
+        arithmetic over catalog prices — whatever the agent asserted, the payable
+        figure is the one this system re-derived.
+        """
+        authority = self.settlement_authority(request_id)
+        if not authority.allowed:
+            raise PermissionError(f"{request_id} {authority}")
+
+        order = gateway.create_order(
+            amount_paise=authority.amount_paise, currency="INR", receipt=request_id,
+            idempotency_key=f"{request_id}:order",
+        )
+        self.ledger.append(
+            EventType.PAYMENT_INITIATED, request_id,
+            observed={"gateway": gateway.name, **order.as_observed()},
+            inferred={"authorised_by": authority.basis,
+                      "approved_amount_paise": authority.amount_paise},
+        )
+        return order
+
+    def capture(self, request_id: str, gateway, order: OrderRef) -> PaymentRef:
+        """Take a payment, but only for the amount a decision approved.
+
+        This is the last check before money is irreversible, and it is a
+        different question from every check that came before. Those asked whether
+        the *cart* was right. This asks whether the *payment in front of us* is
+        the one that cart authorised.
+
+        Three ways it can be wrong, all of which are refused rather than
+        reconciled: the authority may have lapsed since the order was opened, the
+        payer may have committed a different amount than the order asked for, and
+        the payment may not correspond to this decision at all. A capture that
+        quietly settles a mismatched amount would undo the whole verification
+        chain at the last step.
+        """
+        authority = self.settlement_authority(request_id)
+        if not authority.allowed:
+            raise PermissionError(f"{request_id} {authority}")
+
+        payment = gateway.payment_for(order)
+        if payment is None:
+            raise PaymentError(f"{request_id}: nobody has paid this order yet")
+
+        if payment.amount_paise != authority.amount_paise:
+            # Record the refusal. A mismatch is evidence, not a transient.
+            self.ledger.append(
+                EventType.PAYMENT_FAILED, request_id,
+                observed={"gateway": gateway.name, **payment.as_observed()},
+                inferred={"refused": "AMOUNT_MISMATCH",
+                          "approved_amount_paise": authority.amount_paise,
+                          "presented_amount_paise": payment.amount_paise},
+            )
+            raise AmountMismatch(
+                f"{request_id}: payment presents {payment.amount_paise} paise, "
+                f"the decision approved {authority.amount_paise}. Refusing to capture."
+            )
+
+        try:
+            captured = gateway.capture(payment, idempotency_key=f"{request_id}:capture")
+        except AlreadyCaptured:
+            raise
+        self.ledger.append(
+            EventType.PAYMENT_SETTLED if captured.settled else EventType.PAYMENT_FAILED,
+            request_id,
+            observed={"gateway": gateway.name, **captured.as_observed()},
+            inferred={"authorised_by": authority.basis},
+        )
+        return captured

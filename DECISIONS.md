@@ -370,3 +370,19 @@ A mandate-expiry check written on string comparison passes an expired mandate. `
 **Why.** Content addressing gives immutability for free — the key *is* the hash of the body, so an altered artifact stops answering to the name a decision recorded. There is no update path because there is nothing an update could mean.
 
 **Detail worth recording.** `put_snapshot` supplies the digest explicitly rather than hashing the stored body, because a snapshot's digest deliberately excludes `snapshot_id` — that id is derived from the digest, and including it would be self-referential. Hashing the body instead produced a key that did not match the one decisions reference, which surfaced immediately as an unresolvable `$ref`.
+
+---
+
+## ADR-026 — The payment amount is verified again at capture
+
+**Date** 2026-08-29 · **Area** payments, security · **Status** Accepted
+
+**Problem.** Every check in the gate asks whether the *cart* was right. None of them asks whether the *payment in front of us* is the one that cart authorised. Between opening an order and capturing it, three things can differ: the authority may have lapsed, the payer may have committed a different amount, and the payment may not correspond to this decision at all.
+
+**Chosen.** `Custodian.capture` re-reads `settlement_authority`, compares `payment.amount_paise` against the approved figure, and refuses on any mismatch — recording the refusal as `PAYMENT_FAILED` with both amounts.
+
+**Why.** This is the last point at which money is still reversible, and it is a different question from everything upstream. A capture that quietly settled a mismatched amount would undo the whole verification chain at its final step, which is the answer to "what happens if payment succeeds but verification was wrong?"
+
+**Why the refusal is recorded rather than raised and forgotten.** A mismatch is a fact about what happened. An exception that leaves no trace turns an incident into a gap in the ledger.
+
+**Trade-off.** A legitimate partial payment cannot settle. That is intended: partial payment is a merchant policy decision, not something a verification layer should improvise.

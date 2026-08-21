@@ -354,3 +354,35 @@ The adversarial catch rate does not move across any dial. Every attack in this c
 - No API surface, no viewer, no README.
 
 **Next objective.** API, replay viewer, README.
+
+---
+
+## Day 9 — 2026-08-29 — the surface, the documents, and one hole
+
+**Objective.** API, viewer, README, and a hostile pass over what a judge would attack.
+
+**Completed.**
+- `api/app.py` — ten routes. `Idempotency-Key` required on the one that can lead to money moving.
+- `api/view.py` — the decision viewer. Server-rendered, no build step: a page that needs a toolchain to show a hash chain is not a serious artifact. Loading it re-derives the decision from the ledger, so it is the demo screen and the replay moment at once.
+- `README.md`, `THREAT_MODEL.md`, `EVALUATION.md`, `ARCHITECTURE.md`.
+- `scripts/demo.py` — all six scenarios, creating a live Razorpay test-mode order when credentials are present.
+
+**Tests.** 437 passing, 18 skipped.
+
+**What broke.** `BROKE.md` 009 — the ledger could not be called from a web server at all. sqlite3 connections are thread-bound; FastAPI runs sync handlers on a threadpool. On Day 1 I reasoned about concurrency and concluded `BEGIN IMMEDIATE` was sufficient, which it is for the failure mode I had named — two writers forking the chain. It does nothing about two threads sharing a connection object. Having solved the first problem I stopped looking for the second, and every test I had written called the ledger from the thread that created it.
+
+**Caught while writing the README.** I claimed "5% of cases reach a model" without measuring it. The real figure is 24 of 162 cart lines, 14.8%. Corrected before commit. A number in a README is a claim, and an unmeasured one is worse than no number.
+
+**Caught in the hostile pass.** "What happens if payment succeeds but verification was wrong?" had no good answer. The settle path opened an order for the verified total and never checked what actually arrived before capturing — so a payer committing a different amount would have been captured silently, undoing the whole verification chain at its last step. Closed by ADR-026: `capture` re-reads authority, compares the presented amount against the approved one, and records the refusal as evidence rather than raising and forgetting.
+
+**Where this stands.**
+
+Working and tested: ingest, sanitizer, taxonomy, intent parsing, the gate, the ledger, replay, re-confirmation, settlement with live Razorpay test-mode orders, the corpus, the harness, the sweep, the API, the viewer.
+
+Not done, and stated rather than hidden:
+- **30 benign-divergence labels are drafts.** That class is the project\'s stated moat and it is the one thing I could not honestly finish, because a model scored against labels it drafted is measuring its own consistency. `EVALUATION.md` has the review workflow; it is roughly an evening of judgment.
+- Thresholds remain `v0-untuned`. The sweep now says exactly what tuning them would cost.
+- The mandate is modelled, not integrated. Completing a payment needs a human on a hosted page.
+- No pitch recording. No auth, no rate limiting.
+
+**Confidence.** High on the machinery and on the argument. The claims in the README are either tested or measured, and where a number rests on something unfinished it says so. The weakest part is calibration, and it is weak in a way the documents name rather than obscure.

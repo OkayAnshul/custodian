@@ -322,3 +322,81 @@ def test_the_authorised_amount_is_the_verified_total(custodian, snapshot, mandat
              a_line(snapshot, "l9", WOK, 1))
     run(custodian, snapshot, mandate, lines)
     assert custodian.settlement_authority("req-1").amount_paise == 39_800 + 145_000
+
+
+# --- the last check before money is irreversible ---------------------------
+
+def test_a_payment_for_the_wrong_amount_is_refused(custodian, snapshot, mandate, clean):
+    """Judge question: what if payment succeeds but verification was wrong?
+
+    Every earlier check asked whether the cart was right. This asks whether the
+    payment in front of us is the one that cart authorised.
+    """
+    from custodian.gate.service import AmountMismatch
+    from custodian.payments.fake import FakeGateway
+
+    run(custodian, snapshot, mandate, clean)
+    gateway = FakeGateway()
+    order = custodian.open_order("req-1", gateway)
+    gateway.simulate_payer(order, amount_paise=100)  # ₹1 against a ₹643 order
+
+    with pytest.raises(AmountMismatch, match="Refusing to capture"):
+        custodian.capture("req-1", gateway, order)
+
+
+def test_a_refused_capture_is_recorded_as_evidence(custodian, snapshot, mandate, clean):
+    """A mismatch is a fact about what happened, not a transient to swallow."""
+    from custodian.gate.service import AmountMismatch
+    from custodian.payments.fake import FakeGateway
+
+    run(custodian, snapshot, mandate, clean)
+    gateway = FakeGateway()
+    order = custodian.open_order("req-1", gateway)
+    gateway.simulate_payer(order, amount_paise=100)
+    with pytest.raises(AmountMismatch):
+        custodian.capture("req-1", gateway, order)
+
+    last = custodian.ledger.read("req-1")[-1]
+    assert last.event_type is EventType.PAYMENT_FAILED
+    assert last.inferred["refused"] == "AMOUNT_MISMATCH"
+    assert last.inferred["approved_amount_paise"] == 64_300
+    assert last.inferred["presented_amount_paise"] == 100
+
+
+def test_the_correct_amount_captures_and_settles(custodian, snapshot, mandate, clean):
+    from custodian.payments.fake import FakeGateway
+
+    run(custodian, snapshot, mandate, clean)
+    gateway = FakeGateway()
+    order = custodian.open_order("req-1", gateway)
+    gateway.simulate_payer(order)
+    payment = custodian.capture("req-1", gateway, order)
+
+    assert payment.settled and payment.amount_paise == 64_300
+    assert custodian.ledger.read("req-1")[-1].event_type is EventType.PAYMENT_SETTLED
+
+
+def test_an_order_cannot_be_opened_for_a_held_request(custodian, snapshot, mandate, clean):
+    from custodian.payments.fake import FakeGateway
+
+    run(custodian, snapshot, mandate, clean + (a_line(snapshot, "l9", WOK, 1),))
+    with pytest.raises(PermissionError):
+        custodian.open_order("req-1", FakeGateway())
+
+
+def test_authority_is_rechecked_at_capture_not_only_at_order(custodian, snapshot, mandate, clean):
+    """Time passes between opening an order and money moving."""
+    from custodian.payments.fake import FakeGateway
+    from custodian.ledger.chain import EventType as ET
+
+    run(custodian, snapshot, mandate, clean)
+    gateway = FakeGateway()
+    order = custodian.open_order("req-1", gateway)
+    gateway.simulate_payer(order)
+
+    # A later decision on the same request supersedes the earlier approval.
+    run(custodian, snapshot, mandate,
+        (a_line(snapshot, "l1", COCONUT_MILK, 2, price=1, satisfies="i1-r1"),))
+    assert custodian.settlement_authority("req-1").basis == "REJECTED"
+    with pytest.raises(PermissionError):
+        custodian.capture("req-1", gateway, order)
