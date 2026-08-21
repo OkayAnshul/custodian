@@ -24,7 +24,9 @@ where = ["src"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
-pythonpath = ["src"]
+# "." puts the repo root on the path so `eval` imports explicitly, rather than
+# relying on pytest's rootdir insertion happening to do it.
+pythonpath = ["src", "."]
 addopts = "-q --strict-markers"
 markers = [
     "contract: shared suite every PaymentGateway implementation must pass",

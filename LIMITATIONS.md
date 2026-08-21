@@ -26,6 +26,8 @@ No authentication, no rate limiting, no multi-merchant, no multi-currency, no da
 
 **The lexicon covers one merchant.** 56 bases, 24 form-compatibility pairs, 5 base equivalences, sized to a 70-item catalog. 69 of 70 items place correctly; coverage against a different merchant's catalog is unmeasured. Scaling this is authoring work, not engineering work — which is the honest shape of the problem and the reason it is hard to copy.
 
+**The package assumes an editable install.** `data/catalog` and `data/lexicon` are located relative to `__file__`, so a non-editable install into site-packages would not find them. Shipping them as package data is the fix and is not done — CI and the Makefile both use `pip install -e`, and a merchant-editable lexicon would want to live outside the package anyway.
+
 **The sanitizer is rule-based.** An injection phrased outside its patterns passes it. That is survivable only because the second control is independent: an injected item binds to nothing in the request and is scope creep by construction. The design leans on the second control, not the first.
 
 ## Things that are deliberate and might look like gaps
