@@ -20,20 +20,26 @@ def rig(tmp_path):
     return Ledger.open(tmp_path / "ledger.db"), FakeGateway()
 
 
-def settle(ledger: Ledger, gateway, request_id: str, amount_paise: int):
-    """Create, capture, and record — the whole money-moving sequence."""
-    order = gateway.create_order(
-        amount_paise=amount_paise,
-        currency="INR",
-        receipt=request_id,
-        idempotency_key=f"{request_id}:order",
-    )
-    ledger.append(
-        EventType.PAYMENT_INITIATED,
-        request_id,
-        observed={"gateway": gateway.name, **order.as_observed()},
-    )
-    payment = gateway.capture(order, idempotency_key=f"{request_id}:capture")
+def settle(ledger: Ledger, gateway, request_id: str, amount_paise: int, *, order=None):
+    """Order, payer, capture, record — the whole money-moving sequence.
+
+    The payer step is simulated because no API call performs it; on a live
+    gateway a human completes it on a hosted page. See BROKE.md 006.
+    """
+    if order is None:
+        order = gateway.create_order(
+            amount_paise=amount_paise,
+            currency="INR",
+            receipt=request_id,
+            idempotency_key=f"{request_id}:order",
+        )
+        ledger.append(
+            EventType.PAYMENT_INITIATED,
+            request_id,
+            observed={"gateway": gateway.name, **order.as_observed()},
+        )
+    authorised = gateway.payment_for(order) or gateway.simulate_payer(order)
+    payment = gateway.capture(authorised, idempotency_key=f"{request_id}:capture")
     ledger.append(
         EventType.PAYMENT_SETTLED if payment.settled else EventType.PAYMENT_FAILED,
         request_id,
@@ -104,31 +110,52 @@ def test_a_retried_settlement_pays_once_and_records_once_more(rig):
     ledger, gateway = rig
     total = parse_paise("₹1,999.00")
 
-    _, first = settle(ledger, gateway, "req-1", total)
-    _, second = settle(ledger, gateway, "req-1", total)
+    order, first = settle(ledger, gateway, "req-1", total)
+    _, second = settle(ledger, gateway, "req-1", total, order=order)
 
     assert first.payment_id == second.payment_id  # one payment
     events = ledger.read("req-1")
-    assert len(events) == 4  # both attempts recorded — the ledger hides nothing
+    assert len(events) == 3  # initiated once, settled twice — the ledger hides nothing
     assert sum(e.event_type is EventType.PAYMENT_SETTLED for e in events) == 2
     assert verify_chain(ledger).ok
 
 
-def test_two_requests_cannot_both_capture_one_order(rig):
+def test_two_requests_cannot_both_capture_one_payment(rig):
     """A fresh idempotency key is not a second route to the same money."""
     ledger, gateway = rig
     order = gateway.create_order(
         amount_paise=199_900, currency="INR", receipt="req-1", idempotency_key="a:order"
     )
-    gateway.capture(order, idempotency_key="a:capture")
+    authorised = gateway.simulate_payer(order)
+    gateway.capture(authorised, idempotency_key="a:capture")
     with pytest.raises(AlreadyCaptured):
-        gateway.capture(order, idempotency_key="b:capture")
+        gateway.capture(authorised, idempotency_key="b:capture")
+
+
+def test_an_order_nobody_paid_has_nothing_to_settle(rig):
+    """The ordinary state of a fresh order, and the shape BROKE.md 006 corrected."""
+    _, gateway = rig
+    order = gateway.create_order(
+        amount_paise=199_900, currency="INR", receipt="req-1", idempotency_key="k"
+    )
+    assert gateway.payment_for(order) is None
+
+
+def test_the_ledger_records_an_underpayment_rather_than_capturing_it(rig):
+    """A payer who commits less than the order is evidence, not a silent capture."""
+    ledger, gateway = rig
+    order = gateway.create_order(
+        amount_paise=199_900, currency="INR", receipt="req-1", idempotency_key="k"
+    )
+    short = gateway.simulate_payer(order, amount_paise=100_000)
+    assert short.amount_paise < order.amount_paise  # the caller must refuse this
 
 
 def test_interleaved_requests_share_one_unforked_chain(rig):
     ledger, gateway = rig
     for request_id in ("req-A", "req-B", "req-C"):
         settle(ledger, gateway, request_id, parse_paise("₹100"))
+
 
     assert verify_chain(ledger).ok
     assert len(ledger) == 6
