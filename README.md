@@ -1,8 +1,27 @@
 # Custodian
 
-**The purpose layer for agentic commerce.** Make an Indian merchant transactable by an AI buyer end to end — then verify the agent bought what the human actually asked for.
+**Custodian makes an Indian merchant transactable by an AI buyer end to end — and then treats that buyer as an untrusted client.**
 
-> An "AI guardrail" inspects text and guesses. Custodian re-derives price, purpose and mandate fit against a catalog it controls and a mandate with hard numbers, gates three ways with calibrated abstention, and writes a hash-chained trail a dispute can be resolved from. Different mechanism, different failure surface.
+Two halves, both measured.
+
+**Transactable.** A merchant with unusable product data is invisible to agents however good the checkout is. Of 70 rows in a real kirana export, an AI buyer can act on **18** — the rest are missing a readable price, a matchable identity, or a stock signal it can evaluate, and none of them carry a pack size as its own field. After ingest: **69 of 70**.
+
+**Untrusted.** Every claim the agent makes — price, item, authority — is re-derived server-side before money moves. Across a 120-order corpus:
+
+```
+₹41,609  would settle unchecked, at the prices the agent asserted
+₹12,063  Custodian let through, at catalog prices
+₹31,655  stopped or held for a human — 72% of value
+ ₹2,109  price the agent forged
+₹13,720  items nobody asked for: inside budget, correctly priced, still wrong
+      0  of 60 clean orders held. Zero friction.
+```
+
+Every one of those numbers is printed by `make money`.
+
+> **Why this and not a guardrail.** A guardrail inspects text and guesses. Custodian re-derives against a catalog it controls and a mandate with hard numbers, gates three ways with calibrated abstention, and writes a hash-chained trail a dispute can be resolved from. Different mechanism, different failure surface.
+>
+> **Why this and not Vulcan.** Razorpay's payments foundation model asks whether the payment is *genuine* — routing, fraud, risk, across four billion payments. Custodian asks whether the purchase was *what was asked for*. Different question, and nothing in the stack was answering it.
 
 ---
 
@@ -21,7 +40,9 @@ The agentic commerce stack settled into four layers during 2025–26. Three of t
 
 That is not an oversight. It is a deliberate scope boundary at the rail, which means the check has to happen somewhere else: at the merchant and its aggregator.
 
-**And the liability is already assigned.** Razorpay's public position on the Sarvam voice-agent launch is that agentic shopping does not rewrite commercial liability — if an agent orders the wrong item, the **merchant** handles the dispute and refund. So the merchant now transacts with a counterparty they did not build, running on content they do not control, with no tooling to evaluate any given order.
+**And the liability is already assigned, on a product that is live.** Razorpay and Sarvam shipped a voice agent that completes payments without a PIN, with **Swiggy** as the launch partner. Razorpay's stated position: *"the introduction of agentic shopping does not rewrite the rules of commercial liability."* Commercial disputes sit with the merchant; payment security sits with Razorpay.
+
+So when that agent orders the wrong thing, Swiggy handles the dispute and the refund. The merchant now transacts with a counterparty they did not build, running on content they do not control, with no tooling to evaluate any given order. This is not a problem arriving later — it shipped in March.
 
 Agentic commerce asks whether this is the right agent, for the right person, under the right authorization, **for the right purpose**. The first three are handled. The fourth is open.
 
@@ -123,7 +144,7 @@ The agent's cart carries `asserted_unit_price_paise` — the only price-bearing 
 
 ## 5. Where I chose not to use a model
 
-*Reproduced here because "AI judgment — the right tool in the right place, and where you chose not to use one" is a published criterion.*
+*The stated bar for the Open Track is "meaningful use of AI." This is the answer to it: meaningful means placed where it is load-bearing, and absent where a lookup is strictly better. The table is the argument, so it is stated in full rather than summarised.*
 
 | Task | Tool | Why |
 |---|---|---|
@@ -162,6 +183,20 @@ false-approval rate       0.00%    attacks that got through
 **The class where that question lives is benign divergence.** Its 30 labels have had a model's second pass and no human sign-off, so they are reported separately and folded into no headline figure.
 
 That second pass is itself worth reading as a result. Agreement with the gate rose from 86.67% to 100% — and every label it changed moved *toward* the gate's existing behaviour, reached by reasoning about what `REJECT` means *in this system* rather than about cooking. **The lower number was the more informative one.** The harness now warns when this agreement exceeds 95%, because near-total agreement between a model's labels and a model-built gate measures consistency rather than correctness. `EVALUATION.md` names the four cases a human should look at first.
+
+### What it is worth, and what it costs
+
+```
+₹41,609  would settle unchecked, at the prices the agent asserted
+₹12,063  Custodian let through, at catalog prices
+₹31,655  stopped or held for a human — 72% of value
+ ₹2,109  price the agent forged
+₹13,720  items nobody asked for: inside budget, correctly priced, still wrong
+      0  of 60 clean orders held — 0.00% friction
+     24  of 162 cart lines needed a model at all
+```
+
+`make money`. The forgery figure is not a separate measurement: asserted plus forged equals the catalog total exactly, and a test asserts it, so the three cannot drift apart.
 
 ### The threshold sweep — the curve, not a point
 
@@ -207,11 +242,11 @@ Twelve contract tests then run against the live API. `RazorpayGateway` refuses a
 
 | Considered | Why not |
 |---|---|
-| Failed-payment retry / smart routing | Razorpay Optimizer — ML routing across 150 parameters |
+| Failed-payment retry / smart routing | Optimizer, and now Vulcan — a payments foundation model on 3 trillion data points |
 | Subscription recovery | Shipped: Subscription Recovery Agent |
-| Chargeback evidence responder | Shipped: Dispute Auto-Responder |
+| Chargeback evidence responder | Shipped: Dispute Auto-Responder, in Agent Studio |
 | Reconciliation / bookkeeping | Shipped: Bookkeeping Agent |
-| RTO / return-risk scoring | Shipped: RTO Shield |
+| RTO / return-risk scoring | Shipped: RTO Shield — LLM address validation plus bad-pincode intelligence, blocking high-risk COD before it ships |
 | Mandate enforcement | Shipped: UPI Reserve Pay |
 | Conversational checkout | Shipped: Agentic Payments on ChatGPT and Claude |
 | Vector DB / RAG / agent framework | Reaching for LangChain or a vector store would actively cost points on AI judgment. The deterministic core is the argument |

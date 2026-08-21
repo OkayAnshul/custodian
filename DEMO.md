@@ -4,8 +4,10 @@ Four minutes. Every number below is produced live by `scripts/demo.py` — nothi
 
 ```bash
 set -a && . ./.env && set +a          # live Razorpay test-mode order in step 1
-.venv/bin/python scripts/demo.py
+.venv/bin/python scripts/demo.py --paced      # timed for a single take
 ```
+
+`--paced` holds on each beat so the terminal can be recorded straight through without editing. With `ANTHROPIC_API_KEY` set, step 2 makes a real model call; without it, a recorded verdict is replayed and the script says so.
 
 The first thirty seconds decide whether a judge files this under "AI guardrail" and stops reading. Spend them on the mechanism, not the problem.
 
@@ -13,11 +15,13 @@ The first thirty seconds decide whether a judge files this under "AI guardrail" 
 
 ## Open — 20s
 
-> "The agentic commerce stack proves an agent was *permitted* to spend. AP2 does that, and UAP does it in India. **No layer checks whether it bought the right thing.** And Razorpay has said publicly where that lands: if an agent orders the wrong item, the merchant handles the dispute.
+> "Custodian makes an Indian merchant transactable by an AI buyer end to end — and then treats that buyer as an untrusted client.
+>
+> The stack proves an agent was *permitted* to spend. AP2 does that, UAP does it in India. **No layer checks whether it bought the right thing.** Razorpay shipped a voice agent with Sarvam in March, Swiggy as launch partner, and said plainly that agentic shopping doesn't rewrite commercial liability. So when that agent orders the wrong thing, **Swiggy** handles the dispute.
 >
 > A guardrail inspects text and guesses. Custodian re-derives against a catalog it controls and a mandate with hard numbers. Different mechanism, different failure surface."
 
-Say **purpose alignment, not fraud** in the first thirty seconds. Every Razorpay transaction is already monitored for fraud; this is a different question and the distinction is worth pre-empting.
+Say **purpose alignment, not fraud** in the first thirty seconds, and name Vulcan while doing it: *"Vulcan asks whether the payment is genuine. This asks whether the purchase was what was asked for."* Naming a model they shipped two weeks ago costs one sentence and buys the whole framing.
 
 ---
 
@@ -26,6 +30,9 @@ Say **purpose alignment, not fraud** in the first thirty seconds. Every Razorpay
 *Messy Indian merchant export in, agent-readable feed out, real order created.*
 
 ```
+raw export        18 of 70 rows are actually buyable from by an agent
+after ingest      69 of 70
+
 rice pav kilo loose         →  rice/whole    250g    ₹42.00    transliterated Hindi pack size
 Dhania Powder 100gm ₹38     →  coriander/powder 100g ₹38.00    price embedded in the name
 Onion / Pyaz 1kg            →  onion/fresh  1000g    ₹38.00    named twice, in two languages
@@ -35,7 +42,7 @@ Dabur Coconut Milk 400ml    →  coconut/milk  400ml  ₹199.00    no price colu
   settlement: razorpay-test   order order_TSQyNKVvu7H6xh
 ```
 
-> "Seventy rows of real kirana mess. Six spellings of 'in stock', prices inside item names, a sixth of the rows with no category. That's a live Razorpay test-mode order id."
+> "Seventy rows of real kirana mess. Six spellings of 'in stock', prices inside item names, a sixth with no category, and not one carries a pack size as its own field. An AI buyer can act on eighteen of them. After ingest, sixty-nine. **That's the growth half, and it's measured.** And that's a live Razorpay test-mode order id."
 
 ---
 
@@ -61,6 +68,22 @@ Almond Milk      base=almond   form=milk    base_score= none  form_score=10000
 > **Both decided by arithmetic. No model was called.**"
 
 If a judge pushes: the base and form tables are hand-authored, 56 bases and 24 form pairs, and that is deliberately the part that took judgment rather than code.
+
+**Then show the model earning its place** — this is the beat that answers "is this even an AI project?":
+
+```
+turmeric whole → turmeric powder     same base, form pair unlisted
+
+  model      claude-opus-5
+  prompt     1aef5f177bcc2747…
+  returned   {"label":"UNSURE","rationale":"Powder is fine in a masala and
+              useless for a pickle, which needs the root. Depends on the dish."}
+  read as    UNSURE at 5200bp
+
+→ HOLD   confidence 15.15%   escalated: l1
+```
+
+> "Here the tables genuinely can't decide, so it asks — once, seeing only the cooking context and two items. No price, no budget, no mandate. It says it doesn't know, and that routes to hold rather than to a guess. And the verdict lands in the ledger as an **observation**, same standing as a catalog price — which is why this decision replays later without calling anything."
 
 ---
 
@@ -126,6 +149,25 @@ a rejection cannot be confirmed past:
 >
 > A **rejection** can't be confirmed past. A constraint a human can wave through is advisory."
 
+And a failure, which the bar names explicitly:
+
+```
+payment declined  simulated gateway failure
+recorded as       PAYMENT_FAILED, not swallowed
+authority now     RECONFIRMED — still settleable, the decision did not change
+chain             intact
+```
+
+Then what it's worth:
+
+```
+would settle unchecked     ₹41,609        stopped or held    ₹31,655   72% of value
+Custodian let through      ₹12,063        price forged        ₹2,109
+items nobody asked for     ₹13,720        clean orders held    0 of 60
+```
+
+> "Across a hundred and twenty orders: thirty-one thousand six hundred rupees of purchases that didn't match intent, stopped or held. Zero clean orders held. That's the saving and the cost in the same breath."
+
 Then the sweep:
 
 ```
@@ -142,15 +184,16 @@ substitution_faithful_bp   substitutions held   escalation rate   clean approval
 ## 6 · Replay — 20s
 
 ```
-demo-1: reproduces exactly (APPROVE)
-demo-2: reproduces exactly (APPROVE)
-demo-4: reproduces exactly (HOLD)
-demo-5: reproduces exactly (REJECT)
+demo-1:  reproduces exactly (APPROVE)
+demo-2:  reproduces exactly (APPROVE)
+demo-2b: reproduces exactly (HOLD)     <- decided on a recorded model verdict
+demo-4:  reproduces exactly (HOLD)
+demo-5:  reproduces exactly (REJECT)
 
-chain intact: 15 events
+chain intact: 20 events
 ```
 
-> "Take a ledger entry, re-run it, get the same bytes. The model client is mocked to raise if it's called — so 'replayable without a model' is enforced, not asserted. An audit trail you can't replay is decoration."
+> "Take a ledger entry, re-run it, get the same bytes. Note the third one — that decision was *made* on a model's answer, and it still replays with the model client mocked to raise if it's called. The model participates; it isn't consulted twice. An audit trail you can't replay is decoration."
 
 ---
 
