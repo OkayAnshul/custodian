@@ -159,7 +159,9 @@ false-approval rate       0.00%    attacks that got through
 
 **What that number does not mean.** Those three classes have labels that follow from how each case was built — a forged price is a rejection by construction. Scoring 100% says the implementation matches its specification. It does not say the specification is right.
 
-**The class where that question lives is benign divergence**, and its 30 labels are drafts. They are reported separately and folded into no headline figure, because a model scored against labels it drafted is measuring its own consistency. **Those 30 cases need human review before any number resting on them is quotable.**
+**The class where that question lives is benign divergence.** Its 30 labels have had a model's second pass and no human sign-off, so they are reported separately and folded into no headline figure.
+
+That second pass is itself worth reading as a result. Agreement with the gate rose from 86.67% to 100% — and every label it changed moved *toward* the gate's existing behaviour, reached by reasoning about what `REJECT` means *in this system* rather than about cooking. **The lower number was the more informative one.** The harness now warns when this agreement exceeds 95%, because near-total agreement between a model's labels and a model-built gate measures consistency rather than correctness. `EVALUATION.md` names the four cases a human should look at first.
 
 ### The threshold sweep — the curve, not a point
 

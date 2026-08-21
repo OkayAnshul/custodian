@@ -190,7 +190,7 @@ def interactive(actor: str) -> int:
     return _apply(calls, actor)
 
 
-def apply_file(actor: str) -> int:
+def apply_file(actor: str, *, machine: bool = False) -> int:
     if not DECISIONS.exists():
         print(f"no {DECISIONS.relative_to(Path.cwd())} — run --sheet first")
         return 1
@@ -208,10 +208,10 @@ def apply_file(actor: str) -> int:
             print(f"line {number}: {outcome!r} is not one of {sorted(VALID)}")
             return 1
         calls[case_id.strip()] = outcome
-    return _apply(calls, actor)
+    return _apply(calls, actor, machine=machine)
 
 
-def _apply(calls: dict[str, str], actor: str) -> int:
+def _apply(calls: dict[str, str], actor: str, *, machine: bool = False) -> int:
     corpus, _ = _load()
     known = {c.case_id for c in corpus.cases}
     if unknown := sorted(set(calls) - known):
@@ -227,7 +227,7 @@ def _apply(calls: dict[str, str], actor: str) -> int:
         if outcome is not case.expect.outcome:
             changed += 1
         updated.append(case.model_copy(update={
-            "label_source": LabelSource.HUMAN,
+            "label_source": LabelSource.MACHINE_REVIEWED if machine else LabelSource.HUMAN,
             "reviewed_by": actor,
             "expect": case.expect.model_copy(update={"outcome": outcome}),
         }))
@@ -235,10 +235,15 @@ def _apply(calls: dict[str, str], actor: str) -> int:
     reviewed = Corpus(version=corpus.version, cases=tuple(updated))
     CASES.write_text(yaml.safe_dump(reviewed.model_dump(mode="json"), sort_keys=False,
                                     width=100, allow_unicode=True))
-    remaining = len(reviewed.awaiting_review())
-    print(f"applied {len(calls)} label(s) as {actor} — {changed} differ from the draft")
-    print(f"{remaining} still awaiting review")
-    if remaining == 0:
+    from eval.corpus.schema import LabelSource as LS
+    remaining = sum(1 for c in reviewed.cases if c.label_source is LS.PROPOSED)
+    kind = "MACHINE_REVIEWED" if machine else "HUMAN"
+    print(f"applied {len(calls)} label(s) as {actor} [{kind}] — {changed} differ from the draft")
+    print(f"{remaining} still carrying a first draft")
+    if machine:
+        print("\nThese are a model's second pass, not a human sign-off. They stay out of")
+        print("every headline number until someone reviews them.")
+    elif remaining == 0:
         print("\nEvery label is now human-authored. The benign-divergence numbers are quotable.")
     print("\nre-run:  python -m eval.harness --all")
     return 0
@@ -250,6 +255,10 @@ def main() -> int:
     parser.add_argument("--apply", action="store_true", help="read decisions.txt")
     parser.add_argument("--as", dest="actor", metavar="NAME",
                         help="who is making these calls; required to write a label")
+    parser.add_argument("--machine-review", action="store_true",
+                        help="record as MACHINE_REVIEWED rather than HUMAN. A model's "
+                             "second pass is not a human sign-off and is never folded "
+                             "into a headline number")
     args = parser.parse_args()
     if args.sheet:
         return write_sheet()
@@ -257,7 +266,7 @@ def main() -> int:
         parser.error("--as NAME is required to record a label. A reviewed label must name "
                      "who made the call.")
     if args.apply:
-        return apply_file(args.actor)
+        return apply_file(args.actor, machine=args.machine_review)
     return interactive(args.actor)
 
 

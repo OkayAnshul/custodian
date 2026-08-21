@@ -214,8 +214,10 @@ def summarise(results: list[Outcome_]) -> dict[str, Metrics]:
 
 
 def report(results: list[Outcome_], *, thresholds: Thresholds, split: str) -> None:
-    derived = [r for r in results if r.case.label_source is not LabelSource.PROPOSED]
-    proposed = [r for r in results if r.case.label_source is LabelSource.PROPOSED]
+    derived = [r for r in results
+               if r.case.label_source in (LabelSource.DERIVED, LabelSource.HUMAN)]
+    proposed = [r for r in results
+                if r.case.label_source in (LabelSource.PROPOSED, LabelSource.MACHINE_REVIEWED)]
     metrics = summarise(derived)
 
     print(f"\nCorpus — {split} split, thresholds {thresholds.version}")
@@ -257,10 +259,33 @@ def report(results: list[Outcome_], *, thresholds: Thresholds, split: str) -> No
 
     if proposed:
         matched = sum(r.correct for r in proposed)
-        print(f"\n  benign divergence — {len(proposed)} cases, labels AWAITING HUMAN REVIEW")
-        print(f"    agreement with drafted labels {bp.to_str(bp.from_ratio(matched, len(proposed))):>8}")
-        print(f"    Not a headline number. These labels were drafted, not judged, and a model")
-        print(f"    scored against labels it drafted is measuring its own consistency.")
+        machine = [r for r in proposed if r.case.label_source is LabelSource.MACHINE_REVIEWED]
+        stage = "MACHINE-REVIEWED" if machine else "DRAFTED"
+        print(f"\n  benign divergence — {len(proposed)} cases, labels {stage}, "
+              f"AWAITING HUMAN REVIEW")
+        print(f"    agreement with these labels {bp.to_str(bp.from_ratio(matched, len(proposed))):>8}")
+        if machine:
+            reviewers = sorted({r.case.reviewed_by for r in machine if r.case.reviewed_by})
+            print(f"    reviewed by: {', '.join(reviewers)}")
+            print(f"    A model's second pass, not a human sign-off. It is a stronger label than")
+            print(f"    a first draft and it is still the same kind of judgment being scored")
+            print(f"    against itself, so this is not a headline number either.")
+        else:
+            print(f"    Not a headline number. These labels were drafted, not judged, and a model")
+            print(f"    scored against labels it drafted is measuring its own consistency.")
+        if machine and bp.from_ratio(matched, len(proposed)) >= 9_500:
+            print(f"\n    ⚠ Near-total agreement between a model's labels and a model-built")
+            print(f"      gate is evidence of circularity, not of correctness. A first draft")
+            print(f"      of these labels agreed 86.67%; a second pass by the same model")
+            print(f"      raised it by moving labels toward the system's behaviour. The")
+            print(f"      lower number was the more informative one. Treat this as a")
+            print(f"      measurement that has not been taken.")
+        if disagreements := [r for r in proposed if not r.correct]:
+            print(f"\n    {len(disagreements)} case(s) where the gate and the label disagree —")
+            print(f"    the most useful place for a human to start:")
+            for r in disagreements[:8]:
+                print(f"      {r.case.case_id:18} label {r.case.expect.outcome:8} "
+                      f"gate {r.decision.outcome:8} {r.case.rationale[:52]}")
 
     failures = [r for r in derived if not r.correct]
     if failures:

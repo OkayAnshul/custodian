@@ -400,3 +400,35 @@ A mandate-expiry check written on string comparison passes an expired mandate. `
 **Why.** `PROPOSED` versus `HUMAN` records *whether* a judgment was made. It does not record *whose*, and without that a relabelled draft and a real review are indistinguishable in the file. The guard that mattered was one I had built and then walked around by accident.
 
 **Why this is worth an ADR rather than a quiet fix.** The failure mode is not carelessness with a field; it is that the person most likely to fabricate a label is whoever is closest to wanting the number to look good. Attribution is cheap and it makes the fabrication visible to a reviewer who does not know the history.
+
+---
+
+## ADR-028 — A same-base substitution cannot reject, and arguably should
+
+**Date** 2026-08-30 · **Area** gate · **Status** Open — recorded, not resolved
+
+**Found by.** Working the benign-divergence labels case by case. `mustard seeds → mustard oil` is the same base and an entirely different ingredient: seeds pop in hot oil for a tadka, and oil does not. `whole almonds → almond milk` is the same shape of failure. Neither can reject.
+
+**Why not.** `SUBST_BASE_UNRELATED` is blocking, so an *identity* change with no recorded relationship rejects. Form scores have no equivalent floor — an unlisted or low-scoring form pair escalates or lowers the dimension, and a failed dimension caps the outcome at `HOLD`. So a base match plus a catastrophic form mismatch is, at worst, a hold.
+
+**Why it is being recorded rather than fixed.** The fix is not obvious. A `form_incompatible` floor needs a threshold, and the threshold needs corpus evidence to set — which needs labels that are not a model's. Adding a blocking form code now would be tuning against my own judgment, which is the exact circularity the label-provenance design exists to prevent. Two cases is also not enough evidence to design a mechanism from.
+
+**What would settle it.** A human review of `benign-007` and `benign-014`. If both come back `REJECT`, the floor is warranted and the corpus says where to put it. If both come back `HOLD`, the current behaviour is right and this ADR closes as "considered, rejected".
+
+**Related.** ADR-020 established that weights decide how much a dimension contributes and not whether a failure counts. This is the same question one level down: whether a *form* mismatch can be severe enough to count as a failure on its own, rather than only as a low score.
+
+---
+
+## ADR-029 — A model's second pass on judgment labels is recorded, not counted
+
+**Date** 2026-08-30 · **Area** evaluation, integrity · **Status** Accepted
+
+**Context.** Asked directly to review the 30 drafted benign-divergence labels, I did — and the result is a lesson rather than a number.
+
+**Chosen.** `LabelSource.MACHINE_REVIEWED`, distinct from both `PROPOSED` and `HUMAN`, requiring `--machine-review` and an explicit reviewer name. `Corpus.reviewed()` excludes it; `awaiting_review()` includes it. No headline figure moves.
+
+**Why not simply mark them `HUMAN`.** That would be fabricating provenance, and BROKE.md 010 is the record of me doing it accidentally once already.
+
+**Why not refuse.** A concern raised and reaffirmed is the requester's decision. The second pass produced real work product: per-case reasoning a human can check in minutes rather than hours, one case flagged as genuinely low-confidence on allergen grounds, and the design gap in ADR-028.
+
+**What it demonstrated, which is the part worth keeping.** Agreement rose from 86.67% to 100% — and every label I changed moved *toward* the gate's existing behaviour, reached by reasoning about what `REJECT` means *in this system* rather than about cooking. The conclusions are independently defensible; the route to them was contaminated. **The lower number was the more informative one.** The harness now warns when agreement on machine-reviewed labels exceeds 95%, because near-total agreement between a model's labels and a model-built gate measures consistency, not correctness.

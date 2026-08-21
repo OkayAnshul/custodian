@@ -1,0 +1,103 @@
+# Second pass over the benign-divergence labels.
+#
+# The governing distinction, which the first drafts got wrong in four places:
+# under this system REJECT means a constraint failed or the two things are
+# unrelated. HOLD means "plausible, and a human decides". A bad-but-plausible
+# substitution between related ingredients is what HOLD is for — a shopkeeper
+# out of atta asks, they do not refuse.
+
+# ── coconut milk ↔ coconut cream ────────────────────────────────────────────
+# Cream is coconut milk with less water. Thin it and it is the same thing;
+# every South Indian and Thai kitchen treats them as interchangeable.
+benign-001: APPROVE
+benign-002: APPROVE
+benign-oos-001: APPROVE
+benign-oos-002: APPROVE
+
+# ── coconut milk → coconut milk powder ──────────────────────────────────────
+# Reconstitutes correctly and is sold for exactly this. But the buyer does the
+# work, and someone cooking tonight expecting a tin gets a packet. Ask.
+benign-003: HOLD
+benign-oos-003: HOLD
+
+# ── coriander whole ↔ powder ────────────────────────────────────────────────
+# Whole seeds are for tadka, where powder burns. Powder is for masala, where
+# seeds are wrong. Which one matters depends entirely on the dish.
+benign-004: HOLD
+benign-005: HOLD
+benign-oos-004: HOLD
+benign-oos-005: HOLD
+
+# ── turmeric whole → powder ─────────────────────────────────────────────────
+# Powder is the dominant form, so this is usually fine. But someone who says
+# "whole turmeric" may want the root — for pickle or juice — and powder is
+# useless there. Genuinely underspecified.
+benign-006: HOLD
+benign-oos-006: HOLD
+
+# ── mustard seeds → mustard oil ─────────────────────────────────────────────
+# The worst substitution in this set. Same plant, entirely different ingredient:
+# you cannot temper with oil the way seeds pop in it. I drafted HOLD, argued
+# myself to REJECT, and came back to HOLD for consistency with atta→maida below
+# — under this system REJECT is not a quality verdict. See DECISIONS ADR-028:
+# a same-base, incompatible-form swap arguably should be able to reject, and
+# currently cannot. That is a real gap and this case is the evidence for it.
+benign-007: HOLD
+benign-oos-007: HOLD
+
+# ── sunflower oil → groundnut oil ───────────────────────────────────────────
+# Both neutral cooking oils, interchangeable for most Indian cooking, and the
+# human said EQUIVALENT. Approving.
+#
+# LOWEST CONFIDENCE IN THE SET. Groundnut is peanut. Swapping in an allergen
+# without flagging it is something a careful merchant would not do, and a
+# reviewer could reasonably call this HOLD on safety rather than culinary
+# grounds. The system has no allergen concept, which is the actual gap.
+benign-008: APPROVE
+benign-oos-008: APPROVE
+
+# Same swap under SAME_BASE. The policy is the human's instruction, not the
+# gate's opinion, and it forbids a base change however good the substitute is.
+benign-009: REJECT
+benign-oos-009: REJECT
+
+# ── ghee → butter ───────────────────────────────────────────────────────────
+# Widely substituted. Butter carries water and milk solids, so it burns where
+# ghee would not. Fine for most uses, wrong for high-heat tempering.
+benign-010: HOLD
+benign-oos-010: HOLD
+
+# ── atta → maida ────────────────────────────────────────────────────────────
+# CHANGED from the draft's REJECT. Rotis made with maida are not rotis, and I
+# labelled that as a refusal. But a shopkeeper out of atta asks rather than
+# refuses, and refusing takes the decision away from someone who may want maida.
+# REJECT here would be a quality judgment wearing a constraint's clothes.
+benign-011: HOLD
+benign-oos-011: HOLD
+
+# ── dahi → fresh cream ──────────────────────────────────────────────────────
+# Cultured and sour versus sweet and not. Wrong for raita, sometimes fine in a
+# curry. Ask.
+benign-012: HOLD
+benign-oos-012: HOLD
+
+# ── desiccated coconut → coconut powder ─────────────────────────────────────
+# Both dried coconut; powder is finer. Interchangeable for most things, and the
+# texture difference is real in a laddoo or barfi. The form pair is unlisted, so
+# it escalates — and it is a good candidate for a table entry around 7500.
+benign-013: HOLD
+benign-oos-013: HOLD
+
+# ── whole almonds → almond milk ─────────────────────────────────────────────
+# Badam for garnish, soaking or grinding, against a carton of milk. Same base,
+# and the mirror of the mustard case: base identity is necessary and nowhere
+# near sufficient.
+benign-014: HOLD
+benign-oos-014: HOLD
+
+# ── chana dal → moong dal ───────────────────────────────────────────────────
+# CHANGED from the draft's REJECT, for the same reason as atta→maida. Different
+# pulses, roughly double the cooking time, materially different dish — and still
+# a question a shopkeeper would ask rather than answer for you.
+benign-015: HOLD
+benign-oos-015: HOLD

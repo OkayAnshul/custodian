@@ -47,6 +47,14 @@ class LabelSource(StrEnum):
     #: Machine-drafted and awaiting review. Reported separately and never folded
     #: into a headline figure.
     PROPOSED = "PROPOSED"
+    #: A model made a second, independent pass and stands behind the call.
+    #:
+    #: Stronger than PROPOSED — the reasoning was reconsidered rather than
+    #: drafted once — and weaker than HUMAN, because it is still the same kind
+    #: of judgment being scored against itself. Kept as its own value so the
+    #: circularity is visible in the data rather than argued about in prose.
+    #: Reported separately; never folded into a headline figure.
+    MACHINE_REVIEWED = "MACHINE_REVIEWED"
 
 
 class Split(StrEnum):
@@ -128,8 +136,8 @@ class Case(Contract):
     reviewed_by: str | None = Field(default=None, max_length=128)
 
     @model_validator(mode="after")
-    def _a_human_label_names_a_human(self) -> "Case":
-        if self.label_source is LabelSource.HUMAN and not self.reviewed_by:
+    def _a_reviewed_label_names_its_reviewer(self) -> "Case":
+        if self.label_source in (LabelSource.HUMAN, LabelSource.MACHINE_REVIEWED) and not self.reviewed_by:
             raise ValueError(
                 f"{self.case_id}: a HUMAN label must name who made it. An unattributed "
                 "judgment cannot be told apart from a relabelled draft."
@@ -172,7 +180,14 @@ class Corpus(Contract):
 
     def reviewed(self) -> tuple[Case, ...]:
         """Cases whose label a human is answerable for, or that need no judgment."""
-        return tuple(c for c in self.cases if c.label_source is not LabelSource.PROPOSED)
+        return tuple(
+            c for c in self.cases
+            if c.label_source in (LabelSource.DERIVED, LabelSource.HUMAN)
+        )
 
     def awaiting_review(self) -> tuple[Case, ...]:
-        return tuple(c for c in self.cases if c.label_source is LabelSource.PROPOSED)
+        """Cases no human has signed off, whether drafted once or twice."""
+        return tuple(
+            c for c in self.cases
+            if c.label_source in (LabelSource.PROPOSED, LabelSource.MACHINE_REVIEWED)
+        )

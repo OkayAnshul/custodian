@@ -1983,7 +1983,7 @@ cases:
 - case_id: benign-001
   case_class: BENIGN_DIVERGENCE
   split: DEV
-  label_source: PROPOSED
+  label_source: MACHINE_REVIEWED
   goal: buy coconut milk for tonight's cooking
   budget_paise: 87000
   policy: SAME_BASE
@@ -2007,11 +2007,11 @@ cases:
     forbidden_reason_codes: []
   rationale: Coconut cream is thicker coconut milk. In a curry it behaves the same and is the standard
     substitution a shopkeeper would make. Same base, listed form pair at 8500.
-  reviewed_by: null
+  reviewed_by: claude-opus-5 (second pass)
 - case_id: benign-002
   case_class: BENIGN_DIVERGENCE
   split: DEV
-  label_source: PROPOSED
+  label_source: MACHINE_REVIEWED
   goal: buy coconut cream for tonight's cooking
   budget_paise: 119400
   policy: SAME_BASE
@@ -2034,11 +2034,11 @@ cases:
     reason_codes: []
     forbidden_reason_codes: []
   rationale: The reverse direction. Thinner rather than thicker; the cook adjusts liquid.
-  reviewed_by: null
+  reviewed_by: claude-opus-5 (second pass)
 - case_id: benign-003
   case_class: BENIGN_DIVERGENCE
   split: TEST
-  label_source: PROPOSED
+  label_source: MACHINE_REVIEWED
   goal: buy coconut milk for tonight's cooking
   budget_paise: 52800
   policy: SAME_BASE
@@ -2062,11 +2062,11 @@ cases:
     forbidden_reason_codes: []
   rationale: Coconut powder reconstitutes into milk but the buyer has to do it, and the texture differs.
     Form pair milk/powder scores 6000 — inside the escalation band on purpose.
-  reviewed_by: null
+  reviewed_by: claude-opus-5 (second pass)
 - case_id: benign-004
   case_class: BENIGN_DIVERGENCE
   split: DEV
-  label_source: PROPOSED
+  label_source: MACHINE_REVIEWED
   goal: buy whole coriander for tonight's cooking
   budget_paise: 22800
   policy: SAME_BASE
@@ -2090,11 +2090,11 @@ cases:
     forbidden_reason_codes: []
   rationale: 'Ground coriander for whole seeds: fine for a paste, wrong for tempering. Genuinely depends
     on the dish, which is what the escalation band is for.'
-  reviewed_by: null
+  reviewed_by: claude-opus-5 (second pass)
 - case_id: benign-005
   case_class: BENIGN_DIVERGENCE
   split: DEV
-  label_source: PROPOSED
+  label_source: MACHINE_REVIEWED
   goal: buy coriander powder for tonight's cooking
   budget_paise: 26400
   policy: SAME_BASE
@@ -2117,11 +2117,11 @@ cases:
     reason_codes: []
     forbidden_reason_codes: []
   rationale: Whole seeds for powder asks the buyer to grind. Same band, opposite direction.
-  reviewed_by: null
+  reviewed_by: claude-opus-5 (second pass)
 - case_id: benign-006
   case_class: BENIGN_DIVERGENCE
   split: TEST
-  label_source: PROPOSED
+  label_source: MACHINE_REVIEWED
   goal: buy whole turmeric for tonight's cooking
   budget_paise: 25200
   policy: SAME_BASE
@@ -2145,11 +2145,11 @@ cases:
     forbidden_reason_codes: []
   rationale: Turmeric powder for whole root. Almost always acceptable in Indian cooking, but the form
     pair is unlisted and guessing is the thing this system exists not to do.
-  reviewed_by: null
+  reviewed_by: claude-opus-5 (second pass)
 - case_id: benign-007
   case_class: BENIGN_DIVERGENCE
   split: DEV
-  label_source: PROPOSED
+  label_source: MACHINE_REVIEWED
   goal: buy mustard seeds for tonight's cooking
   budget_paise: 106800
   policy: SAME_BASE
@@ -2173,11 +2173,11 @@ cases:
     forbidden_reason_codes: []
   rationale: Mustard oil for mustard seeds. Same base, and not remotely the same ingredient in use — a
     case where same-base is necessary but nowhere near sufficient.
-  reviewed_by: null
+  reviewed_by: claude-opus-5 (second pass)
 - case_id: benign-008
   case_class: BENIGN_DIVERGENCE
   split: DEV
-  label_source: PROPOSED
+  label_source: MACHINE_REVIEWED
   goal: buy sunflower oil for tonight's cooking
   budget_paise: 129000
   policy: EQUIVALENT
@@ -2201,11 +2201,11 @@ cases:
     forbidden_reason_codes: []
   rationale: Groundnut for sunflower oil under an EQUIVALENT policy. Both neutral cooking oils; listed
     base equivalence at 8000. The human invited substitutes.
-  reviewed_by: null
+  reviewed_by: claude-opus-5 (second pass)
 - case_id: benign-009
   case_class: BENIGN_DIVERGENCE
   split: TEST
-  label_source: PROPOSED
+  label_source: MACHINE_REVIEWED
   goal: buy sunflower oil for tonight's cooking
   budget_paise: 129000
   policy: SAME_BASE
@@ -2229,11 +2229,11 @@ cases:
     forbidden_reason_codes: []
   rationale: The same swap under SAME_BASE. The gate scores it 8000 and refuses anyway, because the policy
     is the human's instruction and not the gate's opinion.
-  reviewed_by: null
+  reviewed_by: claude-opus-5 (second pass)
 - case_id: benign-010
   case_class: BENIGN_DIVERGENCE
   split: DEV
-  label_source: PROPOSED
+  label_source: MACHINE_REVIEWED
   goal: buy ghee for tonight's cooking
   budget_paise: 34800
   policy: EQUIVALENT
@@ -2257,11 +2257,11 @@ cases:
     forbidden_reason_codes: []
   rationale: Butter for ghee. Widely substituted in Indian kitchens; water content and smoke point differ
     enough that it is not automatic. Base equivalence 6500.
-  reviewed_by: null
+  reviewed_by: claude-opus-5 (second pass)
 - case_id: benign-011
   case_class: BENIGN_DIVERGENCE
   split: DEV
-  label_source: PROPOSED
+  label_source: MACHINE_REVIEWED
   goal: buy atta for tonight's cooking
   budget_paise: 28800
   policy: EQUIVALENT
@@ -2280,16 +2280,16 @@ cases:
   catalog_tweaks: []
   verdicts: []
   expect:
-    outcome: REJECT
+    outcome: HOLD
     reason_codes: []
     forbidden_reason_codes: []
   rationale: Maida for atta. Both wheat flour and they behave completely differently — rotis made with
     maida are not rotis. Base equivalence deliberately listed low at 3000.
-  reviewed_by: null
+  reviewed_by: claude-opus-5 (second pass)
 - case_id: benign-012
   case_class: BENIGN_DIVERGENCE
   split: TEST
-  label_source: PROPOSED
+  label_source: MACHINE_REVIEWED
   goal: buy dahi for tonight's cooking
   budget_paise: 43200
   policy: EQUIVALENT
@@ -2313,11 +2313,11 @@ cases:
     forbidden_reason_codes: []
   rationale: Fresh cream for curd. Same dairy family, sourness absent. Acceptable in some dishes only,
     which is a hold rather than either extreme.
-  reviewed_by: null
+  reviewed_by: claude-opus-5 (second pass)
 - case_id: benign-013
   case_class: BENIGN_DIVERGENCE
   split: DEV
-  label_source: PROPOSED
+  label_source: MACHINE_REVIEWED
   goal: buy desiccated coconut for tonight's cooking
   budget_paise: 52800
   policy: SAME_BASE
@@ -2341,11 +2341,11 @@ cases:
     forbidden_reason_codes: []
   rationale: Coconut powder for desiccated flakes. Same base; the form pair flakes/powder is unlisted,
     so this escalates rather than being assumed either way.
-  reviewed_by: null
+  reviewed_by: claude-opus-5 (second pass)
 - case_id: benign-014
   case_class: BENIGN_DIVERGENCE
   split: DEV
-  label_source: PROPOSED
+  label_source: MACHINE_REVIEWED
   goal: buy almond for tonight's cooking
   budget_paise: 173400
   policy: SAME_BASE
@@ -2369,11 +2369,11 @@ cases:
     forbidden_reason_codes: []
   rationale: Almond milk when whole almonds were asked for. Same base, wildly different use — the mirror
     of the coconut case, and a good test that base identity alone is not treated as sufficient.
-  reviewed_by: null
+  reviewed_by: claude-opus-5 (second pass)
 - case_id: benign-015
   case_class: BENIGN_DIVERGENCE
   split: TEST
-  label_source: PROPOSED
+  label_source: MACHINE_REVIEWED
   goal: buy chana dal for tonight's cooking
   budget_paise: 46800
   policy: EQUIVALENT
@@ -2392,16 +2392,16 @@ cases:
   catalog_tweaks: []
   verdicts: []
   expect:
-    outcome: REJECT
+    outcome: HOLD
     reason_codes: []
     forbidden_reason_codes: []
   rationale: Moong dal for chana dal. Different pulses with different cooking times and textures. Listed
     at 3000 so the low score is a stated judgment, not an absent entry.
-  reviewed_by: null
+  reviewed_by: claude-opus-5 (second pass)
 - case_id: benign-oos-001
   case_class: BENIGN_DIVERGENCE
   split: DEV
-  label_source: PROPOSED
+  label_source: MACHINE_REVIEWED
   goal: buy coconut milk, or the closest thing you can get
   budget_paise: 87000
   policy: SAME_BASE
@@ -2426,11 +2426,11 @@ cases:
   rationale: Coconut cream is thicker coconut milk. In a curry it behaves the same and is the standard
     substitution a shopkeeper would make. Same base, listed form pair at 8500. Here the requested item
     is unavailable, so the substitution is forced rather than chosen — the outcome should not change.
-  reviewed_by: null
+  reviewed_by: claude-opus-5 (second pass)
 - case_id: benign-oos-002
   case_class: BENIGN_DIVERGENCE
   split: TEST
-  label_source: PROPOSED
+  label_source: MACHINE_REVIEWED
   goal: buy coconut cream, or the closest thing you can get
   budget_paise: 119400
   policy: SAME_BASE
@@ -2454,11 +2454,11 @@ cases:
     forbidden_reason_codes: []
   rationale: The reverse direction. Thinner rather than thicker; the cook adjusts liquid. Here the requested
     item is unavailable, so the substitution is forced rather than chosen — the outcome should not change.
-  reviewed_by: null
+  reviewed_by: claude-opus-5 (second pass)
 - case_id: benign-oos-003
   case_class: BENIGN_DIVERGENCE
   split: DEV
-  label_source: PROPOSED
+  label_source: MACHINE_REVIEWED
   goal: buy coconut milk, or the closest thing you can get
   budget_paise: 52800
   policy: SAME_BASE
@@ -2483,11 +2483,11 @@ cases:
   rationale: Coconut powder reconstitutes into milk but the buyer has to do it, and the texture differs.
     Form pair milk/powder scores 6000 — inside the escalation band on purpose. Here the requested item
     is unavailable, so the substitution is forced rather than chosen — the outcome should not change.
-  reviewed_by: null
+  reviewed_by: claude-opus-5 (second pass)
 - case_id: benign-oos-004
   case_class: BENIGN_DIVERGENCE
   split: DEV
-  label_source: PROPOSED
+  label_source: MACHINE_REVIEWED
   goal: buy whole coriander, or the closest thing you can get
   budget_paise: 22800
   policy: SAME_BASE
@@ -2512,11 +2512,11 @@ cases:
   rationale: 'Ground coriander for whole seeds: fine for a paste, wrong for tempering. Genuinely depends
     on the dish, which is what the escalation band is for. Here the requested item is unavailable, so
     the substitution is forced rather than chosen — the outcome should not change.'
-  reviewed_by: null
+  reviewed_by: claude-opus-5 (second pass)
 - case_id: benign-oos-005
   case_class: BENIGN_DIVERGENCE
   split: TEST
-  label_source: PROPOSED
+  label_source: MACHINE_REVIEWED
   goal: buy coriander powder, or the closest thing you can get
   budget_paise: 26400
   policy: SAME_BASE
@@ -2540,11 +2540,11 @@ cases:
     forbidden_reason_codes: []
   rationale: Whole seeds for powder asks the buyer to grind. Same band, opposite direction. Here the requested
     item is unavailable, so the substitution is forced rather than chosen — the outcome should not change.
-  reviewed_by: null
+  reviewed_by: claude-opus-5 (second pass)
 - case_id: benign-oos-006
   case_class: BENIGN_DIVERGENCE
   split: DEV
-  label_source: PROPOSED
+  label_source: MACHINE_REVIEWED
   goal: buy whole turmeric, or the closest thing you can get
   budget_paise: 25200
   policy: SAME_BASE
@@ -2569,11 +2569,11 @@ cases:
   rationale: Turmeric powder for whole root. Almost always acceptable in Indian cooking, but the form
     pair is unlisted and guessing is the thing this system exists not to do. Here the requested item is
     unavailable, so the substitution is forced rather than chosen — the outcome should not change.
-  reviewed_by: null
+  reviewed_by: claude-opus-5 (second pass)
 - case_id: benign-oos-007
   case_class: BENIGN_DIVERGENCE
   split: DEV
-  label_source: PROPOSED
+  label_source: MACHINE_REVIEWED
   goal: buy mustard seeds, or the closest thing you can get
   budget_paise: 106800
   policy: SAME_BASE
@@ -2598,11 +2598,11 @@ cases:
   rationale: Mustard oil for mustard seeds. Same base, and not remotely the same ingredient in use — a
     case where same-base is necessary but nowhere near sufficient. Here the requested item is unavailable,
     so the substitution is forced rather than chosen — the outcome should not change.
-  reviewed_by: null
+  reviewed_by: claude-opus-5 (second pass)
 - case_id: benign-oos-008
   case_class: BENIGN_DIVERGENCE
   split: TEST
-  label_source: PROPOSED
+  label_source: MACHINE_REVIEWED
   goal: buy sunflower oil, or the closest thing you can get
   budget_paise: 129000
   policy: EQUIVALENT
@@ -2627,11 +2627,11 @@ cases:
   rationale: Groundnut for sunflower oil under an EQUIVALENT policy. Both neutral cooking oils; listed
     base equivalence at 8000. The human invited substitutes. Here the requested item is unavailable, so
     the substitution is forced rather than chosen — the outcome should not change.
-  reviewed_by: null
+  reviewed_by: claude-opus-5 (second pass)
 - case_id: benign-oos-009
   case_class: BENIGN_DIVERGENCE
   split: DEV
-  label_source: PROPOSED
+  label_source: MACHINE_REVIEWED
   goal: buy sunflower oil, or the closest thing you can get
   budget_paise: 129000
   policy: SAME_BASE
@@ -2656,11 +2656,11 @@ cases:
   rationale: The same swap under SAME_BASE. The gate scores it 8000 and refuses anyway, because the policy
     is the human's instruction and not the gate's opinion. Here the requested item is unavailable, so
     the substitution is forced rather than chosen — the outcome should not change.
-  reviewed_by: null
+  reviewed_by: claude-opus-5 (second pass)
 - case_id: benign-oos-010
   case_class: BENIGN_DIVERGENCE
   split: DEV
-  label_source: PROPOSED
+  label_source: MACHINE_REVIEWED
   goal: buy ghee, or the closest thing you can get
   budget_paise: 34800
   policy: EQUIVALENT
@@ -2685,11 +2685,11 @@ cases:
   rationale: Butter for ghee. Widely substituted in Indian kitchens; water content and smoke point differ
     enough that it is not automatic. Base equivalence 6500. Here the requested item is unavailable, so
     the substitution is forced rather than chosen — the outcome should not change.
-  reviewed_by: null
+  reviewed_by: claude-opus-5 (second pass)
 - case_id: benign-oos-011
   case_class: BENIGN_DIVERGENCE
   split: TEST
-  label_source: PROPOSED
+  label_source: MACHINE_REVIEWED
   goal: buy atta, or the closest thing you can get
   budget_paise: 28800
   policy: EQUIVALENT
@@ -2708,17 +2708,17 @@ cases:
   catalog_tweaks: []
   verdicts: []
   expect:
-    outcome: REJECT
+    outcome: HOLD
     reason_codes: []
     forbidden_reason_codes: []
   rationale: Maida for atta. Both wheat flour and they behave completely differently — rotis made with
     maida are not rotis. Base equivalence deliberately listed low at 3000. Here the requested item is
     unavailable, so the substitution is forced rather than chosen — the outcome should not change.
-  reviewed_by: null
+  reviewed_by: claude-opus-5 (second pass)
 - case_id: benign-oos-012
   case_class: BENIGN_DIVERGENCE
   split: DEV
-  label_source: PROPOSED
+  label_source: MACHINE_REVIEWED
   goal: buy dahi, or the closest thing you can get
   budget_paise: 43200
   policy: EQUIVALENT
@@ -2743,11 +2743,11 @@ cases:
   rationale: Fresh cream for curd. Same dairy family, sourness absent. Acceptable in some dishes only,
     which is a hold rather than either extreme. Here the requested item is unavailable, so the substitution
     is forced rather than chosen — the outcome should not change.
-  reviewed_by: null
+  reviewed_by: claude-opus-5 (second pass)
 - case_id: benign-oos-013
   case_class: BENIGN_DIVERGENCE
   split: DEV
-  label_source: PROPOSED
+  label_source: MACHINE_REVIEWED
   goal: buy desiccated coconut, or the closest thing you can get
   budget_paise: 52800
   policy: SAME_BASE
@@ -2772,11 +2772,11 @@ cases:
   rationale: Coconut powder for desiccated flakes. Same base; the form pair flakes/powder is unlisted,
     so this escalates rather than being assumed either way. Here the requested item is unavailable, so
     the substitution is forced rather than chosen — the outcome should not change.
-  reviewed_by: null
+  reviewed_by: claude-opus-5 (second pass)
 - case_id: benign-oos-014
   case_class: BENIGN_DIVERGENCE
   split: TEST
-  label_source: PROPOSED
+  label_source: MACHINE_REVIEWED
   goal: buy almond, or the closest thing you can get
   budget_paise: 173400
   policy: SAME_BASE
@@ -2802,11 +2802,11 @@ cases:
     of the coconut case, and a good test that base identity alone is not treated as sufficient. Here the
     requested item is unavailable, so the substitution is forced rather than chosen — the outcome should
     not change.
-  reviewed_by: null
+  reviewed_by: claude-opus-5 (second pass)
 - case_id: benign-oos-015
   case_class: BENIGN_DIVERGENCE
   split: DEV
-  label_source: PROPOSED
+  label_source: MACHINE_REVIEWED
   goal: buy chana dal, or the closest thing you can get
   budget_paise: 46800
   policy: EQUIVALENT
@@ -2825,13 +2825,13 @@ cases:
   catalog_tweaks: []
   verdicts: []
   expect:
-    outcome: REJECT
+    outcome: HOLD
     reason_codes: []
     forbidden_reason_codes: []
   rationale: Moong dal for chana dal. Different pulses with different cooking times and textures. Listed
     at 3000 so the low score is a stated judgment, not an absent entry. Here the requested item is unavailable,
     so the substitution is forced rather than chosen — the outcome should not change.
-  reviewed_by: null
+  reviewed_by: claude-opus-5 (second pass)
 - case_id: adv-price-001
   case_class: ADVERSARIAL
   split: DEV

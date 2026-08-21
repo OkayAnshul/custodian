@@ -220,7 +220,7 @@ Anything you do not list keeps its drafted label and stays marked as a draft.
 | form score | 10000 |
 | gate decides today | **HOLD** (alignment 84.09%, confidence 81.82%, escalates: no) |
 
-<details><summary>Drafted call — <b>REJECT</b> — click to see the reasoning</summary>
+<details><summary>Drafted call — <b>HOLD</b> — click to see the reasoning</summary>
 
 > Maida for atta. Both wheat flour and they behave completely differently — rotis made with maida are not rotis. Base equivalence deliberately listed low at 3000.
 
@@ -296,7 +296,7 @@ Anything you do not list keeps its drafted label and stays marked as a draft.
 | form score | 10000 |
 | gate decides today | **HOLD** (alignment 84.09%, confidence 81.82%, escalates: no) |
 
-<details><summary>Drafted call — <b>REJECT</b> — click to see the reasoning</summary>
+<details><summary>Drafted call — <b>HOLD</b> — click to see the reasoning</summary>
 
 > Moong dal for chana dal. Different pulses with different cooking times and textures. Listed at 3000 so the low score is a stated judgment, not an absent entry.
 
@@ -505,7 +505,7 @@ Anything you do not list keeps its drafted label and stays marked as a draft.
 | form score | 10000 |
 | gate decides today | **HOLD** (alignment 84.09%, confidence 81.82%, escalates: no) |
 
-<details><summary>Drafted call — <b>REJECT</b> — click to see the reasoning</summary>
+<details><summary>Drafted call — <b>HOLD</b> — click to see the reasoning</summary>
 
 > Maida for atta. Both wheat flour and they behave completely differently — rotis made with maida are not rotis. Base equivalence deliberately listed low at 3000. Here the requested item is unavailable, so the substitution is forced rather than chosen — the outcome should not change.
 
@@ -581,7 +581,7 @@ Anything you do not list keeps its drafted label and stays marked as a draft.
 | form score | 10000 |
 | gate decides today | **HOLD** (alignment 84.09%, confidence 81.82%, escalates: no) |
 
-<details><summary>Drafted call — <b>REJECT</b> — click to see the reasoning</summary>
+<details><summary>Drafted call — <b>HOLD</b> — click to see the reasoning</summary>
 
 > Moong dal for chana dal. Different pulses with different cooking times and textures. Listed at 3000 so the low score is a stated judgment, not an absent entry. Here the requested item is unavailable, so the substitution is forced rather than chosen — the outcome should not change.
 

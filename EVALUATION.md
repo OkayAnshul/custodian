@@ -74,9 +74,23 @@ Friction is measured as a *hold rate*, which needs no ground truth: what fractio
 
 The corpus runs in the test suite, so a change that alters a graded outcome fails the build rather than being noticed the next time someone happens to run the evaluation.
 
-## How to review the 30 drafted labels
+## The state of the 30 judgment labels
+
+They have had a model's second pass (`MACHINE_REVIEWED`, ADR-029) and **no human sign-off**. Agreement with the gate rose from 86.67% to 100%, and that is a warning rather than a result: every label the second pass changed moved *toward* the gate's existing behaviour. The harness prints this warning itself.
+
+**Four cases are worth a human's attention before any of the rest**, because they are where the second pass changed its own mind and where the reasoning was most contaminated:
+
+| Case | Pair | Draft → second pass | Why it is contestable |
+|---|---|---|---|
+| `benign-011` / `-oos-011` | atta → maida | REJECT → HOLD | Rotis made with maida are not rotis. Changed on the argument that a shopkeeper asks rather than refuses — which is a claim about this system's outcome vocabulary, not about cooking |
+| `benign-015` / `-oos-015` | chana dal → moong dal | REJECT → HOLD | Different pulses, roughly double the cooking time, materially different dish. Changed for the same reason, and the same objection applies |
+| `benign-008` / `-oos-008` | sunflower → groundnut oil | APPROVE (unchanged) | **Lowest confidence in the set.** Groundnut is peanut. Swapping in an allergen unflagged is something a careful merchant would not do; a reviewer could reasonably say HOLD on safety rather than culinary grounds |
+| `benign-007` / `-oos-007` | mustard seeds → mustard oil | HOLD (unchanged, after argument) | Same plant, entirely different ingredient — you cannot temper with oil. If this is really REJECT, the gate cannot currently express it. See ADR-028 |
+
+## How to review the labels
 
 1. `eval/corpus/cases.yaml`, entries `benign-*`. Each has a `rationale` explaining the drafted call.
-2. Change `expect.outcome` where you disagree, and set `label_source: HUMAN`.
-3. Re-run `python -m eval.corpus.build` — `merge_reviews` preserves anything marked `HUMAN`, so a rebuild never silently reverts a judgment.
+2. Change `expect.outcome` where you disagree. Start with the four above.
+3. Applying requires `--as NAME`: a reviewed label carries whoever made the call, because an unattributed judgment cannot be told apart from a relabelled draft.
+4. Re-run `python -m eval.corpus.build` — `merge_reviews` preserves anything marked `HUMAN`, so a rebuild never silently reverts a judgment.
 4. Re-run the harness. Reviewed labels move out of the "awaiting review" heading.
