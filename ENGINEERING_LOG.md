@@ -303,3 +303,54 @@ Replay under a deliberately drifted lexicon version refuses rather than quietly 
 **Next objective.** The corpus. 120 hand-labelled cases across four classes, the harness, and the threshold sweep.
 
 **Confidence.** High on the machinery. Demo 6 — take a ledger entry, re-run it, get the same result — now runs as a test rather than existing as a claim. Unchanged on calibration: every number the gate produces is still keyed to thresholds nobody has measured.
+
+---
+
+## Day 8 — 2026-08-28
+
+**Objective.** The corpus, the harness, and the sweep. Started two days early, as planned — thresholds cannot be chosen without data.
+
+**Completed.**
+- `eval/corpus/schema.py` — cases with **label provenance as a typed field**. `BENIGN_DIVERGENCE` cannot be `DERIVED`; the schema refuses to build it, so the integrity constraint is enforced rather than remembered.
+- `eval/corpus/build.py` — 120 cases matching §7\'s distribution exactly (60/30/15/15), each with a written rationale. `merge_reviews` preserves human labels across regeneration.
+- `eval/harness.py` — grades outcome *and* reason codes, reports derived and drafted classes separately.
+- `eval/sweep.py` — three dials, with friction measured as a hold rate that needs no ground truth.
+- `tests/test_corpus.py` — the corpus runs as a regression suite, so a change that alters a graded outcome fails the build.
+
+**Tests.** 14 new (424 total).
+
+**Results, DEV+TEST, derived labels only.**
+
+```
+CLEAN         60  100.00%     clean approval 100%, false-hold 0%
+ADVERSARIAL   15  100.00%     catch 100%, false-approval 0%, zero reached the model
+AMBIGUOUS     15  100.00%     6 escalations
+```
+
+**What that number does and does not mean**, stated in the harness output itself: the derived classes have labels that follow from how each case was built. Scoring 100% says the implementation matches its specification. It does not say the specification is right. The class where that question lives is benign divergence, whose 30 labels are drafts awaiting review.
+
+**The corpus earned its place immediately.** The first run scored clean approval at **76.67%** with a 18.33% false-hold rate. Three distinct causes, only one a gate bug:
+
+- My generator asked for items by the taxonomy\'s internal base key. "coconut" is genuinely ambiguous between milk, cream, oil and flakes, and the gate was right to hold it. Fixed by asking the way a person writes a shopping list.
+- **A real bug**: `pigeon-pea` did not match the alias `pigeon pea`. A hyphen between letters is a word separator, and merchants write both spellings.
+- One expectation demanded `SUBST_EXACT` where "jeera" places as cumin/seed and the catalog item as cumin/whole — scored 9000, a correct approval and not an exact match.
+
+**What broke.** `BROKE.md` 008 — a flat sweep that read as a finding. Two faults in one appearance: version strings overflowing a 32-character cap so every point was silently discarded by a blanket `except`, and a genuinely flat curve because I had excluded the only class whose cases sit near a boundary.
+
+**The sweep, now real.**
+
+```
+substitution_faithful_bp   substitutions held   escalation rate   clean approval
+        50%                    46.67%              10.83%            100%
+        80%  (default)         73.33%              20.00%            100%
+        95%                    93.33%              25.83%             98.33%
+```
+
+The adversarial catch rate does not move across any dial. Every attack in this corpus is settled by a deterministic check, so tightening a threshold spends friction and buys no safety — which is worth knowing before anyone tunes it upward hoping for protection it cannot provide.
+
+**Known issues.**
+- **30 benign-divergence labels need human review.** Until then no headline number rests on them.
+- Thresholds are still `v0-untuned`. The sweep now says what tuning them would cost.
+- No API surface, no viewer, no README.
+
+**Next objective.** API, replay viewer, README.

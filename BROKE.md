@@ -246,3 +246,31 @@ The specific one: `SUBST_BASE_CHANGED` was not in `BLOCKING`, and could not simp
 **What changed to prevent recurrence.** `test_a_failed_dimension_can_never_be_outvoted_by_a_good_average` asserts both halves — that the aggregate still reads above the approve threshold, *and* that the outcome is nonetheless not `APPROVE`. A test that only checked the outcome would pass again if someone later re-tuned the weights until the average dipped, which would look like a fix and would not be one.
 
 **Lesson.** The scoring was right and the reporting was right; the composition was wrong. Decomposed scores make a system explainable, and they also create a place for a failure to be quietly outvoted — the decomposition needs a rule about which dimensions can veto, and that rule cannot be "whichever ones someone remembered to list". Also: I wrote the correct principle as a comment and then failed to implement it. A comment stating an invariant is a claim, and claims belong in tests.
+
+---
+
+## 008 — A flat sweep that looked like a finding
+
+**Day 8 · 2026-08-28 · severity: would have been reported as a result**
+
+**What broke.** The first threshold sweep produced a completely flat curve, and the alignment sweep produced no rows at all. Flatness is a legitimate outcome, so it read as one: "no threshold changes anything here."
+
+**Expected.** A curve with a bend in it, or a stated reason there is not one.
+
+**Actual.** Two different faults wearing one appearance.
+
+*The alignment sweep produced nothing.* Every point was silently discarded. `Thresholds.version` is capped at 32 characters and the sweep built its version string from the full dial name — `sweep-approve_min_alignment_bp-5000` is 35. Each construction raised, and the `except Exception: continue` that exists to skip settings the invariants forbid swallowed it as though the setting were invalid.
+
+*The confidence sweep was genuinely flat, for a reason that made the measurement useless.* I had excluded the benign-divergence class from the sweep — correctly, since tuning against drafted labels is circular. But that class is the only one whose cases sit near a boundary. What remained was bimodal: clean orders at 100% alignment and violations rejected by deterministic checks. Nothing was near a threshold, so no threshold could move anything.
+
+**Investigation.** The alignment sweep printing a header and zero rows was the tell. A flat curve and an empty curve look similar in a terminal and are not the same failure.
+
+**Fix.** Short version strings (`sw-align-5000`). And a change in what the sweep measures: friction is now reported as the **hold rate on benign-divergence orders**, which needs no ground truth at all — what fraction of plausible substitutions get sent back to a human is a fact about behaviour, not a claim about correctness. Accuracy against labels stays restricted to the derived classes.
+
+**Why the fix works.** It separates the two things that were tangled: *is the gate right* needs labels and is reported only where labels are sound; *how much friction does this setting cost* needs no labels and can therefore be measured across the whole corpus, including the cases whose ground truth is still a draft.
+
+The curve is now real — `substitution_faithful_bp` from 50% to 95% moves substitutions held from 46.67% to 93.33% and the escalation rate from 10.83% to 25.83%, while the adversarial catch rate does not move at all.
+
+**What changed to prevent recurrence.** `test_the_threshold_is_a_dial_with_a_measurable_cost` asserts the curve is monotonic and that its ends differ, so a sweep that silently collapses fails the build.
+
+**Lesson.** A blanket `except Exception: continue` inside a loop that exists to skip invalid inputs will also skip a bug in how the inputs are built, and the output is indistinguishable. And measuring correctness where you only have drafted labels is a dead end — the fix was not better labels, it was finding the question that could be answered without them.
