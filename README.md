@@ -247,6 +247,7 @@ Stated plainly, because a reviewer will find them anyway and the honest version 
 | [`LIMITATIONS.md`](LIMITATIONS.md) | What is modelled, unfinished, out of scope, or deliberate |
 | [`DEMO.md`](DEMO.md) | Four-minute script, every number produced live |
 | [`DEFENSE.md`](DEFENSE.md) | Panel-round notes — the reasoning under each answer, not the answers |
+| [`SUBMISSION.md`](SUBMISSION.md) | Form answers, drafted to be pasted |
 
 `BROKE.md` is worth reading first. Three entries are the interesting kind:
 
