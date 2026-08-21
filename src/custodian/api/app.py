@@ -11,6 +11,7 @@ second one, because two decisions for one request would mean two orders.
 
 from __future__ import annotations
 
+import os
 from pathlib import Path
 from typing import Any
 
@@ -182,6 +183,62 @@ def create_app(*, db_path: Path | None = None, gateway=None) -> FastAPI:
         except AmountMismatch as exc:
             raise HTTPException(409, str(exc)) from exc
         except PaymentError as exc:
+            raise HTTPException(409, str(exc)) from exc
+        return {"request_id": request_id, "payment": payment.as_observed(),
+                "settled": payment.settled}
+
+    @app.get("/checkout/{request_id}", response_class=HTMLResponse, include_in_schema=False)
+    def checkout(request_id: str) -> HTMLResponse:
+        """The page a payer completes an order on. Live gateway only."""
+        order = state["orders"].get(request_id)
+        key_id = os.environ.get("RAZORPAY_KEY_ID")
+        if order is None:
+            return HTMLResponse(view.not_found(request_id), status_code=409)
+        if not key_id or state["gateway"].name != "razorpay-test":
+            return HTMLResponse(view.not_found(request_id), status_code=409)
+        return HTMLResponse(view.checkout_page(
+            request_id=request_id, key_id=key_id, order_id=order.order_id,
+            amount_paise=order.amount_paise,
+            description=f"Verified order {request_id}",
+        ))
+
+    @app.post("/v1/checkout/callback/{request_id}", tags=["checkout"])
+    def callback(request_id: str, payload: dict = Body(...)) -> dict[str, Any]:
+        """Take a completed Checkout payment, once its signature checks out.
+
+        The browser is an untrusted client. Without this check anyone who can
+        reach the endpoint could claim any order was paid, so the signature is
+        verified before the capture path is entered at all.
+        """
+        order = state["orders"].get(request_id)
+        gateway = state["gateway"]
+        if order is None:
+            raise HTTPException(409, f"no order open for {request_id}")
+        if not hasattr(gateway, "verify_callback"):
+            raise HTTPException(409, "this gateway has no signed callback")
+
+        try:
+            genuine = gateway.verify_callback(
+                order_id=payload["razorpay_order_id"],
+                payment_id=payload["razorpay_payment_id"],
+                signature=payload["razorpay_signature"],
+            )
+        except KeyError as exc:
+            raise HTTPException(422, f"callback missing {exc}") from exc
+
+        if not genuine or payload["razorpay_order_id"] != order.order_id:
+            state["custodian"].ledger.append(
+                EventType.PAYMENT_FAILED, request_id,
+                observed={"gateway": gateway.name,
+                          "order_id": payload.get("razorpay_order_id"),
+                          "payment_id": payload.get("razorpay_payment_id")},
+                inferred={"refused": "SIGNATURE_INVALID"},
+            )
+            raise HTTPException(403, "callback signature did not verify")
+
+        try:
+            payment = state["custodian"].capture(request_id, gateway, order)
+        except (PermissionError, AmountMismatch, PaymentError) as exc:
             raise HTTPException(409, str(exc)) from exc
         return {"request_id": request_id, "payment": payment.as_observed(),
                 "settled": payment.settled}

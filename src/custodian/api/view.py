@@ -210,3 +210,66 @@ def decision_page(*, request_id: str, events: list[LedgerEvent], replay, authori
     return _page(f"Custodian — {request_id}",
                  head + dimensions + bindings + record + "<p style='margin-top:28px'><a href='/'>"
                  "← all decisions</a></p>")
+
+
+def checkout_page(*, request_id: str, key_id: str, order_id: str, amount_paise: int,
+                  description: str) -> str:
+    """The hosted page a payer completes an order on.
+
+    This is the one part of the loop no API call can perform: a person has to
+    put a card in. The page hands the payment back to
+    ``POST /v1/checkout/callback/{request_id}``, where the signature is checked
+    before anything is captured — the browser is an untrusted client too.
+
+    Test card 4111 1111 1111 1111, any future expiry, any CVV.
+    """
+    return _page(f"Pay — {request_id}", (
+        f"<h1>Custodian</h1>"
+        f"<p class='sub'>Order <code>{_e(order_id)}</code> for request "
+        f"<code>{_e(request_id)}</code>.</p>"
+        f"<div class='panel'>"
+        f"<p class='stat'>Amount<br><b style='font-size:22px'>{_e(format_inr(amount_paise))}</b></p>"
+        f"<p class='why'>{_e(description)}</p>"
+        f"<p class='why'>This is the amount Custodian derived from the catalog, "
+        f"not the amount the agent asserted.</p>"
+        f"<p id='status' class='stat'></p>"
+        f"<p><button id='pay' style='font:inherit;padding:9px 18px;border-radius:8px;"
+        f"border:1px solid var(--line);background:var(--accent);color:#fff;cursor:pointer'>"
+        f"Pay {_e(format_inr(amount_paise))}</button></p>"
+        f"<p class='why'>Test mode. Card 4111 1111 1111 1111, any future expiry, any CVV.</p>"
+        f"</div>"
+        f"<script src='https://checkout.razorpay.com/v1/checkout.js'></script>"
+        f"<script>\n"
+        f"const status = document.getElementById('status');\n"
+        f"document.getElementById('pay').onclick = function () {{\n"
+        f"  const rzp = new Razorpay({{\n"
+        f"    key: {key_id!r},\n"
+        f"    amount: {amount_paise},\n"
+        f"    currency: 'INR',\n"
+        f"    name: 'Custodian',\n"
+        f"    description: {description!r},\n"
+        f"    order_id: {order_id!r},\n"
+        f"    theme: {{ color: '#2b5c8a' }},\n"
+        f"    handler: function (response) {{\n"
+        f"      status.textContent = 'verifying signature\\u2026';\n"
+        f"      fetch('/v1/checkout/callback/{request_id}', {{\n"
+        f"        method: 'POST',\n"
+        f"        headers: {{ 'Content-Type': 'application/json' }},\n"
+        f"        body: JSON.stringify(response)\n"
+        f"      }}).then(r => r.json().then(b => ({{ ok: r.ok, body: b }})))\n"
+        f"        .then(({{ ok, body }}) => {{\n"
+        f"          status.innerHTML = ok\n"
+        f"            ? '<b class=ok>settled \\u2014 ' + body.payment.payment_id +\n"
+        f"              '</b><br><a href=\"/view/{request_id}\">see the decision</a>'\n"
+        f"            : '<b class=bad>' + (body.detail || 'refused') + '</b>';\n"
+        f"        }});\n"
+        f"    }},\n"
+        f"    modal: {{ ondismiss: function () {{ status.textContent = 'cancelled'; }} }}\n"
+        f"  }});\n"
+        f"  rzp.on('payment.failed', function (r) {{\n"
+        f"    status.innerHTML = '<b class=bad>declined: ' + r.error.description + '</b>';\n"
+        f"  }});\n"
+        f"  rzp.open();\n"
+        f"}};\n"
+        f"</script>"
+    ))

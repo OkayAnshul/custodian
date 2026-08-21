@@ -200,6 +200,36 @@ class RazorpayGateway:
         self._idempotency[idempotency_key] = (fingerprint, captured)
         return captured
 
+    def verify_callback(self, *, order_id: str, payment_id: str, signature: str) -> bool:
+        """Whether a Checkout callback genuinely came from Razorpay.
+
+        When a payment completes, the browser hands back an order id, a payment
+        id and a signature. The browser is an untrusted client — the same
+        assumption this whole system makes about the buying agent — so the
+        callback is not evidence until the signature checks out.
+
+        The signature is ``HMAC-SHA256(order_id|payment_id)`` under the key
+        secret, so only Razorpay and this server can produce it. Without this
+        check, anyone who can POST to the confirm endpoint can claim any order
+        was paid.
+
+        Returns ``False`` rather than raising: an invalid signature is an
+        outcome to record, not an exception to swallow.
+        """
+        import razorpay.errors
+
+        try:
+            self.client.utility.verify_payment_signature({
+                "razorpay_order_id": order_id,
+                "razorpay_payment_id": payment_id,
+                "razorpay_signature": signature,
+            })
+        except razorpay.errors.SignatureVerificationError:
+            return False
+        except Exception as exc:  # a malformed field, not a valid-but-wrong one
+            raise PaymentError(f"razorpay: could not verify callback: {exc}") from exc
+        return True
+
     def fetch(self, payment_id: str) -> PaymentRef:
         raw = self._call("fetch payment", lambda: self.client.payment.fetch(payment_id))
         return _to_payment(raw, order_id=str(raw.get("order_id") or ""))

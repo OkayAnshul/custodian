@@ -188,3 +188,20 @@ def test_capture_without_an_open_order_is_refused(client):
     response = client.post("/v1/checkout/capture/req-1")
     assert response.status_code == 409
     assert "no order open" in response.json()["detail"]
+
+
+# --- the payer's page and its signed callback ------------------------------
+
+def test_the_checkout_page_is_only_offered_with_a_live_gateway(client):
+    """The in-process gateway has no hosted page, and saying so beats a broken one."""
+    verify(client, CLEAN_CART)
+    client.post("/v1/checkout/settle/req-1")
+    assert client.get("/checkout/req-1").status_code == 409
+
+
+def test_a_callback_with_no_open_order_is_refused(client):
+    verify(client, CLEAN_CART)
+    response = client.post("/v1/checkout/callback/req-1", json={
+        "razorpay_order_id": "order_x", "razorpay_payment_id": "pay_x",
+        "razorpay_signature": "x" * 64})
+    assert response.status_code == 409

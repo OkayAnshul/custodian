@@ -6,7 +6,17 @@ Stated plainly. A reviewer finds these anyway, and the honest version is shorter
 
 **The UPI mandate.** Reserve Pay is not reachable from a self-serve test account, so the mandate is constructed locally and checked deterministically. Every mandate check is real code against a real object; none of it talks to NPCI or an AP2 issuer. What the project demonstrates is the layer *above* the mandate — it consumes one as an input, which is what §8 of the problem statement argues it should do.
 
-**Completing a payment.** Order creation, the payable link, payment fetch and capture are live Razorpay test-mode calls and the payment ids in the ledger are Razorpay's. But no API call makes a payment *happen* — a person completes it on a hosted page with a test card. Five contract tests skip on the live gateway for exactly that reason rather than inventing a path that does not exist.
+**Completing a payment.** Order creation, the payable link, payment fetch and capture are live Razorpay test-mode calls and the payment ids in the ledger are Razorpay's. No API call makes a payment *happen* — a person completes it on a hosted page with a test card — and five contract tests skip on the live gateway for exactly that reason rather than inventing a path that does not exist.
+
+`GET /checkout/{request_id}` now serves that page, and `POST /v1/checkout/callback/{request_id}` takes the result. **The signature check on that callback is tested; the page itself is not.** The browser is an untrusted client, so the callback is verified as `HMAC-SHA256(order_id|payment_id)` under the key secret before anything is captured — six tests cover a genuine signature, a forged one, a real signature replayed against a different order, one replayed against a different payment, and one made with the wrong secret. What no test covers is a browser actually loading the page and Razorpay's script driving it, because that needs a browser. It is marked here rather than claimed:
+
+```
+make serve                              # with RAZORPAY_KEY_ID in .env
+# verify, settle, then open http://127.0.0.1:8000/checkout/<request_id>
+# test card 4111 1111 1111 1111, any future expiry, any CVV
+```
+
+Until someone runs that, treat the hosted page as written-and-unrun. The Day-5 lesson in `BROKE.md` 006 was precisely that code which only runs against a credential nobody has is code nobody has run.
 
 ## Things that are unfinished
 
