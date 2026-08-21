@@ -32,6 +32,11 @@ jobs:
       - name: Threshold sweep
         run: python -m eval.sweep --split ALL
 
+      # The money figures are quoted in the README. If they drift, the README
+      # is wrong, so they run here too.
+      - name: Counterfactual
+        run: python -m eval.counterfactual
+
       # The demo is the submission's main artifact. If it stops running, that
       # should be a red build and not a discovery on the day.
       - name: Demo

@@ -11,6 +11,7 @@ help:
 	@echo "  make test       the full suite (12 extra tests if .env has Razorpay keys)"
 	@echo "  make demo       all six demo scenarios"
 	@echo "  make eval       the corpus, DEV and TEST"
+	@echo "  make money      what Custodian saves, and what it costs"
 	@echo "  make sweep      the threshold curve"
 	@echo "  make serve      the API and decision viewer on :8000"
 	@echo "  make review     lay out the 30 drafted labels for human review"
@@ -35,6 +36,11 @@ demo:
 eval:
 	@$(PY) -m eval.harness --split DEV
 	@$(PY) -m eval.harness --split TEST
+	@$(PY) -m eval.counterfactual
+
+.PHONY: money
+money:
+	@$(PY) -m eval.counterfactual
 
 .PHONY: sweep
 sweep:
@@ -58,4 +64,5 @@ corpus:
 .PHONY: check
 check: test
 	@$(PY) -m eval.harness --all
+	@$(PY) -m eval.counterfactual > /dev/null && echo "counterfactual: runs clean"
 	@$(PY) scripts/demo.py > /dev/null && echo "demo: runs clean"
