@@ -120,6 +120,22 @@ class Case(Contract):
     #: is a number nobody can check.
     rationale: str = Field(min_length=10, max_length=1_024)
 
+    #: Who made this call, for labels that required judgment. A HUMAN label with
+    #: nobody's name on it is indistinguishable from a machine-drafted one that
+    #: was relabelled, which is exactly the confusion this field exists to
+    #: prevent — including from me. I made that mistake once while testing the
+    #: review tool and the corpus carried three of my calls marked HUMAN.
+    reviewed_by: str | None = Field(default=None, max_length=128)
+
+    @model_validator(mode="after")
+    def _a_human_label_names_a_human(self) -> "Case":
+        if self.label_source is LabelSource.HUMAN and not self.reviewed_by:
+            raise ValueError(
+                f"{self.case_id}: a HUMAN label must name who made it. An unattributed "
+                "judgment cannot be told apart from a relabelled draft."
+            )
+        return self
+
     @model_validator(mode="after")
     def _judgment_classes_are_not_machine_labelled(self) -> "Case":
         if (

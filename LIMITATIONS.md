@@ -1,0 +1,37 @@
+# Limitations
+
+Stated plainly. A reviewer finds these anyway, and the honest version is shorter than the defence.
+
+## Things that are modelled rather than integrated
+
+**The UPI mandate.** Reserve Pay is not reachable from a self-serve test account, so the mandate is constructed locally and checked deterministically. Every mandate check is real code against a real object; none of it talks to NPCI or an AP2 issuer. What the project demonstrates is the layer *above* the mandate — it consumes one as an input, which is what §8 of the problem statement argues it should do.
+
+**Completing a payment.** Order creation, the payable link, payment fetch and capture are live Razorpay test-mode calls and the payment ids in the ledger are Razorpay's. But no API call makes a payment *happen* — a person completes it on a hosted page with a test card. Five contract tests skip on the live gateway for exactly that reason rather than inventing a path that does not exist.
+
+## Things that are unfinished
+
+**30 corpus labels are drafts.** The benign-divergence class is the project's stated moat and it is the one part a model cannot honestly supply: scored against labels it drafted, it measures its own consistency. The schema refuses to build a benign-divergence case with a derived label, the harness reports them separately, and no headline number rests on them. `python -m eval.corpus.review --sheet` lays out the evidence for each.
+
+**Thresholds are `v0-untuned`.** They are stated guesses, labelled as such in the source. The sweep now says exactly what tuning them would cost — and that tightening buys no catch rate on this corpus, only friction. Real tuning needs the reviewed labels.
+
+**No pitch recording.** `DEMO.md` is the script; it has not been performed.
+
+## Things that are out of scope by declaration
+
+No authentication, no rate limiting, no multi-merchant, no multi-currency, no dashboard. This is a reference implementation of a verification layer, not a production edge. Adding them would not strengthen the argument and would dilute it.
+
+## Things that would break at scale
+
+**Single writer.** SQLite, one process. `BEGIN IMMEDIATE` plus a mutex makes the chain safe under a threaded server; nothing here survives multiple processes writing one ledger. `Ledger` and `ArtifactStore` are the only modules that touch SQL, so the migration path is contained to two files.
+
+**The lexicon covers one merchant.** 56 bases, 24 form-compatibility pairs, 5 base equivalences, sized to a 70-item catalog. 69 of 70 items place correctly; coverage against a different merchant's catalog is unmeasured. Scaling this is authoring work, not engineering work — which is the honest shape of the problem and the reason it is hard to copy.
+
+**The sanitizer is rule-based.** An injection phrased outside its patterns passes it. That is survivable only because the second control is independent: an injected item binds to nothing in the request and is scope creep by construction. The design leans on the second control, not the first.
+
+## Things that are deliberate and might look like gaps
+
+**The buyer agent is bad on purpose.** It matches lexically — the primitive the gate rejects — so it will offer almond milk for coconut milk. Making it clever would undercut the thesis: the claim is that the buying agent is an untrusted client whose competence cannot be assumed, and demonstrating that against a carefully-written agent proves nothing.
+
+**Scope creep holds rather than rejects.** An unrequested item is inside budget, correctly priced and in stock. The human is the authority on whether they want it, and a system that only blocks is one merchants switch off.
+
+**A rejection cannot be re-confirmed.** A genuine false rejection cannot be rescued in flight; it needs a corrected cart, which produces a new decision and a new ledger entry. That is the right shape — the fix leaves a record of what was wrong the first time.

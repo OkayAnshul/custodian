@@ -220,7 +220,7 @@ Stated plainly, because a reviewer will find them anyway and the honest version 
 
 - **The UPI mandate is modelled, not integrated.** Reserve Pay is not reachable from a self-serve test account. The mandate is constructed locally and checked deterministically. What this demonstrates is the layer *above* the mandate.
 - **Completing a payment needs a human.** Order creation, the payable link, payment fetch and capture are live Razorpay test-mode calls, and the payment ids in the ledger are Razorpay's. But no API call makes a payment *happen* — a person completes it on a hosted page. Five contract tests skip on the live gateway for exactly this reason rather than pretending otherwise.
-- **30 corpus labels are drafts.** See §6.
+- **30 corpus labels are drafts.** See §6. `python -m eval.corpus.review --sheet` lays out the evidence for each; applying a call requires `--as NAME`, because a reviewed label with nobody's name on it cannot be told apart from a relabelled draft.
 - **The lexicon covers one merchant.** 56 bases, 24 form-compatibility pairs, 5 base equivalences, sized to a 70-item catalog. Coverage against a different merchant is unmeasured.
 - **Single writer.** SQLite, one process. `Ledger` is the only thing that touches SQL, so the migration path is contained.
 - **Thresholds are `v0-untuned`.** The sweep says what tuning them would cost; nobody has tuned them.
@@ -232,9 +232,14 @@ Stated plainly, because a reviewer will find them anyway and the honest version 
 
 | Document | What it holds |
 |---|---|
-| [`DECISIONS.md`](DECISIONS.md) | 25 ADRs, each with the alternatives that were rejected |
+| [`DECISIONS.md`](DECISIONS.md) | 26 ADRs, each with the alternatives that were rejected |
 | [`BROKE.md`](BROKE.md) | Nine failures, with root cause and what changed to prevent recurrence |
 | [`ENGINEERING_LOG.md`](ENGINEERING_LOG.md) | Session by session, written as it happened |
+| [`ARCHITECTURE.md`](ARCHITECTURE.md) | Module map, contracts, ledger format, API |
+| [`THREAT_MODEL.md`](THREAT_MODEL.md) | Ten threats, and the architectural control for each |
+| [`EVALUATION.md`](EVALUATION.md) | The corpus, what it measures, and how to review the drafted labels |
+| [`LIMITATIONS.md`](LIMITATIONS.md) | What is modelled, unfinished, out of scope, or deliberate |
+| [`DEMO.md`](DEMO.md) | Four-minute script, every number produced live |
 
 `BROKE.md` is worth reading first. Three entries are the interesting kind:
 

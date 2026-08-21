@@ -386,3 +386,17 @@ A mandate-expiry check written on string comparison passes an expired mandate. `
 **Why the refusal is recorded rather than raised and forgotten.** A mismatch is a fact about what happened. An exception that leaves no trace turns an incident into a gap in the ledger.
 
 **Trade-off.** A legitimate partial payment cannot settle. That is intended: partial payment is a merchant policy decision, not something a verification layer should improvise.
+
+---
+
+## ADR-027 — A reviewed label names who reviewed it
+
+**Date** 2026-08-29 · **Area** evaluation, integrity · **Status** Accepted
+
+**Context.** While testing the review tool I applied three labels of my own invention to see the round-trip work. `merge_reviews` did its job and preserved them, and the corpus then carried three cases marked `HUMAN` whose calls I had made — including one that deliberately disagreed with the draft. Removed immediately, but the corpus had briefly contained exactly the circularity the whole label-provenance design exists to prevent.
+
+**Chosen.** `Case.reviewed_by`, required whenever `label_source is HUMAN`. The schema refuses to construct an unattributed human label, and `review.py` requires `--as NAME` before it will write one.
+
+**Why.** `PROPOSED` versus `HUMAN` records *whether* a judgment was made. It does not record *whose*, and without that a relabelled draft and a real review are indistinguishable in the file. The guard that mattered was one I had built and then walked around by accident.
+
+**Why this is worth an ADR rather than a quiet fix.** The failure mode is not carelessness with a field; it is that the person most likely to fabricate a label is whoever is closest to wanting the number to look good. Attribution is cheap and it makes the fabrication visible to a reviewer who does not know the history.

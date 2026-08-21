@@ -303,3 +303,29 @@ I had reasoned about concurrency once, on Day 1, and concluded `BEGIN IMMEDIATE`
 **What changed to prevent recurrence.** `tests/test_api.py` drives every route through `TestClient`, which uses the same threadpool a real server does. A ledger that cannot be called from a handler now fails the suite rather than the demo.
 
 **Lesson.** "I thought about concurrency here" is not the same as "I thought about *this* concurrency here". The Day 1 reasoning was correct and complete for the failure mode I had named, and naming one failure mode is what stopped me finding the second. The tell was that all my tests called the ledger from the thread that made it — every one of them, without exception, which should itself have been suspicious.
+
+---
+
+## 010 — I put three of my own labels in the corpus and marked them human
+
+**Day 9 · 2026-08-29 · severity: the integrity control, defeated by the person who built it**
+
+**What broke.** Testing the new review tool, I wrote a `decisions.txt` with three made-up calls to check the round-trip — including `benign-003: REJECT`, chosen specifically to disagree with the draft so I could see the "differs from the draft" counter move. It worked. Then I rebuilt the corpus expecting a clean slate, and `merge_reviews` correctly preserved all three as `HUMAN`.
+
+**Expected.** A corpus where every benign-divergence label is still marked as a draft awaiting review.
+
+**Actual.** A corpus containing three labels I had invented, indistinguishable in the file from a real human judgment — inside the one class whose entire design exists to keep machine-drafted labels out of the headline numbers.
+
+**Symptoms.** The harness dutifully reported "27 cases awaiting review" instead of 30 and folded the other three into the reviewed set. Everything behaved correctly. Nothing was wrong except the data.
+
+**Root cause.** Two things, and the second is the real one.
+
+`merge_reviews` preserving `HUMAN` labels across a rebuild is correct behaviour — a regeneration must never silently revert a judgment someone made. It has no way to know a judgment was fake.
+
+And the label provenance design recorded *whether* a judgment had been made, not *whose*. `PROPOSED` and `HUMAN` distinguish drafted from reviewed; nothing distinguished reviewed-by-a-person from relabelled-by-whoever-ran-the-tool. I built that gap and then walked into it within ten minutes of building the tool.
+
+**Fix.** `Case.reviewed_by` is required whenever `label_source is HUMAN` — the schema refuses to construct an unattributed human label — and `review.py` requires `--as NAME` before writing one. The three fabricated labels were removed by deleting `cases.yaml` and rebuilding from scratch.
+
+**Why the fix works.** A label now carries the name of whoever made the call. A reviewer who does not know this history can see, per case, that a judgment was attributed to someone — and an unattributed one cannot exist.
+
+**Lesson.** The person most likely to fabricate a label is whoever is closest to wanting the number to look good, and on a solo project that is always the same person. I had been careful about this for two days in the design and careless about it for one minute in a test, which is roughly the ratio that matters. A control that only binds when you remember it is applying to you is not a control — which is the same lesson as BROKE.md 007, arriving from a completely different direction.
