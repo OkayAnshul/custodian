@@ -257,3 +257,49 @@ Both flagship cases are settled by arithmetic with zero escalations, which is AD
 **Next objective.** Wire `decide()` to the ledger, build replay, and the re-confirmation path.
 
 **Confidence.** The gate does what it should on eight hand-built scenarios, which is not the same as being calibrated. Today\'s bug is the argument for the corpus: it was found by looking at output, not by a test, and eight scenarios is not a measurement.
+
+---
+
+## Day 7 — 2026-08-27
+
+**Objective.** Wire the gate to the ledger, build replay, and the re-confirmation path.
+
+**Completed.**
+- `gate/semantic.py` — model position #2. `SemanticScorer` Protocol, `RecordedScorer`, `ClaudeScorer`. The prompt carries the cooking context and the two items and *nothing else*: no price, no budget, no mandate. `UNSURE` is a first-class label, because a two-way choice manufactures confidence.
+- `ledger/store.py` — content-addressed artifact store (ADR-025).
+- `gate/service.py` — the orchestrated flow, re-confirmation, and `settlement_authority`.
+- `ledger/replay.py` — `replay` and `replay_all`, reporting field-level differences rather than a boolean.
+
+**Tests.** 23 new (410 total).
+
+**Verified — the replay claim, end to end.**
+
+```
+req-1: reproduces exactly (HOLD)
+req-2: reproduces exactly (REJECT)
+chain intact: 6 events
+artifacts stored: 5 (one catalog shared by both decisions)
+```
+
+Replay under a deliberately drifted lexicon version refuses rather than quietly producing a different answer — the tables are an input, so a different lexicon is a different decision.
+
+**Two decisions worth defending.**
+
+*Re-confirmation does not rewrite the decision* (ADR-023). A held order stays `HOLD` in the record; a separate `RECONFIRM_GRANTED` event names the actor. Rewriting the outcome to `APPROVE` would erase the fact that anyone had to be asked — which is the fact a dispute turns on and the number the false-hold rate is measured from.
+
+*A rejection cannot be re-confirmed* (ADR-024). `HOLD` means "I am not sure and you are the authority"; a human answering it is the design working. `REJECT` means a hard constraint failed, and a constraint a human can wave through is advisory.
+
+**Problems encountered.** Two, both caught by tests I wrote immediately after the code.
+
+*The snapshot `$ref` did not resolve.* `put_snapshot` hashed the serialised body while `snapshot.digest()` excludes `snapshot_id` — the self-reference fix from Day 4. Two names for one artifact. The store now takes an explicit digest when an artifact has a canonical identity that is not simply the hash of its bytes.
+
+*`INTENT_RECEIVED` was recorded after `SNAPSHOT_TAKEN`.* Wrong order: the intent is what causes a snapshot to be taken at all, and a dispute starts from the request. Also fixed a real gap — the first version of `evaluate` did not record the intent at all, so the trail began with a catalog and never said what was asked for.
+
+**Known issues.**
+- No API surface and no UI. The replay viewer is Days 11-12.
+- Settlement is not yet wired to `settlement_authority` — the demo script still creates orders directly.
+- Thresholds still `v0-untuned`. **The corpus starts tomorrow.**
+
+**Next objective.** The corpus. 120 hand-labelled cases across four classes, the harness, and the threshold sweep.
+
+**Confidence.** High on the machinery. Demo 6 — take a ledger entry, re-run it, get the same result — now runs as a test rather than existing as a claim. Unchanged on calibration: every number the gate produces is still keyed to thresholds nobody has measured.

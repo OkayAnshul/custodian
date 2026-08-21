@@ -330,3 +330,43 @@ A mandate-expiry check written on string comparison passes an expired mandate. `
 **Chosen.** `Decision.disposition_codes` — reasons attributable to the outcome rather than to any dimension. `ALIGNMENT_BELOW_APPROVE_THRESHOLD`, `CONFIDENCE_BELOW_THRESHOLD`, `HARD_CONSTRAINT_VIOLATED`.
 
 **Why.** "Everything checked out individually, and not by enough overall" is a real and actionable answer. Forcing it into a dimension would attribute an aggregate property to whichever axis happened to score lowest, which is a fabricated explanation.
+
+---
+
+## ADR-023 — Re-confirmation records authority; it does not rewrite the decision
+
+**Date** 2026-08-27 · **Area** gate, ledger · **Status** Accepted
+
+**Problem.** A held order that a human approves has to become settleable. The obvious implementation is to change the decision to `APPROVE`.
+
+**Chosen.** The decision is immutable. `RECONFIRM_GRANTED` is a separate ledger event naming the actor, and `settlement_authority()` reads the pair.
+
+**Why.** "Custodian held this order and a human overrode it at 14:32" is the truthful entry. Rewriting the outcome to `APPROVE` erases the fact that anyone had to be asked — which is exactly the fact a dispute turns on, and exactly the number the false-hold rate is measured from. An audit trail that loses the difference between "passed" and "was waved through" is not an audit trail.
+
+**Trade-off.** Two places to look instead of one. `settlement_authority()` is the single reader, so no caller has to know the rule.
+
+---
+
+## ADR-024 — A rejection cannot be re-confirmed
+
+**Date** 2026-08-27 · **Area** gate, security · **Status** Accepted
+
+**Chosen.** `reconfirm()` raises on a request whose decision was `REJECT`. Only `HOLD` can be confirmed past.
+
+**Why.** The three-way gate means something only if the outcomes differ in kind. `HOLD` says "I am not sure, and you are the authority" — a human answering that is the design working. `REJECT` says "a hard constraint failed": the price did not match the catalog, the mandate is spent, the merchant is not authorised. A constraint a human can wave through is advisory, and the project's central claim is that policy enforcement lives in infrastructure rather than in anyone's discretion.
+
+**What this costs.** A genuine false rejection cannot be rescued in-flight; it needs a corrected cart, which produces a new decision and a new ledger entry. That is the right shape — the fix leaves a record of what was wrong the first time.
+
+---
+
+## ADR-025 — Evidence is content-addressed and stored beside the chain
+
+**Date** 2026-08-27 · **Area** ledger · **Status** Accepted
+
+**Problem.** A replayable decision must name every input it used. Writing the catalog snapshot into each ledger row copies seventy items per decision and makes the chain unreadable.
+
+**Chosen.** An `artifacts` table keyed by content hash. Decision inputs lift the snapshot out by `$ref`, so one ingest serves a whole corpus run.
+
+**Why.** Content addressing gives immutability for free — the key *is* the hash of the body, so an altered artifact stops answering to the name a decision recorded. There is no update path because there is nothing an update could mean.
+
+**Detail worth recording.** `put_snapshot` supplies the digest explicitly rather than hashing the stored body, because a snapshot's digest deliberately excludes `snapshot_id` — that id is derived from the digest, and including it would be self-referential. Hashing the body instead produced a key that did not match the one decisions reference, which surfaced immediately as an unresolvable `$ref`.
