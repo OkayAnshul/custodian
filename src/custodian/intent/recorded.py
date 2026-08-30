@@ -13,6 +13,7 @@ from __future__ import annotations
 
 import json
 from dataclasses import dataclass, field
+from pathlib import Path
 
 from custodian.clock import utc_now
 from custodian.ingest.taxonomy import Taxonomy
@@ -28,10 +29,29 @@ class RecordedParser:
     responses: dict[str, str] = field(default_factory=dict)
     model_name: str = "recorded"
     taxonomy: Taxonomy | None = None
+    #: prompt digest -> the model that actually produced it. See RecordedScorer.
+    provenance: dict[str, str] = field(default_factory=dict)
+
+    @classmethod
+    def from_recordings(cls, path: Path | None = None,
+                        taxonomy: Taxonomy | None = None) -> "RecordedParser":
+        """Replay parses that were actually received."""
+        from custodian.gate.semantic import load_recordings
+
+        entries = load_recordings("intent", path)
+        return cls(
+            responses={d: e["raw_response"] for d, e in entries.items()},
+            provenance={d: e["model"] for d, e in entries.items()},
+            taxonomy=taxonomy,
+        )
 
     @property
     def model(self) -> str:
         return self.model_name
+
+    @property
+    def has_real_recordings(self) -> bool:
+        return bool(self.provenance)
 
     def record(self, goal: str, payload: dict) -> str:
         """Register a response for ``goal``. Returns the digest it was filed under."""
@@ -49,7 +69,7 @@ class RecordedParser:
         raw = self.responses[digest]
         return ParseResult(
             intent=resolve(decode(raw), intent_id=intent_id, taxonomy=self.taxonomy),
-            model=self.model_name,
+            model=self.provenance.get(digest, self.model_name),
             prompt_digest=digest,
             raw_response=raw,
             obtained_at=utc_now(),

@@ -95,9 +95,19 @@ def _intent_parser(fallback_payload: dict):
         parser = ClaudeParser()
         return parser, f"{parser.model} — live"
 
+    real = RecordedParser.from_recordings()
+    if real.has_real_recordings:
+        try:
+            real.parse(GOAL, intent_id="probe")
+        except Exception:
+            pass
+        else:
+            model = next(iter(real.provenance.values()))
+            return real, f"replaying a real recorded response from {model}"
+
     recorded = RecordedParser()
     recorded.record(GOAL, fallback_payload)
-    return recorded, "no API key — replaying a recorded parse"
+    return recorded, "no API key and no recordings — replaying an authored fixture"
 
 
 def show(decision) -> None:
@@ -264,13 +274,19 @@ def main() -> int:
         custodian.scorer = ClaudeScorer()
         print(f"  asking {custodian.scorer.model} — live")
     else:
-        offered = snapshot.find("SKU032")
-        custodian.scorer.record(
+        real = RecordedScorer.from_recordings()
+        if real.has_real_recordings:
+            custodian.scorer = real
+            print(f"  replaying a real recorded response from "
+                  f"{next(iter(real.provenance.values()))}")
+        else:
+            offered = snapshot.find("SKU032")
+            custodian.scorer.record(
             spice_intent.goal, spice_intent.requested_items[0], offered,
-            {"label": "UNSURE", "score_bp": 5_200,
-             "rationale": "Powder is fine in a masala and useless for a pickle, "
-                          "which needs the root. Depends on the dish."})
-        print("  (no ANTHROPIC_API_KEY — replaying a recorded verdict)")
+                {"label": "UNSURE", "score_bp": 5_200,
+                 "rationale": "Powder is fine in a masala and useless for a pickle, "
+                              "which needs the root. Depends on the dish."})
+            print("  (no API key and no recordings — replaying an authored fixture)")
 
     spiced = custodian.evaluate(request_id="demo-2b", intent=spice_intent, cart=spice_cart,
                                 snapshot=snapshot, mandate=MANDATE, thresholds=DEFAULT,

@@ -19,6 +19,7 @@ from __future__ import annotations
 
 import json
 from dataclasses import dataclass, field
+from pathlib import Path
 from typing import Any, Final, Protocol, runtime_checkable
 
 from custodian.canonical import canonical_hash
@@ -125,6 +126,26 @@ def _verdict_from(
         raise ScoringError(f"model output is not a usable verdict: {exc}") from exc
 
 
+#: Where `scripts/record_fixtures.py` writes real responses.
+FIXTURES_PATH = Path(__file__).resolve().parents[3] / "data" / "fixtures" / "model_responses.json"
+
+
+def load_recordings(kind: str, path: Path | None = None) -> dict[str, dict]:
+    """Real model responses, keyed by prompt digest.
+
+    Returns an empty mapping when the file is absent, so every caller degrades
+    to authored fixtures rather than failing — but a caller that wants to know
+    the difference can check whether it got anything back.
+    """
+    import json
+
+    source = path or FIXTURES_PATH
+    if not source.exists():
+        return {}
+    body = json.loads(source.read_text())
+    return {e["prompt_digest"]: e for e in body.get("entries", []) if e.get("kind") == kind}
+
+
 @dataclass
 class RecordedScorer:
     """Replays recorded verdicts, keyed on the prompt digest.
@@ -136,10 +157,32 @@ class RecordedScorer:
 
     responses: dict[str, str] = field(default_factory=dict)
     model_name: str = "recorded"
+    #: prompt digest -> the model that actually produced that response. Present
+    #: only for real recordings; an authored fixture has no answerer to name.
+    provenance: dict[str, str] = field(default_factory=dict)
+
+    @classmethod
+    def from_recordings(cls, path: Path | None = None) -> "RecordedScorer":
+        """Replay responses that were actually received.
+
+        The difference from `record()` matters: those are answers someone typed,
+        these are answers a model gave. The verdict carries the real model id, so
+        the ledger names who answered rather than saying "recorded".
+        """
+        entries = load_recordings("verdict", path)
+        return cls(
+            responses={d: e["raw_response"] for d, e in entries.items()},
+            provenance={d: e["model"] for d, e in entries.items()},
+            model_name="recorded",
+        )
 
     @property
     def model(self) -> str:
         return self.model_name
+
+    @property
+    def has_real_recordings(self) -> bool:
+        return bool(self.provenance)
 
     def record(self, goal: str, requested: RequestedItem, offered: CatalogItem,
                payload: dict) -> str:
@@ -158,7 +201,8 @@ class RecordedScorer:
         raw = self.responses[digest]
         return _verdict_from(json.loads(raw), cart_line_id=cart_line_id,
                              requested_line_id=requested.line_id,
-                             model=self.model_name, digest=digest, raw=raw)
+                             model=self.provenance.get(digest, self.model_name),
+                             digest=digest, raw=raw)
 
 
 @dataclass

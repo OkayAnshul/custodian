@@ -18,7 +18,16 @@ make serve                              # with RAZORPAY_KEY_ID in .env
 
 Until someone runs that, treat the hosted page as written-and-unrun. The Day-5 lesson in `BROKE.md` 006 was precisely that code which only runs against a credential nobody has is code nobody has run.
 
-**No model call has been made live.** Both positions have two implementations and all four are graded by contract suites against stubs shaped like each provider's real response objects — request shape, schema enforcement, refusals, malformed payloads, truncation, rate limits, and the distinction between a transport failure and a decline. What none of that covers is the network. Until a key is present and the fixtures are re-recorded from real responses, `RecordedParser` and `RecordedScorer` are replaying answers that were written rather than recorded, and the class names overstate what happened.
+**No model call has been made live.** *(`make record` fixes this in one command once a key exists — see below.)* Both positions have two implementations and all four are graded by contract suites against stubs shaped like each provider's real response objects — request shape, schema enforcement, refusals, malformed payloads, truncation, rate limits, and the distinction between a transport failure and a decline. What none of that covers is the network. Until a key is present and the fixtures are recorded, `RecordedParser` and `RecordedScorer` are replaying answers that were written rather than received, and the class names overstate what happened.
+
+`scripts/record_fixtures.py` closes that: 23 distinct substitution questions across the corpus plus 2 intent parses, made for real and written to `data/fixtures/model_responses.json` with provenance — provider, model, prompt digest, timestamp and the question as sent. It is incremental and resumable, so a rate limit mid-run does not lose the recordings already made.
+
+The distinction survives afterwards. A real recording names the model that produced it and the verdict carries that id into the ledger; an authored fixture cannot name one, and reports `recorded`. The demo prints which of the three states it is in — live call, real recording, or authored fixture — rather than letting them look alike.
+
+```
+export GROQ_API_KEY=...     # free: console.groq.com
+make record                 # 25 calls
+```
 
 ## Things that are unfinished
 

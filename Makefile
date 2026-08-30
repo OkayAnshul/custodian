@@ -16,6 +16,7 @@ help:
 	@echo "  make sweep      the threshold curve"
 	@echo "  make serve      the API and decision viewer on :8000"
 	@echo "  make review     lay out the 30 drafted labels for human review"
+	@echo "  make record     record real model responses (needs GROQ_API_KEY)"
 	@echo "  make check      what CI runs"
 
 $(VENV):
@@ -61,6 +62,14 @@ review:
 	@$(PY) -m eval.corpus.review --sheet
 	@echo "read eval/corpus/REVIEW.md, then:"
 	@echo "  $(PY) -m eval.corpus.review --apply --as you@example.com"
+
+.PHONY: record
+record:
+	@set -a; [ -f .env ] && . ./.env; set +a; $(PY) scripts/record_fixtures.py --provider groq
+
+.PHONY: record-dry
+record-dry:
+	@$(PY) scripts/record_fixtures.py --dry-run
 
 .PHONY: corpus
 corpus:
