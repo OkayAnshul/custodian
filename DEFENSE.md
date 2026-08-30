@@ -24,6 +24,8 @@ If pressed on where a model *is* used: two places, both deliberate, and §6 of t
 >
 > The second one sees the cooking context and two item descriptors. No price, no budget, no mandate, no total. It's not deciding whether a purchase should proceed and it can't see what that would require."
 
+**If they ask whether you are locked to one provider:** no — `ClaudeScorer` and `GroqScorer` sit behind one Protocol, graded by one contract suite, and a test asserts the gate reaches a byte-identical decision whichever answered. That is "the model may propose; the runtime decides" made checkable rather than asserted. `make demo-groq`.
+
 **The follow-up to be ready for:** *"So a compromised model can't approve a bad order?"* — It can raise one dimension's score inside the escalation band. It can't raise it past a failed dimension elsewhere, because any `FAIL` or `UNCERTAIN` caps the outcome at `HOLD` regardless of score. And it never sees a cart the arithmetic already settled.
 
 ### "Your corpus scores 100%. Isn't that suspicious?"

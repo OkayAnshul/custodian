@@ -10,6 +10,7 @@ help:
 	@echo "  make install    virtualenv and dependencies"
 	@echo "  make test       the full suite (12 extra tests if .env has Razorpay keys)"
 	@echo "  make demo       all six demo scenarios"
+	@echo "  make demo-groq  the same demo, with Groq breaking the substitution tie"
 	@echo "  make eval       the corpus, DEV and TEST"
 	@echo "  make money      what Custodian saves, and what it costs"
 	@echo "  make sweep      the threshold curve"
@@ -31,6 +32,10 @@ test:
 .PHONY: demo
 demo:
 	@set -a; [ -f .env ] && . ./.env; set +a; $(PY) scripts/demo.py
+
+.PHONY: demo-groq
+demo-groq:
+	@set -a; [ -f .env ] && . ./.env; set +a; $(PY) scripts/demo.py --scorer groq
 
 .PHONY: eval
 eval:

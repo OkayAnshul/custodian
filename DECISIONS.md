@@ -434,3 +434,25 @@ A mandate-expiry check written on string comparison passes an expired mandate. `
 **Why not refuse.** A concern raised and reaffirmed is the requester's decision. The second pass produced real work product: per-case reasoning a human can check in minutes rather than hours, one case flagged as genuinely low-confidence on allergen grounds, and the design gap in ADR-028.
 
 **What it demonstrated, which is the part worth keeping.** Agreement rose from 86.67% to 100% — and every label I changed moved *toward* the gate's existing behaviour, reached by reasoning about what `REJECT` means *in this system* rather than about cooking. The conclusions are independently defensible; the route to them was contaminated. **The lower number was the more informative one.** The harness now warns when agreement on machine-reviewed labels exceeds 95%, because near-total agreement between a model's labels and a model-built gate measures consistency, not correctness.
+
+---
+
+## ADR-030 — A second scorer, to make swappability structural
+
+**Date** 2026-08-30 · **Area** gate · **Status** Accepted
+
+**Problem.** The README says "the model may propose; the runtime decides." That is a claim about architecture, and a reader has to take it on trust as long as exactly one model implementation exists.
+
+**Chosen.** `GroqScorer` beside `ClaudeScorer`, both satisfying `SemanticScorer`, both graded by one contract suite in `tests/contract/test_semantic_scorer.py`.
+
+**Why this and not a cheaper model on the same provider.** A second *provider* is what tests the abstraction. Two Anthropic models share a wire format, a response shape and an error taxonomy — swapping them proves the model id is a parameter, which nobody doubted. Groq's system prompt is a message rather than a parameter, its structured output is `response_format.json_schema` rather than `output_config.format`, its text arrives at `choices[0].message.content` rather than from a content-block list, and its errors are a different class hierarchy. Everything the Protocol has to absorb, it now absorbs.
+
+**The test that carries the argument.** `test_the_gate_reaches_the_same_decision_whichever_scored_it` runs one substitution through both providers and asserts the resulting `Decision` is **byte-identical**. It can be, because the model id lives on the verdict rather than on the decision — so the answer is recorded and attributable, and what the gate concluded from it does not depend on who answered.
+
+**A deliberate consequence.** `prompt_digest` does not include the model. The same question asked of two providers produces the same digest, which is what allows a ledger to show one substitution answered two ways. Provenance is not lost: `SemanticVerdict.model` records who answered.
+
+**Refused: non-strict models.** Groq honours `strict: true` on a short list. Off that list the schema degrades from enforcement to suggestion, so the constructor raises and names the models that would work. An unenforced schema turns "the output is constrained" into a hope, and the whole reason a model is allowed near this decision is that its output shape is guaranteed.
+
+**Temperature is zero.** A verdict that changes on re-ask is one the ledger cannot stand behind.
+
+**Cost note.** Groq's free tier is ample for this — 24 escalations across the whole corpus. It is not the reason for the decision. If it were only about cost, the right answer would be to spend the ₹30 and keep one implementation.
