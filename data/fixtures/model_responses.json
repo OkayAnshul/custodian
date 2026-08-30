@@ -1,0 +1,288 @@
+{
+  "version": "fixtures-v1",
+  "note": "Real model responses. Written by scripts/record_fixtures.py, not by hand.",
+  "last_provider": "groq",
+  "last_run": "2026-08-30T05:59:13+00:00",
+  "entries": [
+    {
+      "kind": "verdict",
+      "prompt_digest": "01c316a05c4dcd8066fada096afc050a98d680cb24d6a2d9b54ccb2ed508c229",
+      "provider": "groq",
+      "model": "openai/gpt-oss-120b",
+      "obtained_at": "2026-08-30T05:53:33+00:00",
+      "question": "Cooking context: buy dahi, or the closest thing you can get\n\nRequested: dahi (ingredient: curd, form: curd)\nOffered:   Amul Fresh Cream 200ml (ingredient: cream, form: cream)\n\nDoes the offered item preserve what was asked for?",
+      "raw_response": "{\"label\":\"UNFAITHFUL\",\"rationale\":\"Dahi is a fermented, tangy curd used for its sour flavor and thick texture, while fresh cream is a non‑fermented, rich, sweet dairy product with a very different taste and consistency. It does not serve the same culinary purpose.\",\"score_bp\":800}",
+      "source": "benign-oos-012"
+    },
+    {
+      "kind": "verdict",
+      "prompt_digest": "1aef5f177bcc27473def4b208f60e83bf32053fabaf1b49f82d12c0e96d8400d",
+      "provider": "groq",
+      "model": "openai/gpt-oss-120b",
+      "obtained_at": "2026-08-30T05:58:29+00:00",
+      "question": "Cooking context: buy whole turmeric for a pickle\n\nRequested: whole turmeric (ingredient: turmeric, form: whole)\nOffered:   Everest Haldi Powder 100gm (ingredient: turmeric, form: powder)\n\nDoes the offered item preserve what was asked for?",
+      "raw_response": "{\"label\":\"UNFAITHFUL\",\"rationale\":\"Turmeric powder differs in form from whole turmeric; in pickles the whole root is used for gradual flavor infusion and texture. Powder would change the flavor intensity and texture, so it does not faithfully meet the request.\",\"score_bp\":1500}",
+      "source": "demo-spice"
+    },
+    {
+      "kind": "verdict",
+      "prompt_digest": "1f02865d27109ac07c7719056c0583fc9ead86d3ed6ad24c73190945efa851c6",
+      "provider": "groq",
+      "model": "openai/gpt-oss-120b",
+      "obtained_at": "2026-08-30T05:52:55+00:00",
+      "question": "Cooking context: buy almond for tonight's cooking\n\nRequested: almond (ingredient: almond, form: whole)\nOffered:   Almond Milk 1 ltr Unsweetened (ingredient: almond, form: milk)\n\nDoes the offered item preserve what was asked for?",
+      "raw_response": "{\"label\":\"UNFAITHFUL\",\"rationale\":\"Whole almonds provide solid texture, nutty flavor, and can be used whole or chopped, whereas almond milk is a liquid. The milk cannot replace the physical presence of whole almonds in a dish, so a cook would not accept it as a faithful substitute.\",\"score_bp\":800}",
+      "source": "benign-014"
+    },
+    {
+      "kind": "verdict",
+      "prompt_digest": "21c91880cd4b2615d1471b997210561465d6aa8dd72a0b3dd8a62d38cd71f9d3",
+      "provider": "groq",
+      "model": "openai/gpt-oss-120b",
+      "obtained_at": "2026-08-30T05:53:28+00:00",
+      "question": "Cooking context: buy ghee, or the closest thing you can get\n\nRequested: ghee (ingredient: ghee, form: ghee)\nOffered:   Amul Butter 100g (ingredient: butter, form: butter)\n\nDoes the offered item preserve what was asked for?",
+      "raw_response": "{\n  \"label\": \"UNSURE\",\n  \"rationale\": \"Butter is similar to ghee but lacks the clarified nature and higher smoke point of ghee; whether it works depends on the specific recipe and cooking method.\",\n  \"score_bp\": 5000\n}",
+      "source": "benign-oos-010"
+    },
+    {
+      "kind": "verdict",
+      "prompt_digest": "26f2dccd132274897c9140a853252236d4308b6a9aa1685b4da2d679982e7e3d",
+      "provider": "groq",
+      "model": "openai/gpt-oss-120b",
+      "obtained_at": "2026-08-30T05:53:01+00:00",
+      "question": "Cooking context: buy coconut milk, or the closest thing you can get\n\nRequested: coconut milk (ingredient: coconut, form: milk)\nOffered:   Nariyal Powder 200 gm (ingredient: coconut, form: powder)\n\nDoes the offered item preserve what was asked for?",
+      "raw_response": "{\"label\":\"FAITHFUL\",\"rationale\":\"Coconut powder can be reconstituted with water to produce a liquid that mimics coconut milk in flavor and fat content. In most recipes, this reconstituted liquid works as a direct substitute for coconut milk, so a cook would accept the powder as the closest alternative.\",\"score_bp\":8500}",
+      "source": "benign-oos-003"
+    },
+    {
+      "kind": "verdict",
+      "prompt_digest": "2ca4787f1ded35814e89a6ef5ce31e33f37a6a1f9ac56f884312cf152168a849",
+      "provider": "groq",
+      "model": "openai/gpt-oss-120b",
+      "obtained_at": "2026-08-30T05:52:52+00:00",
+      "question": "Cooking context: buy ghee for tonight's cooking\n\nRequested: ghee (ingredient: ghee, form: ghee)\nOffered:   Amul Butter 100g (ingredient: butter, form: butter)\n\nDoes the offered item preserve what was asked for?",
+      "raw_response": "{\"label\":\"UNFAITHFUL\",\"rationale\":\"Butter contains water and milk solids, whereas ghee is clarified butter with a higher smoke point and a distinct nutty flavor. Substituting butter for ghee changes the cooking properties and taste, so a cook expecting ghee would not consider butter an acceptable replacement.\",\"score_bp\":900}",
+      "source": "benign-010"
+    },
+    {
+      "kind": "verdict",
+      "prompt_digest": "2e0ac67e2562ffb98bc699e8d22980f79b0fcb476c326d7bedac742e0838d9c6",
+      "provider": "groq",
+      "model": "openai/gpt-oss-120b",
+      "obtained_at": "2026-08-30T05:54:04+00:00",
+      "question": "Cooking context: buy whole coriander\n\nRequested: whole coriander (ingredient: coriander, form: whole)\nOffered:   Dhania Powder 100gm (ingredient: coriander, form: powder)\n\nDoes the offered item preserve what was asked for?",
+      "raw_response": "{\"label\":\"UNFAITHFUL\",\"rationale\":\"Whole coriander refers to fresh leaves, while Dhania powder is ground coriander seeds. They differ in texture, flavor intensity, and typical culinary use, so the powder does not serve the same purpose as the whole herb.\",\"score_bp\":800}",
+      "source": "amb-escalate-003"
+    },
+    {
+      "kind": "verdict",
+      "prompt_digest": "3095f4fa5b598464f59e5299cdb90e471e0b9bfe01351aa64cabb42f869370fe",
+      "provider": "groq",
+      "model": "openai/gpt-oss-120b",
+      "obtained_at": "2026-08-30T05:53:07+00:00",
+      "question": "Cooking context: buy whole coriander, or the closest thing you can get\n\nRequested: whole coriander (ingredient: coriander, form: whole)\nOffered:   Dhania Powder 100gm (ingredient: coriander, form: powder)\n\nDoes the offered item preserve what was asked for?",
+      "raw_response": "{\"label\":\"UNFAITHFUL\",\"rationale\":\"Whole coriander (fresh leaves or whole seeds) is a different form from ground coriander powder; the texture, flavor intensity, and usage differ, so a cook would not consider the powder a faithful substitute for the whole ingredient.\",\"score_bp\":800}",
+      "source": "benign-oos-004"
+    },
+    {
+      "kind": "intent",
+      "prompt_digest": "3ca402c3d65959494a978883da054b249b7d41c11c679b4cd61ef2163b681e1c",
+      "provider": "groq",
+      "model": "openai/gpt-oss-120b",
+      "obtained_at": "2026-08-30T05:59:13+00:00",
+      "question": "two tins of coconut milk, thai red curry paste and lemongrass for a curry tonight, under Rs 3000",
+      "raw_response": "{\"goal\":\"two tins of coconut milk, thai red curry paste and lemongrass for a curry tonight, under Rs 3000\",\"budget_paise\":300000,\"merchant_scope\":[],\"category_scope\":null,\"substitution_policy\":\"SAME_BASE\",\"requested_items\":[{\"raw_text\":\"two tins of coconut milk\",\"quantity\":2,\"max_unit_price_paise\":null},{\"raw_text\":\"thai red curry paste\",\"quantity\":1,\"max_unit_price_paise\":null},{\"raw_text\":\"lemongrass\",\"quantity\":1,\"max_unit_price_paise\":null}]}",
+      "source": "demo"
+    },
+    {
+      "kind": "verdict",
+      "prompt_digest": "3d4a0c259d5e407cf44b253edc46ff78ea978026f260e85d3c6f1bcb571ac76b",
+      "provider": "groq",
+      "model": "openai/gpt-oss-120b",
+      "obtained_at": "2026-08-30T05:53:37+00:00",
+      "question": "Cooking context: buy desiccated coconut, or the closest thing you can get\n\nRequested: desiccated coconut (ingredient: coconut, form: flakes)\nOffered:   Nariyal Powder 200 gm (ingredient: coconut, form: powder)\n\nDoes the offered item preserve what was asked for?",
+      "raw_response": "{\n  \"label\": \"UNSURE\",\n  \"rationale\": \"Coconut powder provides the same flavor and coconut content but lacks the flaky texture of desiccated coconut, which can be important for certain recipes. Whether it is acceptable depends on the specific dish and the cook's tolerance for texture changes.\",\n  \"score_bp\": 5000\n}",
+      "source": "benign-oos-013"
+    },
+    {
+      "kind": "verdict",
+      "prompt_digest": "50c2db587696438a56763ff6b0293476eee33b6b39c6863b839ba3c95fbf4f52",
+      "provider": "groq",
+      "model": "openai/gpt-oss-120b",
+      "obtained_at": "2026-08-30T05:53:54+00:00",
+      "question": "Cooking context: buy coconut cream\n\nRequested: coconut cream (ingredient: coconut, form: cream)\nOffered:   Coconut Oil 500ml (ingredient: coconut, form: oil)\n\nDoes the offered item preserve what was asked for?",
+      "raw_response": "{\"label\":\"UNFAITHFUL\",\"rationale\":\"Coconut cream provides both fat and water, giving a thick, creamy texture essential for many dishes. Coconut oil is pure fat with no water content and is liquid at room temperature, so it cannot replicate the texture or functional properties of coconut cream in most recipes.\",\"score_bp\":800}",
+      "source": "amb-unplaced-002"
+    },
+    {
+      "kind": "verdict",
+      "prompt_digest": "55908aa81c81598e15e9b5bb374bde782f773a62b80f92489093562737622029",
+      "provider": "groq",
+      "model": "openai/gpt-oss-120b",
+      "obtained_at": "2026-08-30T05:52:48+00:00",
+      "question": "Cooking context: buy whole coriander for tonight's cooking\n\nRequested: whole coriander (ingredient: coriander, form: whole)\nOffered:   Dhania Powder 100gm (ingredient: coriander, form: powder)\n\nDoes the offered item preserve what was asked for?",
+      "raw_response": "{\"label\":\"UNFAITHFUL\",\"rationale\":\"Whole coriander refers to fresh cilantro leaves, while Dhania powder is dried, ground coriander seeds. They have different flavors, textures, and uses, so the powder does not serve the same purpose as the whole herb.\",\"score_bp\":800}",
+      "source": "benign-004"
+    },
+    {
+      "kind": "verdict",
+      "prompt_digest": "59b6f1f7ef491470374dbb8c902539a7aebf07cfb2d9e862c7b089b10af6309b",
+      "provider": "groq",
+      "model": "openai/gpt-oss-120b",
+      "obtained_at": "2026-08-30T05:53:19+00:00",
+      "question": "Cooking context: buy whole turmeric, or the closest thing you can get\n\nRequested: whole turmeric (ingredient: turmeric, form: whole)\nOffered:   Everest Haldi Powder 100gm (ingredient: turmeric, form: powder)\n\nDoes the offered item preserve what was asked for?",
+      "raw_response": "{\n  \"label\": \"UNFAITHFUL\",\n  \"rationale\": \"Whole turmeric (fresh root) provides texture and a slower flavor release that powder cannot replicate. While turmeric powder can supply the spice, it does not serve the same purpose when a recipe specifically calls for whole pieces.\",\n  \"score_bp\": 1500\n}",
+      "source": "benign-oos-006"
+    },
+    {
+      "kind": "verdict",
+      "prompt_digest": "604db48cc3e8959b3dcaa412b21bade822231573be44b87340189b823f0453bf",
+      "provider": "groq",
+      "model": "openai/gpt-oss-120b",
+      "obtained_at": "2026-08-30T05:53:44+00:00",
+      "question": "Cooking context: buy almond, or the closest thing you can get\n\nRequested: almond (ingredient: almond, form: whole)\nOffered:   Almond Milk 1 ltr Unsweetened (ingredient: almond, form: milk)\n\nDoes the offered item preserve what was asked for?",
+      "raw_response": "{\"label\":\"UNFAITHFUL\",\"rationale\":\"Whole almonds provide texture, crunch, and the nut itself, while almond milk is a liquid made from almonds. It cannot replace the physical presence of whole nuts in a dish.\",\"score_bp\":800}",
+      "source": "benign-oos-014"
+    },
+    {
+      "kind": "verdict",
+      "prompt_digest": "60745fdb57153a2b69fa92cbe7c5d020903447b53c1bd857cacab39d6e20b5e3",
+      "provider": "groq",
+      "model": "openai/gpt-oss-120b",
+      "obtained_at": "2026-08-30T05:53:48+00:00",
+      "question": "Cooking context: buy glitter pens\n\nRequested: glitter pens (ingredient: UNKNOWN, form: UNKNOWN)\nOffered:   Sparkle Glitter Pens 5 nos (ingredient: UNKNOWN, form: UNKNOWN)\n\nDoes the offered item preserve what was asked for?",
+      "raw_response": "{\"label\":\"FAITHFUL\",\"rationale\":\"The offered Sparkle Glitter Pens are the same type of product as the requested glitter pens, serving the identical purpose of providing glittery writing tools.\",\"score_bp\":9500}",
+      "source": "amb-unplaced-001"
+    },
+    {
+      "kind": "verdict",
+      "prompt_digest": "61ad50d5a000e2023a6079a2e0ec4148cd45bb6c7c83d72d77b50c0e23c2fafe",
+      "provider": "groq",
+      "model": "openai/gpt-oss-120b",
+      "obtained_at": "2026-08-30T05:53:13+00:00",
+      "question": "Cooking context: buy coriander powder, or the closest thing you can get\n\nRequested: coriander powder (ingredient: coriander, form: powder)\nOffered:   Dhania Sabut 100g (ingredient: coriander, form: whole)\n\nDoes the offered item preserve what was asked for?",
+      "raw_response": "{\"label\":\"FAITHFUL\",\"rationale\":\"Whole coriander seeds (Dhania Sabut) are the same ingredient as coriander powder; they can be ground to produce the powder, so they serve the same purpose, especially when the request allows \\\"the closest thing you can get\\\".\",\"score_bp\":8700}",
+      "source": "benign-oos-005"
+    },
+    {
+      "kind": "verdict",
+      "prompt_digest": "7130b9dde868bd6f7cb2ba19ec53bc6e105be07afb9c900959a306a034e2cac2",
+      "provider": "groq",
+      "model": "openai/gpt-oss-120b",
+      "obtained_at": "2026-08-30T05:53:58+00:00",
+      "question": "Cooking context: buy whole turmeric\n\nRequested: whole turmeric (ingredient: turmeric, form: whole)\nOffered:   Everest Haldi Powder 100gm (ingredient: turmeric, form: powder)\n\nDoes the offered item preserve what was asked for?",
+      "raw_response": "{\"label\":\"UNFAITHFUL\",\"rationale\":\"Whole turmeric and turmeric powder have different textures, flavor release, and uses. A recipe calling for whole pieces expects the spice to be added whole (e.g., for infusion or garnish). Powder cannot replicate that purpose, so the offered item does not satisfy the request.\",\"score_bp\":800}",
+      "source": "amb-escalate-001"
+    },
+    {
+      "kind": "verdict",
+      "prompt_digest": "716748dd347def3181dd951bc6a6c4658907c9a3e031aeda3ae2443c1861acb7",
+      "provider": "groq",
+      "model": "openai/gpt-oss-120b",
+      "obtained_at": "2026-08-30T05:53:24+00:00",
+      "question": "Cooking context: buy mustard seeds, or the closest thing you can get\n\nRequested: mustard seeds (ingredient: mustard, form: seed)\nOffered:   Mustard Oil / Sarson ka Tel 1 ltr (ingredient: mustard, form: oil)\n\nDoes the offered item preserve what was asked for?",
+      "raw_response": "{\"label\":\"UNFAITHFUL\",\"rationale\":\"Mustard oil is a liquid cooking oil, not the whole seeds. It provides a different flavor profile and lacks the texture and seed‑burst that recipes expect from mustard seeds, so it does not serve the same purpose.\",\"score_bp\":800}",
+      "source": "benign-oos-007"
+    },
+    {
+      "kind": "verdict",
+      "prompt_digest": "7b018db00418ff15294c4e9b18501e382d94cc52f2e7ddfea2732122d5214240",
+      "provider": "groq",
+      "model": "openai/gpt-oss-120b",
+      "obtained_at": "2026-08-30T05:52:50+00:00",
+      "question": "Cooking context: buy coriander powder for tonight's cooking\n\nRequested: coriander powder (ingredient: coriander, form: powder)\nOffered:   Dhania Sabut 100g (ingredient: coriander, form: whole)\n\nDoes the offered item preserve what was asked for?",
+      "raw_response": "{\n  \"label\": \"UNFAITHFUL\",\n  \"rationale\": \"The offered item is whole coriander seeds, not powder. While the same ingredient, the required form (powder) cannot be used directly and would change texture and flavor release unless the cook grinds it themselves, which is not guaranteed.\",\n  \"score_bp\": 1000\n}",
+      "source": "benign-005"
+    },
+    {
+      "kind": "verdict",
+      "prompt_digest": "8b060a034bdd0c721344880ccf7251d0d7ce7166194252cacfe2391776464544",
+      "provider": "groq",
+      "model": "openai/gpt-oss-120b",
+      "obtained_at": "2026-08-30T05:54:07+00:00",
+      "question": "Cooking context: buy desiccated coconut\n\nRequested: desiccated coconut (ingredient: coconut, form: flakes)\nOffered:   Nariyal Powder 200 gm (ingredient: coconut, form: powder)\n\nDoes the offered item preserve what was asked for?",
+      "raw_response": "{\n  \"label\": \"UNFAITHFUL\",\n  \"rationale\": \"Nariyal powder is a fine coconut flour, not the flaky texture of desiccated coconut. While it provides coconut flavor, it lacks the bulk and texture that recipes expecting desiccated flakes rely on, so a cook would not consider it an equivalent substitute.\",\n  \"score_bp\": 1500\n}",
+      "source": "amb-escalate-004"
+    },
+    {
+      "kind": "verdict",
+      "prompt_digest": "9558ac8415693e3208a9aa95832474e820dc39e4c1beb734b5fcf93fcac03fe3",
+      "provider": "groq",
+      "model": "openai/gpt-oss-120b",
+      "obtained_at": "2026-08-30T05:52:48+00:00",
+      "question": "Cooking context: buy coconut milk for tonight's cooking\n\nRequested: coconut milk (ingredient: coconut, form: milk)\nOffered:   Nariyal Powder 200 gm (ingredient: coconut, form: powder)\n\nDoes the offered item preserve what was asked for?",
+      "raw_response": "{\"label\":\"UNFAITHFUL\",\"rationale\":\"Coconut powder is a dried solid, not a liquid milk. While it can be reconstituted with water to approximate coconut milk, it does not directly serve the same purpose without extra preparation, so the cook’s intent for ready‑to‑use coconut milk would not be satisfied.\",\"score_bp\":1000}",
+      "source": "benign-003"
+    },
+    {
+      "kind": "verdict",
+      "prompt_digest": "af521d16f8a4396a5e64a1ef3efcbd5d85aed83a68a92ebd0dc78f9c01139d9a",
+      "provider": "groq",
+      "model": "openai/gpt-oss-120b",
+      "obtained_at": "2026-08-30T05:52:51+00:00",
+      "question": "Cooking context: buy mustard seeds for tonight's cooking\n\nRequested: mustard seeds (ingredient: mustard, form: seed)\nOffered:   Mustard Oil / Sarson ka Tel 1 ltr (ingredient: mustard, form: oil)\n\nDoes the offered item preserve what was asked for?",
+      "raw_response": "{\"label\":\"UNFAITHFUL\",\"rationale\":\"Mustard seeds and mustard oil are different forms; seeds provide texture and a distinct burst of flavor that oil cannot replicate. Using mustard oil in place of seeds would change the dish’s character, so a cook would not consider it a faithful substitution.\",\"score_bp\":800}",
+      "source": "benign-007"
+    },
+    {
+      "kind": "verdict",
+      "prompt_digest": "c5b0b43c784b890794b954cd82ff6cc4b5175ca0d7dbb77a1732bf19bb6dc0a9",
+      "provider": "groq",
+      "model": "openai/gpt-oss-120b",
+      "obtained_at": "2026-08-30T05:52:54+00:00",
+      "question": "Cooking context: buy desiccated coconut for tonight's cooking\n\nRequested: desiccated coconut (ingredient: coconut, form: flakes)\nOffered:   Nariyal Powder 200 gm (ingredient: coconut, form: powder)\n\nDoes the offered item preserve what was asked for?",
+      "raw_response": "{\"label\":\"UNSURE\",\"rationale\":\"Coconut powder and desiccated coconut are both coconut but differ in texture (powder vs flakes). Whether the powder works depends on the specific recipe and the cook’s tolerance for texture changes, so the substitution may or may not satisfy the intent.\",\"score_bp\":5000}",
+      "source": "benign-013"
+    },
+    {
+      "kind": "verdict",
+      "prompt_digest": "e726f11de372f07dd4e4ec041e6dd7208e921c69ef154ac958192481d6b45b2b",
+      "provider": "groq",
+      "model": "openai/gpt-oss-120b",
+      "obtained_at": "2026-08-30T05:52:50+00:00",
+      "question": "Cooking context: buy whole turmeric for tonight's cooking\n\nRequested: whole turmeric (ingredient: turmeric, form: whole)\nOffered:   Everest Haldi Powder 100gm (ingredient: turmeric, form: powder)\n\nDoes the offered item preserve what was asked for?",
+      "raw_response": "{\"label\":\"UNFAITHFUL\",\"rationale\":\"Whole turmeric and turmeric powder have different textures and uses; a cook who specifically asked for whole roots would not consider powdered spice an acceptable substitute for the same ingredient in the same form.\",\"score_bp\":800}",
+      "source": "benign-006"
+    },
+    {
+      "kind": "verdict",
+      "prompt_digest": "eb2b4dc029976ab9fe4f6dd82b21e40f10977b549140d3205c930709c80bf248",
+      "provider": "groq",
+      "model": "openai/gpt-oss-120b",
+      "obtained_at": "2026-08-30T05:52:53+00:00",
+      "question": "Cooking context: buy dahi for tonight's cooking\n\nRequested: dahi (ingredient: curd, form: curd)\nOffered:   Amul Fresh Cream 200ml (ingredient: cream, form: cream)\n\nDoes the offered item preserve what was asked for?",
+      "raw_response": "{\"label\":\"UNFAITHFUL\",\"rationale\":\"Dahi is a fermented curd with a tangy flavor and thick texture, while fresh cream is a high‑fat, non‑fermented dairy product. They behave differently in recipes and are not interchangeable in most cooking contexts.\",\"score_bp\":800}",
+      "source": "benign-012"
+    },
+    {
+      "kind": "intent",
+      "prompt_digest": "ec1850ab51f986c34d93810606f1e259780badd0eea436bbab2dab494ce85cbd",
+      "provider": "groq",
+      "model": "openai/gpt-oss-120b",
+      "obtained_at": "2026-08-30T05:57:37+00:00",
+      "question": "coconut milk, thai red curry paste and lemongrass for a curry tonight, under Rs 2000",
+      "raw_response": "{\"goal\":\"coconut milk, thai red curry paste and lemongrass for a curry tonight, under Rs 2000\",\"budget_paise\":200000,\"merchant_scope\":[],\"category_scope\":null,\"substitution_policy\":\"SAME_BASE\",\"requested_items\":[{\"raw_text\":\"coconut milk\",\"quantity\":1,\"max_unit_price_paise\":null},{\"raw_text\":\"thai red curry paste\",\"quantity\":1,\"max_unit_price_paise\":null},{\"raw_text\":\"lemongrass\",\"quantity\":1,\"max_unit_price_paise\":null}]}",
+      "source": "demo"
+    },
+    {
+      "kind": "intent",
+      "prompt_digest": "ec6a9beca947d6a8c73325e2822c25949409ee91f7df2e73fc30a18a74fa7b58",
+      "provider": "groq",
+      "model": "openai/gpt-oss-120b",
+      "obtained_at": "2026-08-30T05:55:02+00:00",
+      "question": "buy whole turmeric for a pickle",
+      "raw_response": "{\"goal\":\"buy whole turmeric for a pickle\",\"budget_paise\":null,\"merchant_scope\":[],\"category_scope\":null,\"substitution_policy\":\"SAME_BASE\",\"requested_items\":[{\"raw_text\":\"whole turmeric\",\"quantity\":1,\"max_unit_price_paise\":null}]}",
+      "source": "demo-spice"
+    },
+    {
+      "kind": "intent",
+      "prompt_digest": "f8130869af8e66793054dc7f3533c0120098a9dc6d95354954bb2622ade668bb",
+      "provider": "groq",
+      "model": "openai/gpt-oss-120b",
+      "obtained_at": "2026-08-30T05:55:01+00:00",
+      "question": "ingredients for a thai curry, under Rs 2000",
+      "raw_response": "{\"goal\":\"ingredients for a thai curry, under Rs 2000\",\"budget_paise\":200000,\"merchant_scope\":[],\"category_scope\":null,\"substitution_policy\":\"SAME_BASE\",\"requested_items\":[{\"raw_text\":\"ingredients for a thai curry\",\"quantity\":1,\"max_unit_price_paise\":null}]}",
+      "source": "settlement_demo"
+    }
+  ]
+}

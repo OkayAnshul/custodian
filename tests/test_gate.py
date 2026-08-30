@@ -387,3 +387,40 @@ def test_a_permitted_equivalence_is_not_a_blocking_code(tables):
     """SUBST_BASE_CHANGED fires for legitimate swaps and must not reject them."""
     assert ReasonCode.SUBST_BASE_CHANGED not in BLOCKING
     assert ReasonCode.SUBST_BASE_UNRELATED in BLOCKING
+
+
+# --- what a model verdict can and cannot resolve ---------------------------
+
+def test_a_confident_verdict_cannot_resolve_an_unplaceable_item(snapshot, mandate, tables):
+    """A model can say two things are alike. It cannot say what they are.
+
+    When the taxonomy cannot place an item, category scope, mandate category and
+    scope binding are all running on UNKNOWN. A verdict about similarity does not
+    supply that, so the decision stays unresolved however confident it is.
+    Found by real model calls: asked whether "Sparkle Glitter Pens 5 nos"
+    substitutes for "glitter pens", a live model correctly said FAITHFUL at
+    9500bp — and that let an unplaceable item approve. See BROKE.md 012.
+    """
+    intent = an_intent(items=[{"raw_text": "glitter pens", "quantity": 1}])
+    lines = (a_line(snapshot, "l1", "SKU070", 1, satisfies="i1-r1"),)
+    confident = _verdict(VerdictLabel.FAITHFUL, 9_500)
+
+    inp = an_input(snapshot, mandate, lines, intent=intent, verdicts=(confident,))
+    decision = decide(inp, tables=tables)
+
+    assert decision.outcome is Outcome.HOLD
+    substitution = decision.dimension(Dimension.SUBSTITUTION)
+    assert substitution.status is DimensionStatus.UNCERTAIN
+    assert ReasonCode.SUBST_BASE_UNKNOWN in substitution.reason_codes
+
+
+def test_a_verdict_still_resolves_a_placeable_substitution(snapshot, mandate, tables):
+    """The guard is narrow: it applies to unplaceable items, not to escalation."""
+    intent = an_intent(items=[{"raw_text": "whole turmeric", "quantity": 1}])
+    lines = (a_line(snapshot, "l1", TURMERIC, 1, satisfies="i1-r1"),)
+    decision = decide(
+        an_input(snapshot, mandate, lines, intent=intent,
+                 verdicts=(_verdict(VerdictLabel.FAITHFUL, 9_000),)),
+        tables=tables,
+    )
+    assert decision.outcome is Outcome.APPROVE

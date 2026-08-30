@@ -359,3 +359,27 @@ And the label provenance design recorded *whether* a judgment had been made, not
 **What changed to prevent recurrence.** The note at the top of the log makes the compression a stated property of the document rather than something a reader must infer. More generally: a date in a document is a claim, and the same rule applies to it as to a number in a README — if it was not observed, it does not get written down as though it was.
 
 **Lesson.** Nothing here was a lie in the moment; it was a plan being transcribed as a record, one heading at a time, with the distinction never surfacing. That is how most fabricated evidence actually gets made. The tell was available the whole time and cost one command to check — and I only ran it because someone asked whether things were working.
+
+---
+
+## 012 — A confident model verdict let an unplaceable item approve
+
+**2026-08-22 · severity: the abstention guarantee, defeated by a correct answer**
+
+**What broke.** Found on the first run with real model responses instead of hand-written ones. `amb-unplaced-001` — the case where the taxonomy cannot place the item at all — went from `HOLD` to `APPROVE`.
+
+**Expected.** An item the system cannot classify holds. That is the whole point of the case, and `SUBST_BASE_UNKNOWN → escalate → hold` is the design's headline example of calibrated abstention.
+
+**Actual.** The escalation went to the model, which was asked whether *"Sparkle Glitter Pens 5 nos"* substitutes for *"glitter pens"* and answered `FAITHFUL` at 9500bp. That is **correct**. They are the same product. And the substitution dimension took the verdict, scored it 9500, passed, and the order approved.
+
+**Symptoms.** None that any test caught, because every fixture until now was written by me and I had written `UNSURE` for that case. My invention preserved the behaviour I expected; the real answer did not. The bug had been present since the escalation path was built and was invisible for as long as the model's answers were mine.
+
+**Root cause.** A category error about what a verdict establishes. The model was asked a question about *similarity* and answered it well. But `base=UNKNOWN` is not a statement that two things might be unalike — it is a statement that the taxonomy could not place the item, and category scope, mandate category coverage and scope-creep binding are all running on `UNKNOWN` downstream. A verdict about similarity does not supply any of that. **A model can tell you two things are alike; it cannot tell you what they are.**
+
+**Fix.** `_substitution_dimension` now tracks whether any line carried `SUBST_BASE_UNKNOWN`, and holds the dimension at `UNCERTAIN` when one did, whatever the verdict says. The guard is narrow on purpose: an escalation for an *unlisted form pair* is still fully resolvable by a verdict, because there the taxonomy did place both items and only the relationship between them was unknown.
+
+**Why the fix works.** It distinguishes the two things escalation currently conflates — "we could not place this" and "we placed both and have no recorded relationship between them." Only the second is a question a model can close.
+
+**What changed to prevent recurrence.** `test_a_confident_verdict_cannot_resolve_an_unplaceable_item` feeds a `FAITHFUL` verdict at 9500bp into exactly that case and asserts the outcome is still `HOLD`, and its sibling asserts the guard does not over-reach into ordinary escalations.
+
+**Lesson.** This is BROKE.md 006 in a different costume. There, a fake gateway satisfied a contract the real provider could not, and it passed for four phases of work because nobody had run the real thing. Here, hand-written fixtures satisfied an abstention guarantee that a real model broke on the first call — and for the same reason: **a stand-in written by the person who also wrote the expectations agrees with them.** It is not a test until something you did not author has a chance to disagree.

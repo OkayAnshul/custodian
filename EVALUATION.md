@@ -87,6 +87,29 @@ They have had a model's second pass (`MACHINE_REVIEWED`, ADR-029) and **no human
 | `benign-008` / `-oos-008` | sunflower → groundnut oil | APPROVE (unchanged) | **Lowest confidence in the set.** Groundnut is peanut. Swapping in an allergen unflagged is something a careful merchant would not do; a reviewer could reasonably say HOLD on safety rather than culinary grounds |
 | `benign-007` / `-oos-007` | mustard seeds → mustard oil | HOLD (unchanged, after argument) | Same plant, entirely different ingredient — you cannot temper with oil. If this is really REJECT, the gate cannot currently express it. See ADR-028 |
 
+## Two labels a real model disagrees with
+
+Recording the fixtures against a live model (`openai/gpt-oss-120b`) produced two
+disagreements with the drafted labels, and both are worth a human's judgment
+rather than a quiet edit:
+
+| Case | Substitution | Drafted | Model | Why it is interesting |
+|---|---|---|---|---|
+| `benign-oos-003` | coconut milk → coconut powder | HOLD | `FAITHFUL` 8500 | The goal says *"or the closest thing you can get"* |
+| `benign-oos-005` | coriander powder → whole seeds | HOLD | `FAITHFUL` 8700 | Same phrasing |
+
+The in-stock variants of both, whose goals say only *"for tonight's cooking"*,
+came back `UNFAITHFUL` at 800–1000. **Same substitution, opposite verdict, and
+the only difference is that the human signalled flexibility.** That is arguably
+the model reading the request correctly — a stated willingness to accept the
+nearest thing does change what counts as faithful — and it is exactly the kind
+of call the benign-divergence class exists to capture.
+
+One general observation, since it will shape any tuning: this model is
+systematically harsh on form substitutions, returning `UNFAITHFUL` at 800–1500bp
+for most same-base form changes. That is a property of the model, not of the
+gate, and it is one reason a second provider behind the Protocol is worth having.
+
 ## How to review the labels
 
 1. `eval/corpus/cases.yaml`, entries `benign-*`. Each has a `rationale` explaining the drafted call.

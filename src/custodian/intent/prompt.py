@@ -46,9 +46,22 @@ it — something downstream is built to handle not knowing, and a guess here \
 cannot be distinguished from a fact later."""
 
 #: JSON Schema the model's output must satisfy. Free-form text is not accepted.
+#:
+#: **Every property is listed in `required`, with optional values expressed as a
+#: nullable type union rather than by omission.** Anthropic accepts a partial
+#: `required`; Groq's strict mode does not — it rejects the schema outright with
+#: "`required` is required to be supplied and to be an array including every key
+#: in properties". Written to satisfy the stricter of the two, it is valid for
+#: both, and one schema serving both providers is the whole point of having two.
+#:
+#: The cost is that the model must emit every key, using `null` where it has
+#: nothing to say. That is arguably better anyway: an absent field and a field
+#: the model decided was empty are different claims, and this makes them look
+#: different.
 OUTPUT_SCHEMA: Final[dict] = {
     "type": "object",
-    "required": ["goal", "requested_items", "substitution_policy"],
+    "required": ["goal", "budget_paise", "merchant_scope", "category_scope",
+                 "substitution_policy", "requested_items"],
     "additionalProperties": False,
     "properties": {
         "goal": {"type": "string"},
@@ -61,7 +74,7 @@ OUTPUT_SCHEMA: Final[dict] = {
             "minItems": 1,
             "items": {
                 "type": "object",
-                "required": ["raw_text", "quantity"],
+                "required": ["raw_text", "quantity", "max_unit_price_paise"],
                 "additionalProperties": False,
                 "properties": {
                     "raw_text": {"type": "string", "minLength": 1},
@@ -75,7 +88,7 @@ OUTPUT_SCHEMA: Final[dict] = {
 
 #: Bumped whenever SYSTEM or OUTPUT_SCHEMA changes, so a replayed parse can tell
 #: a prompt change from a model change.
-VERSION: Final[str] = "intent-prompt-v1"
+VERSION: Final[str] = "intent-prompt-v2"
 
 
 def build(goal: str) -> tuple[str, str]:

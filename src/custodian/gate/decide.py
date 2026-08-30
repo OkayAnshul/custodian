@@ -123,6 +123,9 @@ def _substitution_dimension(inp: DecisionInput, report: BindingReport) -> Dimens
     codes: list[ReasonCode] = []
     blocked = False
     unresolved = False
+    #: An item the taxonomy could not place. A model verdict cannot resolve this
+    #: even when it is confident — see below.
+    unplaceable = False
 
     for bound in report.lines:
         if bound.assessment is None:
@@ -140,6 +143,16 @@ def _substitution_dimension(inp: DecisionInput, report: BindingReport) -> Dimens
             codes.extend(assessment.reason_codes)
             parts.append((assessment.score_bp, weight))
             continue
+
+        if ReasonCode.SUBST_BASE_UNKNOWN in assessment.reason_codes:
+            # The model can be asked whether two things are alike, and it can
+            # answer confidently and correctly. It cannot supply what the
+            # taxonomy failed to: a base and a category that the scope, mandate
+            # and binding checks all depend on. An unplaceable item stays
+            # unresolved however good the verdict, because what is missing is
+            # not an opinion about similarity. See BROKE.md 012.
+            unplaceable = True
+            codes.append(ReasonCode.SUBST_BASE_UNKNOWN)
 
         verdict = inp.verdict_for(bound.line.line_id)
         if verdict is None:
@@ -169,7 +182,7 @@ def _substitution_dimension(inp: DecisionInput, report: BindingReport) -> Dimens
     score = bp.weighted(parts)
     if blocked:
         status = DimensionStatus.FAIL
-    elif unresolved:
+    elif unresolved or unplaceable:
         status = DimensionStatus.UNCERTAIN
     elif score >= inp.thresholds.substitution_faithful_bp:
         status = DimensionStatus.PASS

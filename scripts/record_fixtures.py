@@ -118,10 +118,34 @@ def escalating_pairs():
 #: The goals the demo and the settlement script parse. Recorded so the demo can
 #: show a real parse without a live call during a take.
 DEMO_GOALS = [
-    ("demo", "ingredients for a thai curry, under Rs 2000"),
-    ("settlement_demo", "ingredients for a thai curry, under Rs 2000"),
+    ("demo", "two tins of coconut milk, thai red curry paste and lemongrass for a "
+             "curry tonight, under Rs 3000"),
     ("demo-spice", "buy whole turmeric for a pickle"),
+    # Kept deliberately: the model refuses to expand this into ingredients,
+    # correctly, because the prompt forbids inventing items the human did not
+    # name. The result is one unplaceable line, which holds. That is an honest
+    # limit of the system and worth having a recording of.
+    ("underspecified", "ingredients for a thai curry, under Rs 2000"),
 ]
+
+
+#: Substitution questions the demo asks that no corpus case covers. The digest
+#: depends on the goal as well as the pair, so a differently-worded goal is a
+#: different question and needs its own recording.
+DEMO_SUBSTITUTIONS = [
+    ("demo-spice", "buy whole turmeric for a pickle", "whole turmeric", "SKU032"),
+]
+
+
+def demo_substitution_pairs():
+    from custodian.intent.parser import resolve
+
+    base, _ = ingest_csv(CATALOG, merchant_id=MERCHANT, taken_at=TAKEN_AT)
+    for source, goal, asked, sku in DEMO_SUBSTITUTIONS:
+        intent = resolve({"goal": goal, "substitution_policy": "SAME_BASE",
+                          "requested_items": [{"raw_text": asked, "quantity": 1}]},
+                         intent_id="demo")
+        yield source, goal, intent.requested_items[0], base.find(sku)
 
 
 def main() -> int:
@@ -134,7 +158,7 @@ def main() -> int:
     args = parser.parse_args()
 
     records = _load()
-    pairs = list(escalating_pairs())
+    pairs = list(escalating_pairs()) + list(demo_substitution_pairs())
     seen: set[str] = set()
     todo_verdicts = []
     for case_id, goal, requested, offered in pairs:
