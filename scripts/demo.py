@@ -75,6 +75,31 @@ def beat(seconds: float = 1.2) -> None:
         time.sleep(seconds)
 
 
+def _intent_parser(fallback_payload: dict):
+    """The live parser if a key exists, otherwise a recorded one — and say which.
+
+    Model position #1 of two. Both providers satisfy `IntentParser` and are
+    graded by one contract suite, so which one runs changes the provenance on
+    the record and nothing else.
+    """
+    from custodian.intent.recorded import RecordedParser
+
+    if SCORER == "groq" and os.environ.get("GROQ_API_KEY"):
+        from custodian.intent.groq_parser import GroqParser
+
+        parser = GroqParser()
+        return parser, f"{parser.model} on Groq — live"
+    if SCORER != "groq" and os.environ.get("ANTHROPIC_API_KEY"):
+        from custodian.intent.claude import ClaudeParser
+
+        parser = ClaudeParser()
+        return parser, f"{parser.model} — live"
+
+    recorded = RecordedParser()
+    recorded.record(GOAL, fallback_payload)
+    return recorded, "no API key — replaying a recorded parse"
+
+
 def show(decision) -> None:
     print(f"\n  → {decision.outcome}    alignment {bp.to_str(decision.alignment_bp)}"
           f"    confidence {bp.to_str(decision.confidence_bp)}"
@@ -105,13 +130,16 @@ def main() -> int:
                           tables=tables, scorer=RecordedScorer())
     snapshot, report = ingest_csv(CATALOG, merchant_id=MERCHANT, taken_at=NOW)
 
-    intent = resolve({
+    parsed_payload = {
         "goal": GOAL, "budget_paise": 300_000, "merchant_scope": [MERCHANT],
-        "substitution_policy": "SAME_BASE",
+        "category_scope": None, "substitution_policy": "SAME_BASE",
         "requested_items": [{"raw_text": "coconut milk", "quantity": 2},
                             {"raw_text": "thai red curry paste", "quantity": 1},
                             {"raw_text": "lemongrass", "quantity": 1}],
-    }, intent_id="int", taxonomy=taxonomy)
+    }
+    parser, parser_note = _intent_parser(parsed_payload)
+    parsed = parser.parse(GOAL, intent_id="int")
+    intent = parsed.intent
 
     def line(lid, sku, quantity=1, price=None, satisfies=None):
         item = snapshot.find(sku)
@@ -145,6 +173,20 @@ def main() -> int:
         item = snapshot.find(sku)
         print(f"    {item.raw_name[:36]:36} -> {item.base}/{item.form} "
               f"{item.unit_quantity}{item.unit or ''} {format_inr(item.price_paise):>10}   {label}")
+
+    print(f"\n  model position 1 of 2 — natural language to structured constraints")
+    print(f'    the human said: "{GOAL}"')
+    print(f"    parsed by       {parser_note}")
+    print(f"    prompt digest   {parsed.prompt_digest[:32]}…")
+    print(f"    budget          {format_inr(intent.budget_paise)}   "
+          f"policy {intent.substitution_policy}")
+    for item in intent.requested_items:
+        print(f"      {item.raw_text:24} x{item.quantity}  ->  {item.base}/{item.form}"
+              f"  ({item.category})")
+    print(f"    the model gave the words. The taxonomy decided what they are —")
+    print(f"    the same lexicon the catalog was normalised against, so both")
+    print(f"    sides of every later comparison speak one vocabulary.")
+    beat(2.5)
 
     from eval.counterfactual import transactability
 

@@ -18,6 +18,8 @@ make serve                              # with RAZORPAY_KEY_ID in .env
 
 Until someone runs that, treat the hosted page as written-and-unrun. The Day-5 lesson in `BROKE.md` 006 was precisely that code which only runs against a credential nobody has is code nobody has run.
 
+**No model call has been made live.** Both positions have two implementations and all four are graded by contract suites against stubs shaped like each provider's real response objects — request shape, schema enforcement, refusals, malformed payloads, truncation, rate limits, and the distinction between a transport failure and a decline. What none of that covers is the network. Until a key is present and the fixtures are re-recorded from real responses, `RecordedParser` and `RecordedScorer` are replaying answers that were written rather than recorded, and the class names overstate what happened.
+
 ## Things that are unfinished
 
 **30 corpus labels are drafts.** The benign-divergence class is the project's stated moat and it is the one part a model cannot honestly supply: scored against labels it drafted, it measures its own consistency. The schema refuses to build a benign-divergence case with a derived label, the harness reports them separately, and no headline number rests on them. `python -m eval.corpus.review --sheet` lays out the evidence for each.

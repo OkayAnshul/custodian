@@ -456,3 +456,5 @@ A mandate-expiry check written on string comparison passes an expired mandate. `
 **Temperature is zero.** A verdict that changes on re-ask is one the ledger cannot stand behind.
 
 **Cost note.** Groq's free tier is ample for this — 24 escalations across the whole corpus. It is not the reason for the decision. If it were only about cost, the right answer would be to spend the ₹30 and keep one implementation.
+
+**Extended to position #1.** `GroqParser` followed, for the same reason and by the same pattern, so both model positions now have two implementations and one contract suite each. The consequence is that the system has no paid dependency at all: one `GROQ_API_KEY` runs everything. That is a side effect of the architecture rather than its motivation, and it is the more honest way round — a design chosen for cost would not have produced the contract suites.

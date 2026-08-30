@@ -156,7 +156,9 @@ The agent's cart carries `asserted_unit_price_paise` — the only price-bearing 
 | Ambiguous natural-language intent | LLM, once, at parse time | The only place language understanding is genuinely required |
 | Sanitizer triage | Rules | Runs on every ingest; must be cheap. A classifier trained on our own fixtures and scored on the same corpus would be circular |
 
-**And the model is a component, not the system.** `ClaudeScorer` and `GroqScorer` both satisfy one `SemanticScorer` Protocol and are graded by one contract suite. A test runs the same substitution through both and asserts the resulting `Decision` is **byte-identical** — possible because the model id lives on the verdict, not on the decision. Swap the provider; the decisions still replay. `make demo-groq` runs the whole thing with Groq breaking the tie.
+**And the model is a component, not the system.** *Both* positions have two implementations — `ClaudeParser`/`GroqParser` and `ClaudeScorer`/`GroqScorer` — each pair behind one Protocol and graded by one contract suite. A test runs the same substitution through both scorers and asserts the resulting `Decision` is **byte-identical**, which is possible because the model id lives on the verdict rather than on the decision. Swap the provider; the decisions still replay.
+
+A consequence worth stating: **the whole system runs on a free tier.** `make demo-groq` needs one `GROQ_API_KEY` and no paid account. That is not a cost argument — it is the swappability claim being cashed.
 
 **The LLM occupies exactly two positions**: intent parsing, and substitution ties the deterministic layer cannot break. Measured across the 120-case corpus: **24 of 162 cart lines (14.8%) escalate to a model**, concentrated in the benign-divergence class where they belong. **Zero adversarial cases reach a model** — the arithmetic settles them first, so a rejected cart costs no tokens. Among the classes with derived labels, 6 of 90 cases escalate.
 
