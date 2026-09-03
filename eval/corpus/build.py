@@ -6,8 +6,9 @@ clean single-item order across the catalog) is obviously systematic rather than
 looking like a hundred independent judgments.
 
 The output is YAML, which is what gets reviewed and edited. Re-running this
-regenerates the machine-derivable classes; benign-divergence labels edited by a
-human are preserved by ``merge_reviews``.
+regenerates the machine-derivable classes; benign-divergence labels that have
+been reviewed — by a human or by a model's second pass — are preserved by
+``merge_reviews``, along with the name of whoever made the call.
 
     python -m eval.corpus.build            # writes eval/corpus/cases.yaml
 """
@@ -465,18 +466,31 @@ def build(snapshot=None) -> Corpus:
     return Corpus(version="corpus-v1", cases=tuple(cases))
 
 
+#: Label sources a rebuild must not overwrite. Both name a reviewer, and the
+#: distinction between them survives the merge — a machine-reviewed label is
+#: still reported as awaiting human review, it is just not thrown away.
+_REVIEWED = ("HUMAN", "MACHINE_REVIEWED")
+
+
 def merge_reviews(fresh: Corpus, existing_path: Path) -> Corpus:
-    """Preserve human labels across a regeneration.
+    """Preserve reviewed labels across a regeneration.
 
     A rebuild must never silently revert a judgment someone made. Reviewed
     outcomes win over freshly proposed ones.
+
+    This covers machine-reviewed labels as well as human ones, and that is not
+    a softening of the rule — it is the same rule. A second pass is recorded
+    with the reviewer's name on it either way, and dropping one on a rebuild
+    loses attributed work exactly as silently. It also made `cases.yaml`
+    permanently disagree with its own generator, which turned the CI check
+    that exists to catch a stale corpus into a step that could never pass.
     """
     if not existing_path.exists():
         return fresh
     prior = {
         c["case_id"]: c
         for c in yaml.safe_load(existing_path.read_text())["cases"]
-        if c.get("label_source") == "HUMAN"
+        if c.get("label_source") in _REVIEWED
     }
     if not prior:
         return fresh
@@ -489,10 +503,32 @@ def merge_reviews(fresh: Corpus, existing_path: Path) -> Corpus:
     return Corpus(version=fresh.version, cases=tuple(merged))
 
 
+def _rendered(corpus: Corpus) -> str:
+    return yaml.safe_dump(corpus.model_dump(mode="json"), sort_keys=False, width=100,
+                          allow_unicode=True)
+
+
 def main() -> int:
+    import argparse
+
+    parser = argparse.ArgumentParser(description="Build the evaluation corpus.")
+    parser.add_argument("--check", action="store_true",
+                        help="report whether the committed corpus is what this produces, "
+                             "and write nothing. This is what CI runs — a check that "
+                             "rewrites the file it is checking cannot be run locally.")
+    args = parser.parse_args()
+
     corpus = merge_reviews(build(), OUTPUT)
-    OUTPUT.write_text(yaml.safe_dump(corpus.model_dump(mode="json"), sort_keys=False, width=100,
-                                     allow_unicode=True))
+    rendered = _rendered(corpus)
+
+    if args.check:
+        if OUTPUT.exists() and OUTPUT.read_text() == rendered:
+            print(f"corpus: {OUTPUT.name} is what the generator produces")
+            return 0
+        print(f"corpus: {OUTPUT.name} is out of date — run python -m eval.corpus.build")
+        return 1
+
+    OUTPUT.write_text(rendered)
     counts = {c: len(corpus.of_class(c)) for c in CaseClass}
     print(f"wrote {OUTPUT.relative_to(Path.cwd())}: {len(corpus.cases)} cases")
     for name, count in counts.items():

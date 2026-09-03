@@ -57,6 +57,19 @@ def test_most_orders_never_reach_a_model(measured):
     assert measured.orders_reaching_a_model < measured.orders // 3
 
 
+def test_the_model_cost_is_reported_per_line_because_that_is_how_it_is_charged(measured):
+    """A model is paid per question asked, not per order placed.
+
+    The README quotes the per-line figure, so the per-line figure is what the
+    tool prints. Every escalating line sits inside an escalating order, which is
+    why these two counts can be equal and can never cross.
+    """
+    assert measured.cart_lines == 162
+    assert measured.lines_reaching_a_model == 24
+    assert measured.lines_reaching_a_model >= measured.orders_reaching_a_model
+    assert measured.model_line_share_bp == 1481
+
+
 # --- the split ------------------------------------------------------------
 
 def test_the_test_split_is_measured_separately():

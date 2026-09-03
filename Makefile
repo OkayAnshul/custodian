@@ -75,8 +75,12 @@ record-dry:
 corpus:
 	@$(PY) -m eval.corpus.build
 
+# Everything CI runs, in the order CI runs it. If this passes and the build is
+# red, one of the two is lying — which is exactly how BROKE.md 014 happened.
 .PHONY: check
 check: test
 	@$(PY) -m eval.harness --all
+	@$(PY) -m eval.sweep --split ALL > /dev/null && echo "sweep: runs clean"
 	@$(PY) -m eval.counterfactual > /dev/null && echo "counterfactual: runs clean"
 	@$(PY) scripts/demo.py > /dev/null && echo "demo: runs clean"
+	@$(PY) -m eval.corpus.build --check

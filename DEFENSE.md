@@ -100,7 +100,7 @@ Fixed structurally rather than by re-tuning weights: any `FAIL` or `UNCERTAIN` c
 
 ### Payments
 
-**30s.** Behind a four-method Protocol. The fake and the real Razorpay client pass one contract suite; twelve of those tests run against the live test-mode API.
+**30s.** Behind a four-method Protocol. The fake and the real Razorpay client pass one contract suite; twelve of those tests run against the live test-mode API, and a thirteenth renders the hosted checkout page against an order Razorpay issued.
 
 **The bug worth volunteering.** `BROKE.md` 006. The Protocol had `create_order` then `capture(order)`. Razorpay is `order → a human pays → authorized payment → capture`. An unpaid order has zero payments and nothing to capture. `FakeGateway` passed the whole contract, through every phase up to that point, against an API I had *imagined*.
 
@@ -146,7 +146,7 @@ Answer with the specific decisions, not a disclaimer.
 
 | | |
 |---|---|
-| `BROKE.md` | Entries 006, 007, 009, 010. Ten failures with root causes is the strongest single artifact here |
+| `BROKE.md` | Entries 006, 007, 012, 014. Fourteen failures with root causes is the strongest single artifact here |
 | `README.md` §5 | The table of where a model was deliberately not used |
 | The viewer | `make serve`, then `/view/…` — the per-dimension breakdown lands faster than any explanation |
 | `EVALUATION.md` | For the corpus question, which will come |

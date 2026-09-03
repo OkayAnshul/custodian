@@ -72,6 +72,16 @@ class Counterfactual:
     clean_orders_held: int
     orders_reaching_a_model: int
 
+    #: Cart lines across the corpus, and the ones a deterministic check could
+    #: not settle. Reported per line as well as per order because the cost of a
+    #: model is charged per question asked, not per order placed.
+    cart_lines: int
+    lines_reaching_a_model: int
+
+    @property
+    def model_line_share_bp(self) -> int:
+        return bp.from_ratio(self.lines_reaching_a_model, self.cart_lines) if self.cart_lines else 0
+
     @property
     def friction_bp(self) -> int:
         return bp.from_ratio(self.clean_orders_held, self.clean_orders) if self.clean_orders else 0
@@ -90,6 +100,7 @@ def measure(split: Split | None = None) -> Counterfactual:
 
     unchecked = settled = wrong = adversarial = forged = unrequested = 0
     clean = clean_held = escalating = 0
+    cart_lines = escalating_lines = 0
 
     for result in results:
         # Rebuild the exact input the gate saw, so every figure below comes from
@@ -101,6 +112,8 @@ def measure(split: Split | None = None) -> Counterfactual:
 
         unchecked += asserted
         forged += abs(verified - asserted)
+        cart_lines += len(inp.cart.lines)
+        escalating_lines += len(result.escalated)
 
         if result.decision.outcome is Outcome.APPROVE:
             settled += verified
@@ -134,6 +147,8 @@ def measure(split: Split | None = None) -> Counterfactual:
         clean_orders=clean,
         clean_orders_held=clean_held,
         orders_reaching_a_model=escalating,
+        cart_lines=cart_lines,
+        lines_reaching_a_model=escalating_lines,
     )
 
 
@@ -155,6 +170,8 @@ def report(measured: Counterfactual, *, split: str) -> None:
     print(f"  {'clean orders sent back to a human':<42} {m.clean_orders_held:>3} of {m.clean_orders:<9}"
           f"  {bp.to_str(m.friction_bp)} friction")
     print(f"  {'orders that needed a model at all':<42} {m.orders_reaching_a_model:>3} of {m.orders}")
+    print(f"  {'cart lines that needed a model at all':<42} {m.lines_reaching_a_model:>3} of {m.cart_lines:<9}"
+          f"  {bp.to_str(m.model_line_share_bp)} of lines")
     print()
     print(f"  Across {m.orders} orders, {format_inr(m.wrong_money_stopped_paise)} of purchases that did")
     print(f"  not match intent were stopped or held, at {bp.to_str(m.friction_bp)} friction on "

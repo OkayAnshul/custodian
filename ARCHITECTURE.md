@@ -50,8 +50,9 @@ src/custodian/
   intent/             model position #1
     prompt.py         the one prompt, versioned and hashed
     parser.py         IntentParser Protocol; deterministic taxonomy resolution
-    recorded.py       fixtures keyed on prompt digest
+    recorded.py       recorded answers, keyed on prompt digest
     claude.py         live, structured outputs via output_config.format
+    groq_parser.py    the second provider behind the same Protocol
 
   gate/
     reasons.py        48 reason codes, closed set, each with merchant-facing text
@@ -61,7 +62,8 @@ src/custodian/
     deterministic.py  six checks that reject on their own authority
     scope.py          scope creep, scored by value
     confidence.py     coverage and margin — computed, never a model's self-report
-    semantic.py       model position #2; the tie-breaker
+    semantic.py       model position #2; the tie-breaker, and the replay of recorded ones
+    groq_scorer.py    the second provider behind the same Protocol
     decide.py         the pure function, and escalations()
     service.py        orchestration, re-confirmation, settlement authority
 
@@ -74,10 +76,13 @@ src/custodian/
   payments/
     gateway.py        the Protocol — the provider's shape, established by spike
     fake.py           deterministic; enforces the same rules the real one must
-    razorpay_client.py  live test mode; refuses a non-rzp_test_ key
+    razorpay_client.py  live test mode; refuses a non-rzp_test_ key; signed callbacks
 
   agent/buyer.py      deliberately naive; matches lexically, on purpose
-  api/{app,view}.py   nine routes and the decision viewer
+  api/{app,view}.py   thirteen routes, the decision viewer, and the checkout page
+
+data/fixtures/model_responses.json   28 real model answers, with provenance
+scripts/record_fixtures.py           how they were obtained; incremental and resumable
 ```
 
 ## Data flow
@@ -134,6 +139,9 @@ Events: `INTENT_RECEIVED` · `SNAPSHOT_TAKEN` · `SEMANTIC_VERDICT` · `DECISION
 | `POST /v1/checkout/verify` | The only route that decides. `Idempotency-Key` required |
 | `POST /v1/checkout/confirm/{id}` | A named human authorising a hold. 409 on a rejection |
 | `POST /v1/checkout/settle/{id}` | Orders the derived amount, only if authority permits |
+| `POST /v1/checkout/capture/{id}` | Takes the payment, only at the amount that was approved |
+| `GET /checkout/{id}` | The page a payer completes the order on. Live gateway only |
+| `POST /v1/checkout/callback/{id}` | The browser's word, taken only once its signature verifies |
 | `GET /v1/ledger/{id}` · `GET /v1/ledger/verify` | The record, and its integrity |
 | `POST /v1/replay/{id}` | Re-derive from the record. No model called |
 | `GET /view/{id}` · `GET /` | The decision viewer |

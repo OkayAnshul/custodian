@@ -153,22 +153,72 @@ class RazorpayGateway:
         payment lands against the link rather than against ``order``. It is a
         demo affordance, not a settlement path — the settlement path is Checkout
         against ``order.order_id``, which the replay viewer hosts.
+
+        ``reference_id`` is the provider's *uniqueness* key for links, not an
+        idempotency key: a second creation under the same reference is refused
+        outright rather than returning the first link. A receipt that is minted
+        twice — the demo, run twice — therefore falls through to the link that
+        already exists, on the conditions ``_existing_payment_link`` states.
         """
-        link = self._call(
-            "create payment link",
-            lambda: self.client.payment_link.create(
-                {
-                    "amount": order.amount_paise,
-                    "currency": order.currency,
-                    "description": f"Custodian verified order {order.receipt}",
-                    "reference_id": _reference_id(f"{order.receipt}-link"),
-                    "accept_partial": False,
-                    "notify": {"sms": False, "email": False},
-                    "notes": {"custodian_order": order.order_id},
-                }
-            ),
-        )
+        reference = _reference_id(f"{order.receipt}-link")
+        try:
+            link = self._call(
+                "create payment link",
+                lambda: self.client.payment_link.create(
+                    {
+                        "amount": order.amount_paise,
+                        "currency": order.currency,
+                        "description": f"Custodian verified order {order.receipt}",
+                        "reference_id": reference,
+                        "accept_partial": False,
+                        "notify": {"sms": False, "email": False},
+                        "notes": {"custodian_order": order.order_id},
+                    }
+                ),
+            )
+        except PaymentError as exc:
+            if not _is_duplicate_reference(exc):
+                raise
+            return self._existing_payment_link(reference, order)
         return str(link["short_url"])
+
+    def _existing_payment_link(self, reference: str, order: OrderRef) -> str:
+        """The link already minted under ``reference``, if it is still payable.
+
+        Two things are proved before a URL out of the provider's records is
+        handed to whoever is about to pay, because the wrong one either charges
+        the wrong amount or takes a second payment for an order already settled:
+
+        * the amount must equal what this order re-derived. A link minted for a
+          different total under the same receipt is not this order's link, and
+          the amount is the one control this whole system is built around.
+        * the link must still be payable. ``paid``, ``cancelled`` and
+          ``expired`` links keep their URL and no longer take money.
+
+        Failing either, this raises. Returning a URL that misleads the payer
+        would be worse than the error the reuse was avoiding.
+        """
+        listing = self._call(
+            "fetch payment links",
+            lambda: self.client.payment_link.all({"reference_id": reference}),
+        )
+        entries = listing.get("payment_links") or listing.get("items") or []
+        for entry in entries:
+            try:
+                amount = int(entry.get("amount"))
+            except (TypeError, ValueError):
+                continue
+            if amount != order.amount_paise:
+                continue
+            if str(entry.get("status")) == "created" and entry.get("short_url"):
+                return str(entry["short_url"])
+        found = ", ".join(
+            f"{entry.get('status')} at {entry.get('amount')}p" for entry in entries
+        ) or "no link at all"
+        raise PaymentError(
+            f"razorpay: reference {reference} is taken by a link that cannot be "
+            f"reused for {order.amount_paise}p — found {found}"
+        )
 
     def capture(self, payment: PaymentRef, *, idempotency_key: str) -> PaymentRef:
         if not idempotency_key:
@@ -302,6 +352,17 @@ def _reference_id(receipt: str) -> str:
     if len(receipt) <= _REFERENCE_ID_MAX:
         return receipt
     return "cst_" + hashlib.sha256(receipt.encode()).hexdigest()[:36]
+
+
+def _is_duplicate_reference(exc: Exception) -> bool:
+    """Whether a provider error means "this reference_id already has a link".
+
+    Matched on the message because Razorpay reports it as a generic
+    ``BadRequestError`` — the same class it uses for a rate limit and for a
+    malformed amount, which is why neither can be told from the other by type.
+    """
+    text = str(exc).lower()
+    return "reference_id" in text and "already exists" in text
 
 
 def _is_rate_limit(exc: Exception) -> bool:

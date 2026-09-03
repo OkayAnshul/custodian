@@ -8,7 +8,9 @@ Stated plainly. A reviewer finds these anyway, and the honest version is shorter
 
 **Completing a payment.** Order creation, the payable link, payment fetch and capture are live Razorpay test-mode calls and the payment ids in the ledger are Razorpay's. No API call makes a payment *happen* — a person completes it on a hosted page with a test card — and five contract tests skip on the live gateway for exactly that reason rather than inventing a path that does not exist.
 
-`GET /checkout/{request_id}` now serves that page, and `POST /v1/checkout/callback/{request_id}` takes the result. **The signature check on that callback is tested; the page itself is not.** The browser is an untrusted client, so the callback is verified as `HMAC-SHA256(order_id|payment_id)` under the key secret before anything is captured — six tests cover a genuine signature, a forged one, a real signature replayed against a different order, one replayed against a different payment, and one made with the wrong secret. What no test covers is a browser actually loading the page and Razorpay's script driving it, because that needs a browser. It is marked here rather than claimed:
+`GET /checkout/{request_id}` serves that page, and `POST /v1/checkout/callback/{request_id}` takes the result. The browser is an untrusted client, so the callback is verified as `HMAC-SHA256(order_id|payment_id)` under the key secret before anything is captured — six tests cover a genuine signature, a forged one, a real signature replayed against a different order, one replayed against a different payment, and one made with the wrong secret.
+
+**The page is rendered against a real order under test, and the browser leg is still unrun.** A `live`-marked test settles through the live gateway and asserts the page carries the order id Razorpay issued, the amount Custodian derived rather than the one the agent asserted, the Checkout script, and the callback path for that request. What it cannot cover is Razorpay's script executing and a person putting a card in, because that needs a browser:
 
 ```
 make serve                              # with RAZORPAY_KEY_ID in .env
@@ -16,17 +18,18 @@ make serve                              # with RAZORPAY_KEY_ID in .env
 # test card 4111 1111 1111 1111, any future expiry, any CVV
 ```
 
-Until someone runs that, treat the hosted page as written-and-unrun. The Day-5 lesson in `BROKE.md` 006 was precisely that code which only runs against a credential nobody has is code nobody has run.
+So the honest reading is: everything the page depends on being right is checked, and the last leg — script, card, capture — has not been walked end to end. The Day-5 lesson in `BROKE.md` 006 was precisely that code which only runs against a credential nobody has is code nobody has run, and half of that gap is now closed rather than argued away.
 
-**No model call has been made live.** *(`make record` fixes this in one command once a key exists — see below.)* Both positions have two implementations and all four are graded by contract suites against stubs shaped like each provider's real response objects — request shape, schema enforcement, refusals, malformed payloads, truncation, rate limits, and the distinction between a transport failure and a decline. What none of that covers is the network. Until a key is present and the fixtures are recorded, `RecordedParser` and `RecordedScorer` are replaying answers that were written rather than received, and the class names overstate what happened.
+**Model answers are recorded rather than called, on the default path.** Both positions have two implementations and all four are graded by contract suites against stubs shaped like each provider's real response objects — request shape, schema enforcement, refusals, malformed payloads, truncation, rate limits, and the distinction between a transport failure and a decline. What no stub covers is the network, so `scripts/record_fixtures.py` asked the real thing: **28 responses — 24 substitution verdicts and 4 intent parses — from `openai/gpt-oss-120b` on Groq, recorded 2026-08-30**, each stored in `data/fixtures/model_responses.json` with provider, model, prompt digest, timestamp and the question exactly as sent.
 
-`scripts/record_fixtures.py` closes that: 23 distinct substitution questions across the corpus plus 2 intent parses, made for real and written to `data/fixtures/model_responses.json` with provenance — provider, model, prompt digest, timestamp and the question as sent. It is incremental and resumable, so a rate limit mid-run does not lose the recordings already made.
+That is not bookkeeping. The first run against real answers instead of hand-written ones broke an abstention guarantee that had held for the whole build, because the fixture I had written for the unplaceable-item case said `UNSURE` and the model — correctly — did not. See `BROKE.md` 012.
 
-The distinction survives afterwards. A real recording names the model that produced it and the verdict carries that id into the ledger; an authored fixture cannot name one, and reports `recorded`. The demo prints which of the three states it is in — live call, real recording, or authored fixture — rather than letting them look alike.
+What remains deliberate rather than unfinished: `make demo` and the corpus harness **replay** those recordings, because a decision that must reproduce byte-for-byte from the ledger cannot depend on a model answering the same way twice. `make demo-groq` makes the call live, against the same Protocol, and the demo prints which of the three states it is in — live call, real recording, or authored fixture — rather than letting them look alike. A recording names the model that produced it and the verdict carries that id into the ledger; an authored fixture cannot name one.
 
 ```
 export GROQ_API_KEY=...     # free: console.groq.com
-make record                 # 25 calls
+make record                 # re-record; incremental and resumable
+make demo-groq              # the same demo, calling live
 ```
 
 ## Things that are unfinished

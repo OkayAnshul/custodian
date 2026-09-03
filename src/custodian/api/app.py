@@ -167,7 +167,7 @@ def create_app(*, db_path: Path | None = None, gateway=None) -> FastAPI:
             "amount_paise": authority.amount_paise,
             "amount": format_inr(authority.amount_paise),
             "order": order.as_observed(),
-            "payment_url": getattr(gateway, "payment_link_for", lambda _o: None)(order),
+            "payment_url": _payable_url(gateway, order),
         }
 
     @app.post("/v1/checkout/capture/{request_id}", tags=["checkout"])
@@ -294,6 +294,26 @@ def create_app(*, db_path: Path | None = None, gateway=None) -> FastAPI:
         ))
 
     return app
+
+
+def _payable_url(gateway, order) -> str | None:
+    """A link the payer can open, when the provider can mint one.
+
+    The link is a convenience; the settlement path is Checkout against the
+    order id, which ``GET /checkout/{request_id}`` hosts. Link creation is rate
+    limited far more tightly than order creation, so letting a 429 — or any
+    other provider complaint about the link — fail this call would let a
+    convenience break the settlement it is attached to. The order is already
+    open and the amount is already fixed; what is missing is a URL, so the
+    response says so with ``null`` rather than a 500.
+    """
+    mint = getattr(gateway, "payment_link_for", None)
+    if mint is None:
+        return None
+    try:
+        return mint(order)
+    except PaymentError:
+        return None
 
 
 def _decision_response(state, request_id: str, *, replayed: bool = False) -> dict[str, Any]:

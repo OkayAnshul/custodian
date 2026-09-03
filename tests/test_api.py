@@ -1,9 +1,13 @@
 """The merchant endpoint, end to end."""
 
+import os
+
 import pytest
 from fastapi.testclient import TestClient
 
 from custodian.api.app import create_app
+
+HAS_LIVE_KEYS = bool(os.environ.get("RAZORPAY_KEY_ID") and os.environ.get("RAZORPAY_KEY_SECRET"))
 
 INTENT = {
     "goal": "ingredients for a thai curry, under Rs 2000", "budget_paise": 300_000,
@@ -112,6 +116,28 @@ def test_settlement_orders_the_derived_amount(client):
     assert settled["order"]["amount_paise"] == 64_300
 
 
+def test_a_link_the_provider_will_not_mint_does_not_fail_the_settlement():
+    """The payable URL is a convenience; the order is the settlement.
+
+    Link creation is rate limited far more tightly than order creation, so a
+    provider that refuses one must not take the settle call down with it. The
+    order is open and the amount is fixed — what is missing is a URL.
+    """
+    from custodian.payments.fake import FakeGateway
+    from custodian.payments.gateway import PaymentError
+
+    class _NoLinks(FakeGateway):
+        def payment_link_for(self, order):
+            raise PaymentError("razorpay: could not create payment link: too many requests")
+
+    client = TestClient(create_app(gateway=_NoLinks()))
+    verify(client, CLEAN_CART)
+    settled = client.post("/v1/checkout/settle/req-1")
+    assert settled.status_code == 200
+    assert settled.json()["payment_url"] is None
+    assert settled.json()["order"]["amount_paise"] == 64_300
+
+
 # --- the record ------------------------------------------------------------
 
 def test_the_ledger_is_readable_per_request(client):
@@ -197,6 +223,35 @@ def test_the_checkout_page_is_only_offered_with_a_live_gateway(client):
     verify(client, CLEAN_CART)
     client.post("/v1/checkout/settle/req-1")
     assert client.get("/checkout/req-1").status_code == 409
+
+
+@pytest.mark.live
+@pytest.mark.skipif(not HAS_LIVE_KEYS, reason="no Razorpay test credentials")
+def test_the_checkout_page_carries_the_order_a_payer_would_actually_pay():
+    """The page, rendered against a real order, with the live gateway attached.
+
+    What a browser adds beyond this is Razorpay's own script and a person with
+    a card, and neither is testable here. What is testable is everything the
+    page depends on being right before the browser gets it: the order id is the
+    one the provider issued, the amount is the one Custodian derived rather than
+    the one the agent asserted, and the callback posts back to this request.
+
+    `LIMITATIONS.md` still says the browser leg is unrun, because it is.
+    """
+    from custodian.payments.razorpay_client import RazorpayGateway
+
+    client = TestClient(create_app(gateway=RazorpayGateway()))
+    verify(client, CLEAN_CART)
+    settled = client.post("/v1/checkout/settle/req-1").json()
+    assert settled["order"]["order_id"].startswith("order_")
+    assert settled["order"]["amount_paise"] == 64_300
+
+    page = client.get("/checkout/req-1")
+    assert page.status_code == 200
+    assert settled["order"]["order_id"] in page.text
+    assert os.environ["RAZORPAY_KEY_ID"] in page.text
+    assert "checkout.razorpay.com/v1/checkout.js" in page.text
+    assert "/v1/checkout/callback/req-1" in page.text
 
 
 def test_a_callback_with_no_open_order_is_refused(client):

@@ -162,6 +162,8 @@ A consequence worth stating: **the whole system runs on a free tier.** `make dem
 
 **The LLM occupies exactly two positions**: intent parsing, and substitution ties the deterministic layer cannot break. Measured across the 120-case corpus: **24 of 162 cart lines (14.8%) escalate to a model**, concentrated in the benign-divergence class where they belong. **Zero adversarial cases reach a model** — the arithmetic settles them first, so a rejected cart costs no tokens. Among the classes with derived labels, 6 of 90 cases escalate.
 
+**And the answers being replayed are real ones.** 28 responses — 24 substitution verdicts and 4 intent parses — were recorded from `openai/gpt-oss-120b` on Groq and stored with provider, model, prompt digest and the question as sent. The first run against them broke an abstention guarantee that my own hand-written fixtures had preserved for the whole build (`BROKE.md` 012), which is the argument for recording them: a stand-in written by the person who also wrote the expectations agrees with them.
+
 Every money-affecting decision is re-runnable from the ledger without calling a model. That reproducibility is the point — an audit trail you cannot replay is decoration.
 
 ---
@@ -197,7 +199,7 @@ That second pass is itself worth reading as a result. Agreement with the gate ro
  ₹2,109  price the agent forged
 ₹13,720  items nobody asked for: inside budget, correctly priced, still wrong
       0  of 60 clean orders held — 0.00% friction
-     24  of 162 cart lines needed a model at all
+     24  of 162 cart lines needed a model at all — 14.81%
 ```
 
 `make money`. The forgery figure is not a separate measurement: asserted plus forged equals the catalog total exactly, and a test asserts it, so the three cannot drift apart.
@@ -219,13 +221,13 @@ The adversarial catch rate **does not move across any dial**. Every attack in th
 
 ```bash
 make install                           # or: python3 -m venv .venv && .venv/bin/pip install -e ".[dev]"
-make test                              # 437 tests, +12 with Razorpay credentials
+make test                              # 548 tests, +13 with Razorpay credentials
 make demo                              # all six demo scenarios
 make eval sweep                        # the corpus and the threshold curve
 make serve                             # http://127.0.0.1:8000
 
 # or directly:
-.venv/bin/pytest                       # 437 tests
+.venv/bin/pytest                       # 548 tests
 .venv/bin/python -m eval.harness --all # the corpus
 .venv/bin/python -m eval.sweep         # the threshold curve
 .venv/bin/python scripts/demo.py       # all six demo scenarios
@@ -238,7 +240,7 @@ RAZORPAY_KEY_ID=rzp_test_...
 RAZORPAY_KEY_SECRET=...
 ```
 
-Twelve contract tests then run against the live API. `RazorpayGateway` refuses any key not beginning `rzp_test_` at construction — the gate is not calibrated, and a live key here would move real money on a decision the project does not claim is tuned.
+Thirteen tests then run against the live API — the payment-gateway contract suite, and the checkout page rendered against an order Razorpay actually issued. `RazorpayGateway` refuses any key not beginning `rzp_test_` at construction — the gate is not calibrated, and a live key here would move real money on a decision the project does not claim is tuned.
 
 ---
 
@@ -264,7 +266,7 @@ Custodian **consumes** the mandate as an input and **emits** what a dispute resp
 Stated plainly, because a reviewer will find them anyway and the honest version is shorter.
 
 - **The UPI mandate is modelled, not integrated.** Reserve Pay is not reachable from a self-serve test account. The mandate is constructed locally and checked deterministically. What this demonstrates is the layer *above* the mandate.
-- **Completing a payment needs a human.** Order creation, the payable link, fetch and capture are live Razorpay test-mode calls and the payment ids in the ledger are Razorpay's, but no API call makes a payment *happen*. `GET /checkout/{request_id}` serves the page a payer completes it on. The signature check on the callback is tested — a browser is an untrusted client, so `HMAC-SHA256(order_id|payment_id)` is verified before anything is captured — but **the page itself has not been run in a browser**, and `LIMITATIONS.md` says so rather than claiming otherwise.
+- **Completing a payment needs a human.** Order creation, the payable link, fetch and capture are live Razorpay test-mode calls and the payment ids in the ledger are Razorpay's, but no API call makes a payment *happen*. `GET /checkout/{request_id}` serves the page a payer completes it on; a live test asserts that page carries the order Razorpay issued, the derived amount, and the callback path, and six more cover the signature check that makes the browser's word evidence. **What is still unrun is the browser leg itself** — Razorpay's script and a person with a test card — and `LIMITATIONS.md` says so rather than claiming otherwise.
 - **30 corpus labels are drafts.** See §6. `python -m eval.corpus.review --sheet` lays out the evidence for each; applying a call requires `--as NAME`, because a reviewed label with nobody's name on it cannot be told apart from a relabelled draft.
 - **The lexicon covers one merchant.** 56 bases, 24 form-compatibility pairs, 5 base equivalences, sized to a 70-item catalog. Coverage against a different merchant is unmeasured.
 - **Single writer.** SQLite, one process. `Ledger` is the only thing that touches SQL, so the migration path is contained.
@@ -277,8 +279,8 @@ Stated plainly, because a reviewer will find them anyway and the honest version 
 
 | Document | What it holds |
 |---|---|
-| [`DECISIONS.md`](DECISIONS.md) | 26 ADRs, each with the alternatives that were rejected |
-| [`BROKE.md`](BROKE.md) | Nine failures, with root cause and what changed to prevent recurrence |
+| [`DECISIONS.md`](DECISIONS.md) | 31 ADRs, each with the alternatives that were rejected |
+| [`BROKE.md`](BROKE.md) | Fourteen failures, with root cause and what changed to prevent recurrence |
 | [`ENGINEERING_LOG.md`](ENGINEERING_LOG.md) | Session by session, written as it happened |
 | [`ARCHITECTURE.md`](ARCHITECTURE.md) | Module map, contracts, ledger format, API |
 | [`THREAT_MODEL.md`](THREAT_MODEL.md) | Ten threats, and the architectural control for each |
@@ -288,9 +290,10 @@ Stated plainly, because a reviewer will find them anyway and the honest version 
 | [`DEFENSE.md`](DEFENSE.md) | Panel-round notes — the reasoning under each answer, not the answers |
 | [`SUBMISSION.md`](SUBMISSION.md) | Form answers, drafted to be pasted |
 
-`BROKE.md` is worth reading first. Four entries are the interesting kind:
+`BROKE.md` is worth reading first. Five entries are the interesting kind:
 
 - **007** — the gate approved an order with a *failed dimension*. Seven passing dimensions outvoted the one that mattered. I had written "a constraint that can be outvoted by a good average is not a constraint" as a comment inside the function where exactly that happened.
 - **006** — the payment interface described a provider that does not exist. `FakeGateway` passed the whole contract, through every phase of the build, against an API I had imagined.
 - **009** — the ledger could not be called from a web server. I had reasoned about concurrency correctly, about a different failure mode — and having named one, stopped looking.
 - **011** — I fabricated the project timeline. The log recorded the dates the *plan* assigned to each phase rather than the dates work happened, spread across a week that had not occurred, while every commit was timestamped to one day. Corrected. It is the worst entry here, because everything else this project claims rests on its evidence being honest.
+- **012** — the first run on *real* model answers broke the abstention guarantee. Asked whether "Sparkle Glitter Pens 5 nos" substitutes for "glitter pens", the model said `FAITHFUL` at 95% — which is correct — and an item the taxonomy could not place approved. My hand-written fixture had said `UNSURE`, so the bug was invisible for as long as the model's answers were mine. A model can tell you two things are alike; it cannot tell you *what they are*.

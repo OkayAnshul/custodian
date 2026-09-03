@@ -28,6 +28,29 @@ def derived(results):
     return [r for r in results if r.case.label_source is not LabelSource.PROPOSED]
 
 
+def test_the_committed_corpus_is_what_the_generator_produces(tmp_path):
+    """`cases.yaml` is generated, so a rebuild must reproduce it byte for byte.
+
+    Otherwise the corpus in the repository is not the corpus the code makes,
+    and every number resting on it is a claim nobody can regenerate. It also
+    keeps the reviewed labels attached: a rebuild that quietly reverted a
+    second pass to a first draft would lose attributed judgment, which is the
+    same failure `BROKE.md` 010 is about, arriving from the other direction.
+    """
+    import yaml
+
+    from eval.corpus.build import OUTPUT, build, merge_reviews
+
+    rebuilt = merge_reviews(build(), OUTPUT)
+    committed = yaml.safe_load(OUTPUT.read_text())
+    assert rebuilt.model_dump(mode="json") == committed
+
+    reviewed = [c for c in committed["cases"] if c["label_source"] != "PROPOSED"
+                and c["case_class"] == "BENIGN_DIVERGENCE"]
+    assert len(reviewed) == 30
+    assert all(c["reviewed_by"] for c in reviewed)
+
+
 def test_the_corpus_matches_the_stated_shape(corpus):
     assert len(corpus.cases) == 120
     counts = {c: len(corpus.of_class(c)) for c in CaseClass}

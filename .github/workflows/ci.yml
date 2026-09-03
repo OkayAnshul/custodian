@@ -44,9 +44,7 @@ jobs:
 
       # cases.yaml is generated. If it drifts from build.py the corpus in the
       # repo is not the corpus the code produces, and every number is suspect.
+      # `--check` writes nothing, so this is runnable locally — `make check`
+      # runs it too. A check only CI can perform is one only CI can fail.
       - name: Corpus is not stale
-        run: |
-          cp eval/corpus/cases.yaml /tmp/committed.yaml
-          python -m eval.corpus.build
-          diff -q /tmp/committed.yaml eval/corpus/cases.yaml \
-            || (echo "::error::cases.yaml is out of date — run python -m eval.corpus.build"; exit 1)
+        run: python -m eval.corpus.build --check

@@ -383,3 +383,64 @@ And the label provenance design recorded *whether* a judgment had been made, not
 **What changed to prevent recurrence.** `test_a_confident_verdict_cannot_resolve_an_unplaceable_item` feeds a `FAITHFUL` verdict at 9500bp into exactly that case and asserts the outcome is still `HOLD`, and its sibling asserts the guard does not over-reach into ordinary escalations.
 
 **Lesson.** This is BROKE.md 006 in a different costume. There, a fake gateway satisfied a contract the real provider could not, and it passed for four phases of work because nobody had run the real thing. Here, hand-written fixtures satisfied an abstention guarantee that a real model broke on the first call — and for the same reason: **a stand-in written by the person who also wrote the expectations agrees with them.** It is not a test until something you did not author has a chance to disagree.
+---
+
+## 013 — The demo's payable link worked exactly once
+
+**2026-09-03 · severity: the first thing a viewer sees, broken in a way only a second run reveals**
+
+**What broke.** `make demo` with live credentials printed, where the payable URL belongs:
+
+```
+settlement: razorpay-test  order order_TXYMaKCb89wkPk  ₹698.00
+            link unavailable: razorpay: could not create payment link: BadRequestError: pa
+```
+
+**Expected.** A URL — the moment in the demo where the amount Custodian derived becomes something a person could actually pay.
+
+**Actual.** A truncated error, on every run of the demo after the first one ever made.
+
+**Root cause.** Razorpay's `reference_id` on a payment link reads like an idempotency key and is not one: it is a uniqueness constraint. `payment_link_for` mints under `"<receipt>-link"`, the demo's receipt is the constant `demo-1`, so the first run created `demo-1-link` and every run since was refused with *"payment link with given reference_id: demo-1-link already exists"*.
+
+The code that chose a stable reference did so deliberately, and its docstring gives the reason: an idempotent retry must produce the same reference. That is correct for **orders**, where the provider treats the receipt as idempotent. It is wrong for **links**, where the same field name means something else. One field, two meanings, and I had reasoned about only the first.
+
+**Symptoms.** None in the suite. `payment_link_for` is not part of the `PaymentGateway` Protocol — only one of the two implementations can mint a link — so no contract test covers it. And the demo catches the exception and prints a short line, which is the right behaviour and also the reason this never looked like a failure: a path that degrades politely reads the same on the tenth run as on the first.
+
+**Investigation.** The truncation was the tell — sixty characters is not enough to read a provider error, and `BadRequestError: pa` is not a message. Replaying the payload against the API directly returned the full text; a minimal payload without `reference_id` succeeded. Two calls.
+
+**Fix.** A duplicate reference now falls through to the link that already exists, on two conditions: the amount must equal the amount this order re-derived, and the link must still be payable. A link minted for a different total under the same receipt, or one already `paid`, raises instead — returning either would charge the wrong amount or invite a second payment for an order already settled. Separately, `POST /v1/checkout/settle` no longer lets a refused link fail the settlement: the order is open and the amount is fixed, so the response carries `payment_url: null` rather than a 500. ADR-031.
+
+**Why the fix works.** It stops treating one provider field as though it meant the same thing in two places. Where the provider offers idempotency — order receipts — the stable reference is kept, because that is what makes a retry safe. Where it offers uniqueness, the object that already exists is looked up rather than fought with.
+
+**What changed to prevent recurrence.** `tests/test_payment_link_reuse.py` — a first mint creates; a second returns the existing link; a link for a different amount is never handed back; a `paid`, `cancelled` or `expired` link is not reused; a failure that is not a duplicate still raises rather than becoming a lookup; and a listing entry with no usable amount is skipped rather than trusted. `tests/test_api.py` covers the settle path surviving a gateway that will not mint at all.
+
+**Lesson.** BROKE.md 006 arriving a third time from the same direction: the parts that only run against real credentials are the parts nobody has run. What made this one slower to see is that it *had* run — once, successfully, when the code was written — and nothing afterwards was a fresh account. **A failure that only appears on the second run is invisible to a suite that starts clean every time**, and it is exactly the failure a demo hits, because a demo is by definition the second run.
+---
+
+## 014 — The build was red for ten runs and I read it as noise
+
+**2026-08-21 (found 2026-09-03) · severity: the check that guards every number, unable to pass**
+
+**What broke.** CI's last step compares the committed `eval/corpus/cases.yaml` against a fresh `python -m eval.corpus.build`, so that a corpus which has drifted from its own generator fails the build rather than quietly grading everything. It failed on every push from *"Second pass on the 30 judgment labels"* onward — ten consecutive runs, 21 August to 3 September:
+
+```
+X cases.yaml is out of date — run python -m eval.corpus.build
+```
+
+**Expected.** A rebuild reproduces the committed corpus.
+
+**Actual.** It could not, ever, from the moment the second pass was recorded.
+
+**Root cause.** `merge_reviews` preserved labels marked `HUMAN` across a regeneration and dropped everything else. The second pass writes `MACHINE_REVIEWED` — a distinct source on purpose, so a model's review can never be counted as a human's (ADR-029, and `BROKE.md` 010, which is why the distinction exists at all). So a rebuild reverted all 30 to `PROPOSED` and dropped their `reviewed_by`, and the file on disk could never match a fresh build.
+
+Every other CI step passed the whole time. The tests, the corpus, the sweep, the counterfactual and the demo were green on all ten of those runs.
+
+**Symptoms.** A red badge, and a `git push` that ends the same way whatever you changed. Nothing local ever failed: `make check` does not run the staleness comparison, so the whole build was green on my machine on every one of those thirteen days.
+
+**Investigation.** Found while running CI's steps by hand before submission — not from the badge, which I had been looking at for eleven days. `gh run list` showed the failure starting at exactly the commit that introduced `MACHINE_REVIEWED`, which named the cause before the log was read.
+
+**Fix.** `merge_reviews` now preserves both reviewed sources. That is the same rule it always stated rather than a weakening of it: both carry a reviewer's name, and dropping either on a rebuild loses attributed work. The distinction survives the merge — a machine-reviewed label is still reported as awaiting human review, it is just no longer thrown away.
+
+**Why the fix works.** It makes the file and its generator agree, which is the property the CI step exists to assert. `test_the_committed_corpus_is_what_the_generator_produces` now asserts it locally too, so the failure surfaces in `make test` instead of only in a place I had learned to ignore.
+
+**Lesson.** A check that cannot pass is indistinguishable from one that always fails, and after the second red run I stopped reading it. Worse, the thing it was protecting was real: the corpus in the repository was not the corpus the code produced, which is the exact condition that makes every number resting on it unverifiable — and the check was telling me so, correctly, ten times. The tell was that the build went red on a specific commit and stayed red; a flaky build wanders, a broken invariant does not. And the local shortcut is what let it run: `make check` was "what CI runs" in every document, and it was not.

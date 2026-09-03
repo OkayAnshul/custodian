@@ -1,6 +1,8 @@
 # Engineering log
 
-One entry per working session. Written as the session happens, not reconstructed afterwards.
+One entry per working session.
+
+Entries 1–9 were written as the session happened. **Entries 10 and 11 were not** — those two sittings were worked through without logging, and their entries were reconstructed afterwards from the commit history. Every time, count and claim in them comes from `git log`, from the diffs, or from running the suite at that commit; none of it comes from recollection, which is exactly the failure `BROKE.md` 011 records. Entry 12 was written as it happened.
 
 ---
 
@@ -386,3 +388,66 @@ Not done, and stated rather than hidden:
 - No pitch recording. No auth, no rate limiting.
 
 **Confidence.** High on the machinery and on the argument. The claims in the README are either tested or measured, and where a number rests on something unfinished it says so. The weakest part is calibration, and it is weak in a way the documents name rather than obscure.
+---
+
+## Day 10 — sitting 5, 2026-08-22 00:28–01:41 — the record corrected, and the money question answered
+
+*Reconstructed from the commit history; see the note at the top.*
+
+**Objective.** Fix what a hostile read found in the documents, then answer the question a merchant actually asks.
+
+**Completed.**
+- `BROKE.md` 011 written, and the fabricated dates corrected across `ENGINEERING_LOG.md`, `DECISIONS.md`, `DEFENSE.md`, `README.md` and `SUBMISSION.md` (`35528ba`).
+- `eval/counterfactual.py` and `make money` (`a7ead93`) — the corpus in rupees rather than rates. Both paths are runnable: "without Custodian" is `NaiveBuyer` reading an unsanitised feed with its asserted totals settling, not an estimate. ₹31,655 of 120 orders stopped or held, at 0% friction on the 60 clean ones.
+- The model put on camera in the demo (`f9d6674`): an escalation now prints the prompt digest, the raw response and how it was read, so the one place a model touches a decision is visible rather than described. README and `DEMO.md` repositioned on the track's own wording.
+- `GET /checkout/{request_id}` and `POST /v1/checkout/callback/{request_id}` (`d216e72`) — the page a payer completes an order on, and the signature check on what the browser hands back. `HMAC-SHA256(order_id|payment_id)`, verified before anything is captured, with six tests: a genuine signature, a forged one, one replayed against a different order, one against a different payment, one made with the wrong secret.
+
+**Tests.** 468 passing, 18 skipped — verified by running the suite at `d216e72` rather than remembered.
+
+**What broke.** `BROKE.md` 011, the worst entry in the file: nine log headings carrying the calendar dates the *plan* assigned to each phase, written in the past tense, across a week that had not happened, while every commit in the repository was timestamped to one day. Found by comparing the log against `git log` — one command, run only because someone asked whether things were working.
+
+**Confidence.** High on the money figures, which are computed from the same objects the decisions were made from rather than from a second reading of the case file. Lower on the checkout page, which at this point was written and had never been loaded.
+
+---
+
+## Day 11 — sitting 6, 2026-08-30 09:58–11:30 — a second provider, and the first answers I did not write
+
+*Reconstructed from the commit history; see the note at the top.*
+
+**Objective.** Make the swappability claim structural instead of asserted, then stop replaying model answers I had written myself.
+
+**Completed.**
+- `gate/groq_scorer.py` (`1c8e977`) and `intent/groq_parser.py` (`b4b5e73`) — a second implementation of *both* model positions, behind the same Protocols, graded by the same contract suites. A second **provider** rather than a second model: different system-prompt handling, different structured-output mechanism, different response shape, different error hierarchy — everything the abstraction has to absorb. ADR-030. A consequence worth stating: the whole system now runs on one free API key.
+- `scripts/record_fixtures.py` and `make record` (`9682121`) — incremental and resumable, so a rate limit mid-run does not lose what was already recorded.
+- 28 real responses recorded (`f9d3404`): 24 substitution verdicts and 4 intent parses from `openai/gpt-oss-120b`, each stored with provider, model, prompt digest, timestamp and the question exactly as sent. The demo now prints which of three states it is in — live call, real recording, or authored fixture — rather than letting them look alike.
+
+**Tests.** 537 passing, 19 skipped — verified by running the suite at `f9d3404`.
+
+**What broke.** `BROKE.md` 012, found on the first run with real answers instead of mine. `amb-unplaced-001` — the case that exists to demonstrate calibrated abstention — went from `HOLD` to `APPROVE`, because the model was asked whether "Sparkle Glitter Pens 5 nos" substitutes for "glitter pens" and said `FAITHFUL` at 95%. The answer is correct. The bug was mine: `base=UNKNOWN` is not "these might be unalike", it is "the taxonomy could not place this", and a verdict about similarity cannot supply that. A model can tell you two things are alike; it cannot tell you what they are. The substitution dimension now holds at `UNCERTAIN` whenever a line carried `SUBST_BASE_UNKNOWN`, whatever the verdict says — narrowly, so an unlisted *form pair* is still resolvable by a verdict.
+
+**Confidence.** Raised on the model boundary, and for a specific reason: this is the first thing in the build that disagreed with me without being asked to. Every fixture before it was a stand-in written by the person who also wrote the expectations.
+
+---
+
+## Day 12 — sitting 7, 2026-09-03 — demo readiness: run every path a viewer sees
+
+**Objective.** Present it. Which means running every path with real credentials rather than trusting the suite, and reconciling every number in the documents against what the tools print.
+
+**Completed.**
+- **The payable link, fixed** — `BROKE.md` 013, ADR-031. `make demo` with credentials had been printing `link unavailable` on every run after the first, because Razorpay's `reference_id` on a payment link is a uniqueness constraint rather than an idempotency key. A duplicate now falls through to the existing link, but only if its amount equals the amount this order derived and it is still payable. Six tests.
+- **A refused link no longer fails a settlement.** `POST /v1/checkout/settle` returns `payment_url: null` rather than a 500 when the provider will not mint one. Link creation is rate limited far more tightly than order creation; a convenience must not take down the thing it decorates.
+- **The checkout page rendered against a real order,** as a `live`-marked test: the order id Razorpay issued, the derived amount, the Checkout script, the callback path for that request. What is still unrun is the browser leg — Razorpay's script and a person with a card — and `LIMITATIONS.md` now says exactly that rather than "the page is untested".
+- **`make money` prints the per-line model figure** the README quotes (24 of 162 cart lines, 14.81%). It had printed the per-order figure while the README quoted lines; both were right and the README was claiming to show output it did not show.
+- **The build had been red for ten runs** — `BROKE.md` 014. Every CI step passed except the last, which compares the committed corpus against a fresh build. `merge_reviews` preserved `HUMAN` labels and dropped `MACHINE_REVIEWED` ones, so the second pass on the 30 judgment labels made `cases.yaml` permanently unable to match its own generator. It went red on exactly that commit, on 21 August, and stayed red for thirteen days. Fixed by preserving both reviewed sources; a rebuild is now byte-identical and a test asserts it locally.
+- **`make check` is now what CI runs**, which the documents had been claiming while it skipped the one step that was failing. `python -m eval.corpus.build --check` reports staleness without rewriting the file it is checking, so both can run it.
+- **Documents reconciled against the tools.** Test count 437 → 548 in the README and 449 → 548 in `SUBMISSION.md`; `BROKE.md` entries nine → fourteen; ADRs 26 → 31; `ARCHITECTURE.md`'s module map and route table brought up to the code; `LIMITATIONS.md`'s "no model call has been made live", false since 30 August, rewritten to say what is recorded, what replays and why, and what is still live only under `make demo-groq`.
+
+**Tests.** 548 passing, 20 skipped. With Razorpay credentials present: 561 passing, 7 skipped — and those seven are the payer-simulation cases that no API call can perform, which is the honest asymmetry rather than a gap.
+
+**Verified by hand this sitting, with live credentials.** `make demo` end to end including a real order and a payable link; `make demo-groq` making the substitution call live against Groq; verify → settle → checkout page through the live gateway.
+
+**What broke.** Two, and they rhyme. `BROKE.md` 013: the payable link had run successfully exactly once, when it was written, and nothing afterwards was a fresh account — a failure that only appears on the *second* run is invisible to a suite that starts clean every time, and a demo is by definition the second run. `BROKE.md` 014: the build had been red for ten runs and I had stopped reading it, because a check that cannot pass looks exactly like a check that always fails. Both were found the same way — by running the real thing rather than the thing that stands in for it.
+
+**Where this stands.** Everything a viewer will see has now been run against the real thing at least twice, and the build is green for the first time since 21 August. Two things remain open and are stated rather than hidden: the 30 benign-divergence labels still carry a model's second pass and no human sign-off, and the browser leg of the checkout page is unrun.
+
+**Confidence.** High on the machinery, the argument and now the presentation. Unchanged on calibration, which is where it should be: the thresholds are still `v0-untuned` and the sweep says precisely what tuning them would cost.

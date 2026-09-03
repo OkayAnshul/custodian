@@ -3,7 +3,7 @@
 Every engineering decision that would otherwise exist only in chat history.
 Format is trimmed to the fields that carry weight; a field with nothing to say is omitted rather than filled with "none".
 
-Every decision below was made on **2026-08-21**, the single day this was built. An earlier version of this file spread the dates across 21–30 August to match the plan's day numbering; that was wrong and is corrected.
+Every decision through ADR-029 was made on **2026-08-21**, the single day the system was built. An earlier version of this file spread those dates across 21–30 August to match the plan's day numbering; that was wrong and is corrected. The entries after it carry their own later dates, which are the dates the work actually happened — check any of them against `git log`.
 
 ---
 
@@ -458,3 +458,22 @@ A mandate-expiry check written on string comparison passes an expired mandate. `
 **Cost note.** Groq's free tier is ample for this — 24 escalations across the whole corpus. It is not the reason for the decision. If it were only about cost, the right answer would be to spend the ₹30 and keep one implementation.
 
 **Extended to position #1.** `GroqParser` followed, for the same reason and by the same pattern, so both model positions now have two implementations and one contract suite each. The consequence is that the system has no paid dependency at all: one `GROQ_API_KEY` runs everything. That is a side effect of the architecture rather than its motivation, and it is the more honest way round — a design chosen for cost would not have produced the contract suites.
+---
+
+## ADR-031 — A payment link is looked up, not fought with
+
+**Date** 2026-09-03 · **Area** payments · **Status** Accepted
+
+**Problem.** `payment_link_for` mints a payable URL under `reference_id = "<receipt>-link"`, chosen to be stable so an idempotent retry produces the same reference. Razorpay treats `reference_id` on a payment link as a *uniqueness constraint* rather than an idempotency key, so the second mint under a given receipt is refused outright. The demo mints under a fixed receipt, so it worked once and printed `link unavailable` on every run afterwards. See `BROKE.md` 013.
+
+**Options.** (1) Drop `reference_id` and let every link be anonymous. (2) Suffix it with a nonce, so each mint is unique. (3) On the duplicate error, fetch the link that already exists and return it.
+
+**Chosen.** (3), with two conditions before the URL is handed back: the link's amount must equal the amount this order re-derived, and its status must still be `created`.
+
+**Why not a nonce.** It would work and it would quietly discard the property the field was chosen for. A receipt would no longer identify its link in the provider's dashboard, which is the one place a merchant looks when a payment is disputed — and the reason the reference was made stable in the first place.
+
+**Why not anonymous links.** Same loss, and it also gives up the lookup that makes (3) possible.
+
+**Why the two conditions.** They are the difference between reuse and a wrong charge. A link minted for a different total under the same receipt is not this order's link; a `paid` link keeps a working URL and reusing it invites a second payment for an order already settled. Failing loudly on either is better than a URL that misleads whoever opens it — the amount is the one control this whole system is built around, and a convenience must not be the thing that breaks it.
+
+**A separate consequence, recorded here because it is the same mistake avoided.** `POST /v1/checkout/settle` no longer lets a refused link fail the call. Link creation is rate limited far more tightly than order creation; the order is open and the amount is fixed, so the response carries `payment_url: null` rather than a 500. A convenience that can take down the settlement it decorates is not a convenience.
