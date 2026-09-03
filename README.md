@@ -290,10 +290,11 @@ Stated plainly, because a reviewer will find them anyway and the honest version 
 | [`DEFENSE.md`](DEFENSE.md) | Panel-round notes — the reasoning under each answer, not the answers |
 | [`SUBMISSION.md`](SUBMISSION.md) | Form answers, drafted to be pasted |
 
-`BROKE.md` is worth reading first. Five entries are the interesting kind:
+`BROKE.md` is worth reading first. Six entries are the interesting kind:
 
 - **007** — the gate approved an order with a *failed dimension*. Seven passing dimensions outvoted the one that mattered. I had written "a constraint that can be outvoted by a good average is not a constraint" as a comment inside the function where exactly that happened.
 - **006** — the payment interface described a provider that does not exist. `FakeGateway` passed the whole contract, through every phase of the build, against an API I had imagined.
 - **009** — the ledger could not be called from a web server. I had reasoned about concurrency correctly, about a different failure mode — and having named one, stopped looking.
 - **011** — I fabricated the project timeline. The log recorded the dates the *plan* assigned to each phase rather than the dates work happened, spread across a week that had not occurred, while every commit was timestamped to one day. Corrected. It is the worst entry here, because everything else this project claims rests on its evidence being honest.
 - **012** — the first run on *real* model answers broke the abstention guarantee. Asked whether "Sparkle Glitter Pens 5 nos" substitutes for "glitter pens", the model said `FAITHFUL` at 95% — which is correct — and an item the taxonomy could not place approved. My hand-written fixture had said `UNSURE`, so the bug was invisible for as long as the model's answers were mine. A model can tell you two things are alike; it cannot tell you *what they are*.
+- **014** — the build was red for ten runs and I read it as noise. Every CI step passed except the one comparing the committed corpus against a fresh build, which *could not* pass: a rebuild dropped the machine-reviewed labels, so `cases.yaml` could never match its own generator. A check that cannot pass looks exactly like a check that always fails, and after the second red run I stopped reading it. `make check` now runs what CI runs, which the documents had been claiming while it skipped the failing step.
