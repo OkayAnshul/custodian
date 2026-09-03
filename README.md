@@ -221,13 +221,13 @@ The adversarial catch rate **does not move across any dial**. Every attack in th
 
 ```bash
 make install                           # or: python3 -m venv .venv && .venv/bin/pip install -e ".[dev]"
-make test                              # 548 tests, +13 with Razorpay credentials
+make test                              # 549 tests, +13 with Razorpay credentials
 make demo                              # all six demo scenarios
 make eval sweep                        # the corpus and the threshold curve
 make serve                             # http://127.0.0.1:8000
 
 # or directly:
-.venv/bin/pytest                       # 548 tests
+.venv/bin/pytest                       # 549 tests
 .venv/bin/python -m eval.harness --all # the corpus
 .venv/bin/python -m eval.sweep         # the threshold curve
 .venv/bin/python scripts/demo.py       # all six demo scenarios
@@ -268,7 +268,7 @@ Stated plainly, because a reviewer will find them anyway and the honest version 
 - **The UPI mandate is modelled, not integrated.** Reserve Pay is not reachable from a self-serve test account. The mandate is constructed locally and checked deterministically. What this demonstrates is the layer *above* the mandate.
 - **Completing a payment needs a human.** Order creation, the payable link, fetch and capture are live Razorpay test-mode calls and the payment ids in the ledger are Razorpay's, but no API call makes a payment *happen*. `GET /checkout/{request_id}` serves the page a payer completes it on; a live test asserts that page carries the order Razorpay issued, the derived amount, and the callback path, and six more cover the signature check that makes the browser's word evidence. **What is still unrun is the browser leg itself** — Razorpay's script and a person with a test card — and `LIMITATIONS.md` says so rather than claiming otherwise.
 - **30 corpus labels are drafts.** See §6. `python -m eval.corpus.review --sheet` lays out the evidence for each; applying a call requires `--as NAME`, because a reviewed label with nobody's name on it cannot be told apart from a relabelled draft.
-- **The lexicon covers one merchant.** 56 bases, 24 form-compatibility pairs, 5 base equivalences, sized to a 70-item catalog. Coverage against a different merchant is unmeasured.
+- **The lexicon covers one merchant.** 58 bases, 18 form-compatibility pairs, 5 base equivalences, sized to a 70-item catalog. Coverage against a different merchant is unmeasured.
 - **Single writer.** SQLite, one process. `Ledger` is the only thing that touches SQL, so the migration path is contained.
 - **Thresholds are `v0-untuned`.** The sweep says what tuning them would cost; nobody has tuned them.
 - **The buyer agent is deliberately naive.** It matches lexically — the primitive the gate rejects — so it will offer almond milk for coconut milk. That is the point: the agent's failure and the gate's correctness come from one example.

@@ -14,6 +14,29 @@ def tax() -> Taxonomy:
 
 # --- the case §6's primitive cannot decide ---------------------------------
 
+def test_the_lexicon_is_the_size_the_documents_say_it_is():
+    """The README, DEMO, DEFENSE and LIMITATIONS all quote these three numbers.
+
+    They quoted 56 bases and 24 form pairs for most of the build. The lexicon
+    grew to 58 bases on the day it was written, and it never had 24 pairs at
+    all — a number nobody had counted, repeated across four documents. A count
+    that appears in prose is a claim like any other, so it is asserted here and
+    fails the build when it drifts rather than being noticed by a reader.
+    """
+    import yaml
+
+    from custodian.gate.substitution import SubstitutionTables
+    from custodian.ingest.taxonomy import DEFAULT_LEXICON_DIR
+
+    taxonomy = default_taxonomy()
+    tables = SubstitutionTables.from_taxonomy(taxonomy)
+    lexicon = yaml.safe_load((DEFAULT_LEXICON_DIR / "taxonomy.yaml").read_text())
+
+    assert len(lexicon["bases"]) == 58
+    assert len(lexicon["base_equivalence"]) == 5
+    assert len(tables.form_scores) == 18
+
+
 def test_jaccard_cannot_separate_the_flagship_pair():
     """The premise of ADR-007, asserted rather than claimed in a document."""
     def jaccard(a: str, b: str) -> float:

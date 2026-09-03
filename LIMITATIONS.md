@@ -48,7 +48,7 @@ No authentication, no rate limiting, no multi-merchant, no multi-currency, no da
 
 **Single writer.** SQLite, one process. `BEGIN IMMEDIATE` plus a mutex makes the chain safe under a threaded server; nothing here survives multiple processes writing one ledger. `Ledger` and `ArtifactStore` are the only modules that touch SQL, so the migration path is contained to two files.
 
-**The lexicon covers one merchant.** 56 bases, 24 form-compatibility pairs, 5 base equivalences, sized to a 70-item catalog. 69 of 70 items place correctly; coverage against a different merchant's catalog is unmeasured. Scaling this is authoring work, not engineering work — which is the honest shape of the problem and the reason it is hard to copy.
+**The lexicon covers one merchant.** 58 bases, 18 form-compatibility pairs, 5 base equivalences, sized to a 70-item catalog. 69 of 70 items place correctly; coverage against a different merchant's catalog is unmeasured. Scaling this is authoring work, not engineering work — which is the honest shape of the problem and the reason it is hard to copy.
 
 **The package assumes an editable install.** `data/catalog` and `data/lexicon` are located relative to `__file__`, so a non-editable install into site-packages would not find them. Shipping them as package data is the fix and is not done — CI and the Makefile both use `pip install -e`, and a merchant-editable lexicon would want to live outside the package anyway.
 

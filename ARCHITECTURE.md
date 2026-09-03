@@ -55,7 +55,7 @@ src/custodian/
     groq_parser.py    the second provider behind the same Protocol
 
   gate/
-    reasons.py        48 reason codes, closed set, each with merchant-facing text
+    reasons.py        49 reason codes, closed set, each with merchant-facing text
     thresholds.py     versioned, hashed, travels with every decision
     substitution.py   SubstitutionTables + attribute scoring
     binding.py        cart line → requested item, re-derived not trusted

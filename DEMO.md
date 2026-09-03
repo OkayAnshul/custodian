@@ -93,7 +93,7 @@ Almond Milk      base=almond   form=milk    base_score= none  form_score=10000
 >
 > **Both decided by arithmetic. No model was called.**"
 
-If a judge pushes: the base and form tables are hand-authored, 56 bases and 24 form pairs, and that is deliberately the part that took judgment rather than code.
+If a judge pushes: the base and form tables are hand-authored, 58 bases and 18 form pairs, and that is deliberately the part that took judgment rather than code.
 
 **Then show the model earning its place** — this is the beat that answers "is this even an AI project?":
 

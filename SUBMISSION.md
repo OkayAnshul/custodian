@@ -49,7 +49,7 @@ No vector store, no RAG, no agent framework. The sanitizer is rules rather than 
 
 ## Evidence
 
-- **548 tests**, 13 running against the live Razorpay test-mode API on every run with credentials present — the gateway contract suite, and the hosted checkout page rendered against an order Razorpay actually issued.
+- **549 tests**, 13 running against the live Razorpay test-mode API on every run with credentials present — the gateway contract suite, and the hosted checkout page rendered against an order Razorpay actually issued.
 - **120-case corpus**, four classes, DEV/TEST split, each case with a written rationale. Clean approval 100%, adversarial catch 100%, false-approval 0% on the TEST split.
 - **Threshold sweep**, because a single score at one threshold is an assertion. Raising the substitution bar from 50% to 95% sends 46.67% → 93.33% of plausible substitutions back to a human and raises model cost by half — and the adversarial catch rate does not move at all, because those are settled deterministically.
 - **Runs from a clean clone with no credentials**: `make install && make demo`.

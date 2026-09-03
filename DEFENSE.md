@@ -64,7 +64,7 @@ For each: the thirty-second version, why it's built that way, and where it break
 
 **Why the weakest attribute governs.** Two scores combine by minimum, not average. Averaging lets a perfect base identity carry an incompatible form past the threshold.
 
-**Where it breaks.** Coverage. 56 bases sized to one 70-item catalog; 69 of 70 place. A different merchant's catalog is unmeasured, and scaling it is authoring work rather than engineering work. That's the honest shape of the problem and it's also why it's hard to copy.
+**Where it breaks.** Coverage. 58 bases sized to one 70-item catalog; 69 of 70 place. A different merchant's catalog is unmeasured, and scaling it is authoring work rather than engineering work. That's the honest shape of the problem and it's also why it's hard to copy.
 
 **In production.** The lexicon becomes a merchant-editable artifact with its own review workflow, and unplaced items become a queue rather than a permanent escalation.
 
@@ -138,7 +138,7 @@ Answer with the specific decisions, not a disclaimer.
 
 > "The architecture arguments are the work. Attribute decomposition instead of the lexical primitive I'd originally specified, because I worked the flagship example by hand and found the primitive couldn't decide it. Splitting base equivalence from form compatibility, because one table conflating them would let a form rule authorise an identity change. Keeping the model's output as a recorded observation so decisions replay without it.
 >
-> And the lexicon and the corpus are judgment — 56 bases, 24 form pairs, 120 cases each with a written rationale. The thirty labels that need cooking judgment are the ones I won't let a model supply, and `BROKE.md` 010 is me catching myself putting three fabricated ones in during a test."
+> And the lexicon and the corpus are judgment — 58 bases, 18 form pairs, 120 cases each with a written rationale. The thirty labels that need cooking judgment are the ones I won't let a model supply, and `BROKE.md` 010 is me catching myself putting three fabricated ones in during a test."
 
 ---
 

@@ -92,7 +92,7 @@ Entries 1–9 were written as the session happened. **Entries 10 and 11 were not
 **Completed.**
 - `ingest/units.py` — `250gm`, `1/4 kg`, `¼ kg`, `quarter kilo`, `pav kilo` all normalise to `250g`. Transliterated Hindi quantity words (`pav`, `aadha`, `sawa`, `dedh`, `paune`, `dhai`) included; a generic normaliser has no entry for them. Everything reduces to integer grams, millilitres or pieces.
 - `ingest/text.py` — price extraction from product names, punctuation and filler removal, longest-phrase-first so `garam masala` survives `gram`.
-- `ingest/taxonomy.py` + `data/lexicon/` — 56 bases, 20 form groups, 24 form-compatibility pairs, 5 base-equivalence pairs. Hand-authored and versioned; the version travels in every snapshot.
+- `ingest/taxonomy.py` + `data/lexicon/` — 56 bases, 20 form groups, 18 form-compatibility pairs, 5 base-equivalence pairs. Hand-authored and versioned; the version travels in every snapshot.
 
 **Tests.** 83 new (246 total), all passing.
 
@@ -440,9 +440,10 @@ Not done, and stated rather than hidden:
 - **`make money` prints the per-line model figure** the README quotes (24 of 162 cart lines, 14.81%). It had printed the per-order figure while the README quoted lines; both were right and the README was claiming to show output it did not show.
 - **The build had been red for ten runs** — `BROKE.md` 014. Every CI step passed except the last, which compares the committed corpus against a fresh build. `merge_reviews` preserved `HUMAN` labels and dropped `MACHINE_REVIEWED` ones, so the second pass on the 30 judgment labels made `cases.yaml` permanently unable to match its own generator. It went red on exactly that commit, on 21 August, and stayed red for thirteen days. Fixed by preserving both reviewed sources; a rebuild is now byte-identical and a test asserts it locally.
 - **`make check` is now what CI runs**, which the documents had been claiming while it skipped the one step that was failing. `python -m eval.corpus.build --check` reports staleness without rewriting the file it is checking, so both can run it.
-- **Documents reconciled against the tools.** Test count 437 → 548 in the README and 449 → 548 in `SUBMISSION.md`; `BROKE.md` entries nine → fourteen; ADRs 26 → 31; `ARCHITECTURE.md`'s module map and route table brought up to the code; `LIMITATIONS.md`'s "no model call has been made live", false since 30 August, rewritten to say what is recorded, what replays and why, and what is still live only under `make demo-groq`.
+- **A number four documents quoted had never been counted.** The lexicon is described everywhere as "56 bases, 24 form-compatibility pairs". It has 58 bases — it grew by two on the day it was written — and it has never had 24 pairs; the file has held 18 since the first commit that created it. Corrected in the README, `DEMO.md`, `DEFENSE.md` and `LIMITATIONS.md`, and `test_the_lexicon_is_the_size_the_documents_say_it_is` now fails the build if any of the three drifts. Reason codes were 48 and are 49, corrected the same way. This is `BROKE.md` 011's lesson in miniature: a count in prose is a claim, and one nobody ever counted reads exactly like one that was measured.
+- **Documents reconciled against the tools.** Test count 437 → 549 in the README and 449 → 549 in `SUBMISSION.md`; `BROKE.md` entries nine → fourteen; ADRs 26 → 31; `ARCHITECTURE.md`'s module map and route table brought up to the code; `LIMITATIONS.md`'s "no model call has been made live", false since 30 August, rewritten to say what is recorded, what replays and why, and what is still live only under `make demo-groq`.
 
-**Tests.** 548 passing, 20 skipped. With Razorpay credentials present: 561 passing, 7 skipped — and those seven are the payer-simulation cases that no API call can perform, which is the honest asymmetry rather than a gap.
+**Tests.** 549 passing, 20 skipped. With Razorpay credentials present: 562 passing, 7 skipped — and those seven are the payer-simulation cases that no API call can perform, which is the honest asymmetry rather than a gap.
 
 **Verified by hand this sitting, with live credentials.** `make demo` end to end including a real order and a payable link; `make demo-groq` making the substitution call live against Groq; verify → settle → checkout page through the live gateway.
 
