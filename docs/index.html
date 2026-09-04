@@ -1,0 +1,256 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Custodian — the purpose layer for agentic commerce</title>
+<meta name="description" content="A merchant endpoint that re-derives what an AI agent bought before money moves. Screenshots and real output from a running system.">
+<meta property="og:title" content="Custodian">
+<meta property="og:description" content="The agentic commerce stack proves an agent was permitted to spend. Nothing checks whether it bought what the human asked for.">
+<meta property="og:image" content="img/decision-hold.png">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400&family=Public+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+:root{
+  --paper:#f6f7f5; --raised:#fdfdfc; --ink:#12171c; --muted:#5c6660; --faint:#8a938c;
+  --rule:#dde2dd; --accent:#1c5566; --accent-soft:#e3edef;
+  --pass:#17693f; --hold:#8a5d0a; --reject:#9c2f1c;
+  --term-bg:#11171b; --term-ink:#d6ded8;
+  --sans:"Public Sans",system-ui,-apple-system,sans-serif;
+  --serif:"Newsreader",Georgia,serif;
+  --mono:"JetBrains Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+  --measure:66ch; --wide:min(1080px,100% - 3rem);
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --paper:#0e1216; --raised:#161c21; --ink:#e6eae5; --muted:#9aa49d; --faint:#6e7872;
+  --rule:#252d33; --accent:#6fb3c6; --accent-soft:#152b33;
+  --pass:#4bbd83; --hold:#d9a441; --reject:#e0745c;
+  --term-bg:#080b0d; --term-ink:#cfd8d2;
+}}
+:root[data-theme="dark"]{
+  --paper:#0e1216; --raised:#161c21; --ink:#e6eae5; --muted:#9aa49d; --faint:#6e7872;
+  --rule:#252d33; --accent:#6fb3c6; --accent-soft:#152b33;
+  --pass:#4bbd83; --hold:#d9a441; --reject:#e0745c;
+  --term-bg:#080b0d; --term-ink:#cfd8d2;
+}
+*{box-sizing:border-box}
+body{background:var(--paper);color:var(--ink);font-family:var(--sans);
+  font-size:17px;line-height:1.65;-webkit-font-smoothing:antialiased}
+.wrap{width:var(--wide);margin:0 auto;padding:0 0 6rem}
+.col{max-width:var(--measure)}
+h1,h2,h3{font-family:var(--serif);font-weight:500;text-wrap:balance;margin:0}
+h1{font-size:clamp(2.6rem,6vw,4rem);line-height:1.02;letter-spacing:-.02em}
+h2{font-size:clamp(1.5rem,3vw,2rem);line-height:1.15;margin:0 0 .6rem}
+h3{font-size:1.15rem;margin:0 0 .35rem}
+p{margin:0 0 1rem}
+a{color:var(--accent)}
+a:focus-visible,summary:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
+strong{font-weight:600}
+.eyebrow{font-family:var(--mono);font-size:.7rem;letter-spacing:.14em;text-transform:uppercase;
+  color:var(--faint);margin:0 0 .5rem}
+header{padding:5rem 0 2.5rem}
+.lede{font-family:var(--serif);font-size:clamp(1.2rem,2.4vw,1.5rem);line-height:1.45;
+  color:var(--ink);margin:1.6rem 0 0;max-width:54ch}
+.meta{display:flex;flex-wrap:wrap;gap:.5rem 1.4rem;margin-top:1.8rem;font-size:.85rem;color:var(--muted)}
+.meta code{font-family:var(--mono);font-size:.8rem}
+/* the outcome band — the product's own vocabulary, used as the page's one bold mark */
+.band{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--rule);
+  border-block:1px solid var(--rule);margin:3rem 0 0}
+.band div{background:var(--paper);padding:1.1rem 1.2rem}
+.band b{display:block;font-family:var(--mono);font-size:.8rem;letter-spacing:.1em}
+.band span{font-size:.85rem;color:var(--muted);line-height:1.4;display:block;margin-top:.2rem}
+.band .a b{color:var(--pass)} .band .h b{color:var(--hold)} .band .r b{color:var(--reject)}
+section{padding:3.5rem 0 0}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:0;
+  border:1px solid var(--rule);border-radius:3px;overflow:hidden;margin:2.5rem 0 0}
+.stats div{padding:1.2rem 1.3rem;border-right:1px solid var(--rule)}
+.stats div:last-child{border-right:0}
+.stats b{display:block;font-family:var(--serif);font-size:1.9rem;line-height:1.1;
+  font-variant-numeric:tabular-nums;letter-spacing:-.01em}
+.stats span{display:block;font-size:.82rem;color:var(--muted);margin-top:.35rem;line-height:1.35}
+pre{background:var(--term-bg);color:var(--term-ink);font-family:var(--mono);font-size:.76rem;
+  line-height:1.55;padding:1.1rem 1.25rem;border-radius:4px;overflow-x:auto;margin:1.4rem 0}
+figure{margin:1.8rem 0 0}
+figure img{width:100%;display:block;border:1px solid var(--rule);border-radius:4px}
+figcaption{font-size:.83rem;color:var(--muted);margin-top:.7rem;max-width:60ch;line-height:1.5}
+table{width:100%;border-collapse:collapse;font-size:.88rem;margin:1.4rem 0}
+th,td{text-align:left;padding:.55rem .8rem .55rem 0;border-bottom:1px solid var(--rule);vertical-align:top}
+th{font-family:var(--mono);font-size:.7rem;letter-spacing:.1em;text-transform:uppercase;color:var(--faint);font-weight:400}
+.chip{font-family:var(--mono);font-size:.72rem;padding:.12rem .45rem;border:1px solid var(--rule);
+  border-radius:3px;color:var(--muted);white-space:nowrap}
+.note{border-left:2px solid var(--accent);background:var(--accent-soft);padding:1rem 1.2rem;
+  margin:1.8rem 0;border-radius:0 3px 3px 0;font-size:.92rem}
+.note p:last-child{margin:0}
+.honest{border:1px solid var(--rule);border-radius:3px;padding:1.4rem 1.5rem;margin:1.6rem 0 0}
+.honest h3{font-family:var(--sans);font-size:.95rem;font-weight:600;margin-bottom:.3rem}
+.honest p{font-size:.9rem;color:var(--muted);margin:0}
+.honest + .honest{margin-top:.7rem}
+footer{margin-top:4.5rem;padding-top:2rem;border-top:1px solid var(--rule);font-size:.9rem;color:var(--muted)}
+@media (max-width:640px){
+  body{font-size:16px} header{padding:3rem 0 1.5rem}
+  .band{grid-template-columns:1fr} .stats div{border-right:0;border-bottom:1px solid var(--rule)}
+  pre{font-size:.68rem}
+}
+@media (prefers-reduced-motion:no-preference){a{transition:opacity .15s}a:hover{opacity:.7}}
+</style>
+
+<style>html{color-scheme:light dark}body{margin:0}img{max-width:100%}</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <p class="eyebrow">Razorpay Buildathon · Track 01 · AI Growth &amp; Agentic Commerce</p>
+  <h1>Custodian</h1>
+  <p class="lede">The agentic commerce stack proves an agent was <em>permitted</em> to spend. Nothing checks whether it bought what the human actually asked for. That gap lands on the merchant.</p>
+  <div class="meta">
+    <span><a href="https://github.com/OkayAnshul/custodian">github.com/OkayAnshul/custodian</a></span>
+    <span><code>make install &amp;&amp; make demo</code> — no credentials needed</span>
+  </div>
+</header>
+
+<div class="band">
+  <div class="a"><b>APPROVE</b><span>Every claim re-derived and matched. Money moves at the catalog price.</span></div>
+  <div class="h"><b>HOLD</b><span>Plausible, and a human decides. The record still says HOLD after they say yes.</span></div>
+  <div class="r"><b>REJECT</b><span>A constraint failed. No human can wave it through.</span></div>
+</div>
+
+<div class="stats">
+  <div><b>₹31,655</b><span>of purchases that did not match intent, stopped or held across 120 orders</span></div>
+  <div><b>0 of 60</b><span>clean orders held. Zero friction on the orders that were fine</span></div>
+  <div><b>24 / 162</b><span>cart lines reach a model. Zero adversarial cases do</span></div>
+  <div><b>556</b><span>tests from a clean clone; 14 more against live Razorpay test mode</span></div>
+</div>
+
+<section>
+  <p class="eyebrow">The gap</p>
+  <h2>Three layers are solved. The fourth is open.</h2>
+  <div class="col">
+    <table>
+      <tr><th>Layer</th><th>What it answers</th><th>Standard</th></tr>
+      <tr><td>Communication</td><td>How does the agent talk to systems?</td><td><span class="chip">MCP · A2A</span></td></tr>
+      <tr><td>Commerce</td><td>How does it build a cart?</td><td><span class="chip">UCP · ACP</span></td></tr>
+      <tr><td>Authorization</td><td>Was it <em>permitted</em> to spend?</td><td><span class="chip">AP2 · UAP</span></td></tr>
+      <tr><td><strong>Purpose</strong></td><td><strong>Was this what was asked for?</strong></td><td><span class="chip">—</span></td></tr>
+    </table>
+    <p>Razorpay and Sarvam shipped a voice agent that pays without a PIN, with Swiggy as launch partner, and stated plainly that agentic shopping does not rewrite commercial liability. So when that agent orders the wrong thing, <strong>the merchant handles the dispute</strong> — against a counterparty they did not build, on content they do not control, with no tooling to evaluate any given order.</p>
+  </div>
+</section>
+
+<section>
+  <p class="eyebrow">Output · the hard part</p>
+  <h2>The obvious primitive cannot decide this</h2>
+  <div class="col"><p>Coconut milk is out of stock. Coconut cream is a faithful substitute; almond milk is not. Lexical similarity scores them <em>identically</em>:</p></div>
+<pre>  jaccard('coconut milk', 'coconut cream') = 0.3333
+  jaccard('coconut milk', 'almond milk')   = 0.3333
+  identical scores, opposite ground truth
+
+  attribute decomposition decides both, without a model:
+    Coconut Cream 200 ml           base=coconut  form=cream  base_score=10000 form_score= 8500
+    Almond Milk 1 ltr Unsweetened  base=almond   form=milk   base_score= none form_score=10000
+
+  → APPROVE    alignment 98.33%    confidence 100.00%    charge ₹590.00
+      escalated to a model: nothing — decided by arithmetic</pre>
+  <div class="col"><p>Every product — in the catalog and in the request — reduces to <span class="chip">base · form · category</span> against a hand-authored Indian grocery lexicon. The model is left only the cases that genuinely need language: an unlisted form pair, a bundle, an item the taxonomy cannot place.</p></div>
+</section>
+
+<section>
+  <p class="eyebrow">Screen · a held decision</p>
+  <h2>Eight dimensions, scored separately</h2>
+  <div class="col"><p>The agent's cart contains a ₹1,450 wok nobody asked for. It is correctly priced, in stock, and inside budget — every arithmetic check passes, and it is still wrong.</p></div>
+  <figure>
+    <img src="img/decision-hold.png" alt="Custodian decision page showing a HOLD outcome with eight dimensions scored separately">
+    <figcaption>The actual product screen, re-derived from the ledger when the page loaded. Seven dimensions pass; <code>SCOPE_CREEP</code> fails at 30.72%. Cart line <code>l3</code> binds to nothing anyone requested — scope creep <em>by construction, not by detection</em>. Note the record panel: replay reproduces exactly, chain intact, and nothing escalated to a model.</figcaption>
+  </figure>
+</section>
+
+<section>
+  <p class="eyebrow">Screen · a rejection</p>
+  <h2>A constraint that can be outvoted is not a constraint</h2>
+  <div class="col"><p>Here the agent asserted <strong>₹443.00</strong> for a cart the catalog prices at <strong>₹643.00</strong>.</p></div>
+  <figure>
+    <img src="img/decision-reject.png" alt="Custodian decision page showing a REJECT outcome caused by a price mismatch">
+    <figcaption>Overall alignment is 86.36% — above the 80% approve line — and seven of eight dimensions pass. It rejects anyway, because <code>PRICE_INTEGRITY</code> is a hard constraint. This rule exists because the gate once approved an order with a failed dimension outvoted by seven passing ones; that failure is written up as entry 007 of sixteen in <code>BROKE.md</code>.</figcaption>
+  </figure>
+</section>
+
+<section>
+  <p class="eyebrow">Record · real money</p>
+  <h2>The order is opened for the amount Custodian derived</h2>
+  <div class="col"><p>Never the total the agent asserted. A payer completes it on a hosted page, because no API call makes a payment <em>happen</em>.</p></div>
+  <figure>
+    <img src="img/razorpay-checkout-modal.png" alt="Razorpay Checkout in test mode, on a Custodian order for ₹643">
+    <figcaption>Razorpay's own Checkout, test mode, against a real order.</figcaption>
+  </figure>
+  <figure>
+    <img src="img/decision-settled.png" alt="Custodian decision page carrying a settled Razorpay payment">
+    <figcaption>The same decision page after payment, now carrying a settled payment id issued by Razorpay.</figcaption>
+  </figure>
+<pre>  pay_TXqhfwpiOtrJFY   CAPTURED   64300 paise   authorised_by=APPROVED   captured_by=razorpay-test
+
+  INTENT_RECEIVED → SNAPSHOT_TAKEN → DECISION_MADE → PAYMENT_INITIATED → PAYMENT_SETTLED
+  chain intact · no breaks</pre>
+  <div class="note col">
+    <p><strong>Walking this leg for real found two defects nothing else could.</strong> The server could not serve its own documented checkout page, and — worse — this Razorpay account captures automatically, so a genuinely settled payment left <em>no settlement event</em>: Custodian's capture arrived second and was refused as a duplicate. A fake gateway has no opinion about an account setting. Both are written up as <code>BROKE.md</code> 015 and 016.</p>
+  </div>
+</section>
+
+<section>
+  <p class="eyebrow">Output · what it is worth</p>
+  <h2>The saving, quoted with its cost</h2>
+<pre>  money that would settle unchecked              ₹41,609.00
+  money Custodian let through                    ₹12,063.00
+  money stopped or held for a human              ₹31,655.00   72.41% of value
+
+  of that, adversarial orders                    ₹20,199.00
+  price forged by the agent                       ₹2,109.00   would have charged the wrong amount
+  items nobody asked for                         ₹13,720.00   inside budget, correctly priced
+
+  clean orders sent back to a human            0 of 60         0.00% friction
+  cart lines that needed a model at all       24 of 162        14.81% of lines</pre>
+  <div class="col"><p>Both paths are runnable. “Without Custodian” is the naive buyer reading an unsanitised feed with its asserted totals settling — not an estimate.</p></div>
+</section>
+
+<section>
+  <p class="eyebrow">Output · the evaluation</p>
+  <h2>The threshold was a guess. Now it is measured.</h2>
+  <div class="col"><p>120 hand-built cases, four classes, DEV/TEST split. The 30 labels that are a judgment about cooking rather than a consequence of construction were kept out of every number until a person reviewed them case by case. That review made a measurement possible that had not been:</p></div>
+<pre>   threshold   agreement with the reviewed labels
+      70.00%          80.00%
+      80.00%         100.00%   ← shipped default
+      85.00%          93.33%
+      90.00%          80.00%</pre>
+  <div class="col"><p>Agreement falls off on <strong>both</strong> sides, so it is a peak and not a plateau — and it holds separately on DEV (n=20) and TEST (n=10). <strong>Not one threshold value moved.</strong> The version string went from <code>v0-untuned</code> to <code>v1-reviewed</code> because the numbers were checked and left alone, which is a weaker and more honest claim than “tuned”.</p></div>
+</section>
+
+<section>
+  <p class="eyebrow">What this does not claim</p>
+  <h2>The parts a reviewer should push on</h2>
+  <div class="honest">
+    <h3>100% agreement rests on one reviewer</h3>
+    <p>No adjudication, 15 distinct substitutions, one catalog — and the reviewer could see the gate's current call while judging, which makes agreement cheaper than a blind pass. The evaluation harness prints all three bounds on every run rather than leaving them to a reader.</p>
+  </div>
+  <div class="honest">
+    <h3>The UPI mandate is modelled, not integrated</h3>
+    <p>Reserve Pay is not reachable from a self-serve test account. The mandate is constructed locally and checked deterministically. What this demonstrates is the layer <em>above</em> the mandate.</p>
+  </div>
+  <div class="honest">
+    <h3>100% on the other three classes is weaker than it looks</h3>
+    <p>Their labels follow from how each case was built — a forged price is a rejection by definition. Scoring 100% says the implementation matches its specification. It does not say the specification is right.</p>
+  </div>
+  <div class="honest">
+    <h3>No allergen or dietary control</h3>
+    <p>One corpus case approves groundnut oil for sunflower oil under an equivalence policy, and groundnut is peanut. This system re-derives price, purpose and authority; it has no idea what will hurt someone.</p>
+  </div>
+</section>
+
+<footer>
+  <div class="col">
+    <p>Every figure and screenshot on this page was produced by running the code. <code>BROKE.md</code> carries sixteen failures with root causes, including three that only appeared when something real was run; <code>LIMITATIONS.md</code> states what is modelled, unfinished or deliberately out of scope.</p>
+    <p><a href="https://github.com/OkayAnshul/custodian">github.com/OkayAnshul/custodian</a></p>
+  </div>
+</footer>
+
+</div>
+
+</body>
+</html>
