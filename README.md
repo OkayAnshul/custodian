@@ -173,10 +173,11 @@ Every money-affecting decision is re-runnable from the ledger without calling a 
 120 hand-built cases across four classes. Thresholds are chosen on DEV and reported on TEST; the splits are disjoint and stratified.
 
 ```
-class            n   correct   escalations
-CLEAN           60   100.00%   0 cases
-ADVERSARIAL     15   100.00%   0 cases
-AMBIGUOUS       15   100.00%   6 cases
+class                 n   correct   escalations
+CLEAN                19   100.00%   0 cases
+BENIGN_DIVERGENCE    10   100.00%   5 cases
+ADVERSARIAL           5   100.00%   0 cases
+AMBIGUOUS             4   100.00%   1 cases
 
 clean approval rate     100.00%    does it get out of the way?
 false-hold rate           0.00%    clean orders sent back to a human
@@ -184,11 +185,25 @@ adversarial catch rate  100.00%    does it work?
 false-approval rate       0.00%    attacks that got through
 ```
 
-**What that number does not mean.** Those three classes have labels that follow from how each case was built — a forged price is a rejection by construction. Scoring 100% says the implementation matches its specification. It does not say the specification is right.
+**What that number does not mean.** Three of those classes have labels that follow from how each case was built — a forged price is a rejection by construction. Scoring 100% says the implementation matches its specification. It does not say the specification is right.
 
-**The class where that question lives is benign divergence.** Its 30 labels have had a model's second pass and no human sign-off, so they are reported separately and folded into no headline figure.
+**The class where that question lives is benign divergence**, and its 30 labels are now a person's judgment rather than a model's: reviewed case by case, attributed, with the reasoning recorded in `eval/corpus/decisions.txt`. For most of this project's life they were drafts and were kept out of every headline figure, because a model scored against labels it drafted is measuring its own consistency.
 
-That second pass is itself worth reading as a result. Agreement with the gate rose from 86.67% to 100% — and every label it changed moved *toward* the gate's existing behaviour, reached by reasoning about what `REJECT` means *in this system* rather than about cooking. **The lower number was the more informative one.** The harness now warns when this agreement exceeds 95%, because near-total agreement between a model's labels and a model-built gate measures consistency rather than correctness. `EVALUATION.md` names the four cases a human should look at first.
+### The result that review unlocked
+
+While the labels were drafts, no threshold setting could be scored for correctness — only for how much friction it bought. Now each one can be scored against a person's judgment, and the shipped default is the **unique** maximum:
+
+```
+substitution_faithful_bp   agreement with the reviewed labels
+        70%                        80.00%
+        80%  (default)            100.00%
+        85%                        93.33%
+        90%                        80.00%
+```
+
+Agreement falls off on both sides, so it is a peak and not a plateau — and it holds separately on DEV (n=20) and TEST (n=10). **Not one threshold value moved**; the version string went from `v0-untuned` to `v1-reviewed` because the numbers were checked and left alone, which is a different claim from tuned.
+
+**And 100% agreement is exactly the shape of number that deserves suspicion**, so the harness prints its three bounds on every run: one reviewer with no adjudication, judging 15 distinct substitutions; the reviewer could see the gate's current call while judging, which makes anchoring possible; and it is one catalog. What it is, is a measurement where there was none. `EVALUATION.md` carries all of it, including the one question the review deliberately left open.
 
 ### What it is worth, and what it costs
 
@@ -221,13 +236,13 @@ The adversarial catch rate **does not move across any dial**. Every attack in th
 
 ```bash
 make install                           # or: python3 -m venv .venv && .venv/bin/pip install -e ".[dev]"
-make test                              # 549 tests, +13 with Razorpay credentials
+make test                              # 551 tests, +13 with Razorpay credentials
 make demo                              # all six demo scenarios
 make eval sweep                        # the corpus and the threshold curve
 make serve                             # http://127.0.0.1:8000
 
 # or directly:
-.venv/bin/pytest                       # 549 tests
+.venv/bin/pytest                       # 551 tests
 .venv/bin/python -m eval.harness --all # the corpus
 .venv/bin/python -m eval.sweep         # the threshold curve
 .venv/bin/python scripts/demo.py       # all six demo scenarios
@@ -267,10 +282,11 @@ Stated plainly, because a reviewer will find them anyway and the honest version 
 
 - **The UPI mandate is modelled, not integrated.** Reserve Pay is not reachable from a self-serve test account. The mandate is constructed locally and checked deterministically. What this demonstrates is the layer *above* the mandate.
 - **Completing a payment needs a human.** Order creation, the payable link, fetch and capture are live Razorpay test-mode calls and the payment ids in the ledger are Razorpay's, but no API call makes a payment *happen*. `GET /checkout/{request_id}` serves the page a payer completes it on; a live test asserts that page carries the order Razorpay issued, the derived amount, and the callback path, and six more cover the signature check that makes the browser's word evidence. **What is still unrun is the browser leg itself** — Razorpay's script and a person with a test card — and `LIMITATIONS.md` says so rather than claiming otherwise.
-- **30 corpus labels are drafts.** See §6. `python -m eval.corpus.review --sheet` lays out the evidence for each; applying a call requires `--as NAME`, because a reviewed label with nobody's name on it cannot be told apart from a relabelled draft.
+- **The 30 judgment labels rest on one reviewer.** They are human-signed and attributed now, and the honest reading is in §6: a single pass, no adjudication, and the reviewer could see the gate's current call while judging. A second independent reviewer is the most valuable thing anyone could add — `python -m eval.corpus.review --sheet` lays out the evidence per case, and `--as NAME` is required to write a label.
 - **The lexicon covers one merchant.** 58 bases, 18 form-compatibility pairs, 5 base equivalences, sized to a 70-item catalog. Coverage against a different merchant is unmeasured.
+- **No allergen control.** `benign-008` approves groundnut oil for sunflower oil under an `EQUIVALENT` policy, and groundnut is peanut. The gate re-derives price, purpose and authority; it does not know what will hurt someone. A merchant shipping this would need that check, and it is a different one.
 - **Single writer.** SQLite, one process. `Ledger` is the only thing that touches SQL, so the migration path is contained.
-- **Thresholds are `v0-untuned`.** The sweep says what tuning them would cost; nobody has tuned them.
+- **Thresholds are `v1-reviewed`, which is weaker than tuned.** No value was ever fitted; the reviewed labels showed the shipped guess was already the agreement peak, so it was left alone. Real tuning would need more reviewers and more than one catalog.
 - **The buyer agent is deliberately naive.** It matches lexically — the primitive the gate rejects — so it will offer almond milk for coconut milk. That is the point: the agent's failure and the gate's correctness come from one example.
 
 ---

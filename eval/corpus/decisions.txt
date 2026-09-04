@@ -1,14 +1,31 @@
-# Second pass over the benign-divergence labels.
+# Human review of the 30 benign-divergence labels.
 #
-# The governing distinction, which the first drafts got wrong in four places:
-# under this system REJECT means a constraint failed or the two things are
-# unrelated. HOLD means "plausible, and a human decides". A bad-but-plausible
-# substitution between related ingredients is what HOLD is for — a shopkeeper
-# out of atta asks, they do not refuse.
+# Reviewed by OkayAnshul on 2026-09-03, case by case, against the evidence in
+# REVIEW.md: the request, the offered item, both attribute placements, the table
+# scores, and what the gate does today.
+#
+# The governing question, settled first because it decides several cases at once:
+# REJECT means a hard constraint failed or the two items have no relationship.
+# Anything related but possibly wrong is HOLD — a shopkeeper out of atta offers
+# maida and lets the customer decide; they do not refuse the sale. That is a
+# decision about what this system's three outcomes mean, and it closes ADR-028
+# in favour of the current design: a substitution cannot be rejected on its
+# merits, only on a constraint.
+#
+# Consequence, stated so it is not discovered later: the only REJECT in this
+# class is 009, where the base changed under a SAME_BASE policy. Every judgment
+# about cooking lands on APPROVE or HOLD.
+#
+# Each case is judged once and applied to both variants. The pair differs only
+# in the goal prose ("for tonight's cooking" vs "or the closest thing you can
+# get") and in the DEV/TEST split; the policy and the items are identical, and
+# the gate never sees the prose. A split label inside a pair would be a claim
+# that the gate is wrong, not a judgment about food.
 
 # ── coconut milk ↔ coconut cream ────────────────────────────────────────────
 # Cream is coconut milk with less water. Thin it and it is the same thing;
-# every South Indian and Thai kitchen treats them as interchangeable.
+# every South Indian and Thai kitchen treats them as interchangeable, and a
+# shopkeeper would swap it without asking.
 benign-001: APPROVE
 benign-002: APPROVE
 benign-oos-001: APPROVE
@@ -20,84 +37,75 @@ benign-oos-002: APPROVE
 benign-003: HOLD
 benign-oos-003: HOLD
 
-# ── coriander whole ↔ powder ────────────────────────────────────────────────
-# Whole seeds are for tadka, where powder burns. Powder is for masala, where
-# seeds are wrong. Which one matters depends entirely on the dish.
+# ── coriander, both directions ──────────────────────────────────────────────
+# Ground for whole is fine in a paste or masala and wrong for tempering, where
+# the seed has to crackle. Whole for ground asks the buyer to grind. Both
+# depend on the dish, which is what the escalation band is for.
 benign-004: HOLD
 benign-005: HOLD
 benign-oos-004: HOLD
 benign-oos-005: HOLD
 
-# ── turmeric whole → powder ─────────────────────────────────────────────────
-# Powder is the dominant form, so this is usually fine. But someone who says
-# "whole turmeric" may want the root — for pickle or juice — and powder is
-# useless there. Genuinely underspecified.
+# ── whole turmeric → turmeric powder ────────────────────────────────────────
+# Powder is right for almost every dish and wrong for a pickle or anything
+# wanting the root. Almost-always is not always, and the form pair is unlisted
+# on purpose: guessing is the thing this system exists not to do.
 benign-006: HOLD
 benign-oos-006: HOLD
 
 # ── mustard seeds → mustard oil ─────────────────────────────────────────────
-# The worst substitution in this set. Same plant, entirely different ingredient:
-# you cannot temper with oil the way seeds pop in it. I drafted HOLD, argued
-# myself to REJECT, and came back to HOLD for consistency with atta→maida below
-# — under this system REJECT is not a quality verdict. See DECISIONS ADR-028:
-# a same-base, incompatible-form swap arguably should be able to reject, and
-# currently cannot. That is a real gap and this case is the evidence for it.
+# You cannot temper with oil. Same base is necessary and nowhere near
+# sufficient — but the two are genuinely related, so it asks rather than
+# refuses, consistent with the governing rule above.
 benign-007: HOLD
 benign-oos-007: HOLD
 
-# ── sunflower oil → groundnut oil ───────────────────────────────────────────
-# Both neutral cooking oils, interchangeable for most Indian cooking, and the
-# human said EQUIVALENT. Approving.
-#
-# LOWEST CONFIDENCE IN THE SET. Groundnut is peanut. Swapping in an allergen
-# without flagging it is something a careful merchant would not do, and a
-# reviewer could reasonably call this HOLD on safety rather than culinary
-# grounds. The system has no allergen concept, which is the actual gap.
+# ── sunflower oil → groundnut oil, under two policies ───────────────────────
+# Under EQUIVALENT the human invited substitutes and both are neutral cooking
+# oils at a listed equivalence: approve. Under SAME_BASE the base changed and
+# the policy is the human's instruction, not the gate's opinion: reject. The
+# same swap, two answers, and the difference is authority rather than cooking.
 benign-008: APPROVE
 benign-oos-008: APPROVE
-
-# Same swap under SAME_BASE. The policy is the human's instruction, not the
-# gate's opinion, and it forbids a base change however good the substitute is.
 benign-009: REJECT
 benign-oos-009: REJECT
 
 # ── ghee → butter ───────────────────────────────────────────────────────────
-# Widely substituted. Butter carries water and milk solids, so it burns where
-# ghee would not. Fine for most uses, wrong for high-heat tempering.
+# The most ordinary swap in an Indian kitchen, and still not automatic: butter
+# carries water and milk solids and burns far earlier. Fine on a roti, wrong
+# for frying.
 benign-010: HOLD
 benign-oos-010: HOLD
 
 # ── atta → maida ────────────────────────────────────────────────────────────
-# CHANGED from the draft's REJECT. Rotis made with maida are not rotis, and I
-# labelled that as a refusal. But a shopkeeper out of atta asks rather than
-# refuses, and refusing takes the decision away from someone who may want maida.
-# REJECT here would be a quality judgment wearing a constraint's clothes.
+# Rotis made with maida are not rotis, and the equivalence is listed at 3000 to
+# say so. Related, though — both wheat flour — so under the governing rule it
+# asks. The first draft said REJECT; this is a considered HOLD rather than the
+# second pass's inherited one.
 benign-011: HOLD
 benign-oos-011: HOLD
 
 # ── dahi → fresh cream ──────────────────────────────────────────────────────
-# Cultured and sour versus sweet and not. Wrong for raita, sometimes fine in a
-# curry. Ask.
+# Same dairy family, sourness absent. Works in a few dishes and ruins others.
 benign-012: HOLD
 benign-oos-012: HOLD
 
 # ── desiccated coconut → coconut powder ─────────────────────────────────────
-# Both dried coconut; powder is finer. Interchangeable for most things, and the
-# texture difference is real in a laddoo or barfi. The form pair is unlisted, so
-# it escalates — and it is a good candidate for a table entry around 7500.
+# Close, and the texture differs: fine in a chutney, wrong as a garnish or in a
+# burfi. Form pair unlisted, so it escalates rather than being assumed.
 benign-013: HOLD
 benign-oos-013: HOLD
 
-# ── whole almonds → almond milk ─────────────────────────────────────────────
-# Badam for garnish, soaking or grinding, against a carton of milk. Same base,
-# and the mirror of the mustard case: base identity is necessary and nowhere
-# near sufficient.
+# ── almonds → almond milk ───────────────────────────────────────────────────
+# Same base, wildly different use — the mirror of the coconut case, and the
+# reason base identity alone is never treated as sufficient. Related enough to
+# ask, not close enough to assume.
 benign-014: HOLD
 benign-oos-014: HOLD
 
 # ── chana dal → moong dal ───────────────────────────────────────────────────
-# CHANGED from the draft's REJECT, for the same reason as atta→maida. Different
-# pulses, roughly double the cooking time, materially different dish — and still
-# a question a shopkeeper would ask rather than answer for you.
+# Different pulses, different cooking times and textures, listed at 3000 so the
+# low score is a stated judgment rather than an absent entry. The human invited
+# substitutes, so it asks. Also a considered HOLD, not an inherited one.
 benign-015: HOLD
 benign-oos-015: HOLD

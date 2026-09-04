@@ -34,9 +34,13 @@ make demo-groq              # the same demo, calling live
 
 ## Things that are unfinished
 
-**30 corpus labels are drafts.** The benign-divergence class is the project's stated moat and it is the one part a model cannot honestly supply: scored against labels it drafted, it measures its own consistency. The schema refuses to build a benign-divergence case with a derived label, the harness reports them separately, and no headline number rests on them. `python -m eval.corpus.review --sheet` lays out the evidence for each.
+**The 30 judgment labels rest on one reviewer.** They were drafts for most of this project's life and are now human-signed and attributed, which is what makes the benign-divergence numbers quotable at all. It is still a single pass: 15 distinct substitutions, no adjudication, one catalog — and the reviewer could see the gate's current call while judging, which makes agreement cheaper than an independent pass would be. The harness prints those three bounds itself on every run rather than leaving them to a reader. A second reviewer is the most valuable thing anyone could add here.
 
-**Thresholds are `v0-untuned`.** They are stated guesses, labelled as such in the source. The sweep now says exactly what tuning them would cost — and that tightening buys no catch rate on this corpus, only friction. Real tuning needs the reviewed labels.
+**One question the review left open, deliberately.** Two cases phrase the goal as *"or the closest thing you can get"*, and a real model reads that as licence to approve a substitution it otherwise calls unfaithful. The reviewed label holds in both. The gate's channel for "I am flexible" is the `substitution_policy` field, not the goal prose — so whether the intent parser should *infer* policy from phrasing is unresolved, and it would move model position #1 from reading a request to setting the authority a later check runs under. See `EVALUATION.md`.
+
+**Thresholds are `v1-reviewed`, which is a weaker claim than tuned.** No value was ever fitted. What changed is that the reviewed labels made each setting scorable for correctness, and the shipped guess turned out to be the unique agreement peak — 100% at the default, 73–80% at every other setting, holding on DEV and TEST separately. Checked and left alone, not calibrated.
+
+**No allergen or dietary control.** `benign-008` approves groundnut oil for sunflower oil under an `EQUIVALENT` policy, and groundnut is peanut. This system re-derives price, purpose and authority; it has no idea what will hurt someone. That is a different check and a merchant shipping this would need it.
 
 **No pitch recording.** `DEMO.md` is the script; it has not been performed.
 

@@ -407,7 +407,7 @@ A mandate-expiry check written on string comparison passes an expired mandate. `
 
 ## ADR-028 — A same-base substitution cannot reject, and arguably should
 
-**Date** 2026-08-21 · **Area** gate · **Status** Open — recorded, not resolved
+**Date** 2026-08-21 · **Area** gate · **Status** Closed 2026-09-03 — considered, rejected. The settling condition below was stated in advance and then met
 
 **Found by.** Working the benign-divergence labels case by case. `mustard seeds → mustard oil` is the same base and an entirely different ingredient: seeds pop in hot oil for a tadka, and oil does not. `whole almonds → almond milk` is the same shape of failure. Neither can reject.
 
@@ -418,6 +418,14 @@ A mandate-expiry check written on string comparison passes an expired mandate. `
 **What would settle it.** A human review of `benign-007` and `benign-014`. If both come back `REJECT`, the floor is warranted and the corpus says where to put it. If both come back `HOLD`, the current behaviour is right and this ADR closes as "considered, rejected".
 
 **Related.** ADR-020 established that weights decide how much a dimension contributes and not whether a failure counts. This is the same question one level down: whether a *form* mismatch can be severe enough to count as a failure on its own, rather than only as a low score.
+
+**Resolution — 2026-09-03.** The human review returned `HOLD` for both `benign-007` and `benign-014`, which is the branch this ADR named as "considered, rejected". No form floor is added.
+
+The reviewer settled it on a broader rule than the two cases: **REJECT means a hard constraint failed or the two items have no relationship; anything related but possibly wrong is HOLD**, because a shopkeeper out of atta offers maida and lets the customer decide rather than refusing the sale. Under that rule a catastrophic form mismatch between two genuinely related things is exactly what holding is for.
+
+The consequence is worth stating rather than leaving implicit, because it is the thing a reviewer would otherwise catch: **no substitution in this system is ever rejected on its merits.** The only rejection in the benign class is `benign-009`, where the base changed under a `SAME_BASE` policy — a constraint failure. Rejection is reserved for authority and arithmetic; judgment about whether one ingredient serves for another routes to a human every time it is not clear. That is a deliberate position now, with a name on it, and not an unexamined property of the code.
+
+What would reopen this: a second reviewer returning `REJECT` on either case. The floor would then be warranted and the corpus would say where to put it.
 
 ---
 
@@ -477,3 +485,25 @@ A mandate-expiry check written on string comparison passes an expired mandate. `
 **Why the two conditions.** They are the difference between reuse and a wrong charge. A link minted for a different total under the same receipt is not this order's link; a `paid` link keeps a working URL and reusing it invites a second payment for an order already settled. Failing loudly on either is better than a URL that misleads whoever opens it — the amount is the one control this whole system is built around, and a convenience must not be the thing that breaks it.
 
 **A separate consequence, recorded here because it is the same mistake avoided.** `POST /v1/checkout/settle` no longer lets a refused link fail the call. Link creation is rate limited far more tightly than order creation; the order is open and the amount is fixed, so the response carries `payment_url: null` rather than a 500. A convenience that can take down the settlement it decorates is not a convenience.
+
+---
+
+## ADR-032 — The thresholds are `v1-reviewed`, not `v1-tuned`
+
+**Date** 2026-09-03 · **Area** gate, evaluation · **Status** Accepted
+
+**Problem.** The 30 benign-divergence labels were reviewed by a person, which made a measurement possible that had been impossible all build: scoring each threshold setting for *correctness* rather than only for the friction it buys. The result is that `substitution_faithful_bp = 8_000` — a stated guess, shipped as `v0-untuned` — is the unique agreement peak. 100% against the reviewed labels; 73–80% at every other setting on the dial; falling off on both sides; holding separately on DEV (n=20) and TEST (n=10).
+
+So the version string was wrong in a new way. `v0-untuned` had stopped being true.
+
+**Options.** (1) Keep `v0-untuned`. (2) `v1-dev-tuned`, the conventional name for a threshold chosen on a dev split. (3) `v1-reviewed`.
+
+**Chosen.** (3), and **no value changed**.
+
+**Why not "tuned".** Tuning implies the numbers were fitted to the labels. They were not: they were written before the corpus existed, and the review found them already at the optimum. "Tuned" would claim a process that did not happen and would invite the obvious objection — that a threshold fitted to 30 labels and then reported against those same labels proves nothing. Nothing was fitted, so that objection does not apply, and the name should make that visible.
+
+**Why not keep `v0-untuned`.** It says nobody has examined these, and somebody has. Leaving it would understate the evidence in the same way "tuned" overstates it, and a document that is wrong in the cautious direction is still wrong.
+
+**What the name is not claiming.** One reviewer, no adjudication, 15 distinct substitutions, one catalog — and the reviewer could see the gate's current call while judging, which makes agreement cheaper than an independent blind pass. Those three bounds are printed by the harness on every run and stated in `EVALUATION.md` beside every number that rests on them. `v1-reviewed` means *a person has been through these and the corpus supports them*, which is exactly as far as the evidence goes.
+
+**A property worth keeping.** The version travels with every decision and into the ledger, so a decision made under `v0-untuned` and one made under `v1-reviewed` are distinguishable in the record forever — even though the numbers behind them are identical. That is the point of versioning a threshold rather than hard-coding it: the record can say *which set of beliefs* a decision was made under, not merely which numbers.

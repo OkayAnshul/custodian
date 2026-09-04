@@ -34,9 +34,13 @@ Agree with them. It's the strongest move available and it happens to be true.
 
 > "Yes, and the harness says so in its own output. Three of the four classes have labels that follow from how each case was built — a forged price is a rejection by construction. Scoring 100% says the implementation matches its specification. It doesn't say the specification is right.
 >
-> The class where that question actually lives is benign divergence, and those thirty labels are drafts. I won't quote a number resting on labels a model drafted, because that's measuring its own consistency."
+> The class where that question actually lives is benign divergence. Those thirty labels were drafts for most of this build and deliberately kept out of every number, because a model scored against labels it drafted is measuring its own consistency. They're now reviewed by a person, case by case, attributed, with the reasoning committed.
+>
+> And that unlocked the one measurement that couldn't be taken before. While they were drafts, a threshold could only be scored for how much friction it bought. Now it can be scored for correctness — and the shipped default turns out to be the *unique* agreement peak: 100% at 80%, 73 to 80% at every other setting, falling off on both sides, holding separately on DEV and TEST. No value moved. It was a guess that turned out to be right, and I can now show that rather than assert it.
+>
+> The agreement is 100%, which is the shape of number you should push on. So: one reviewer, no adjudication, fifteen distinct substitutions, one catalog — and the reviewer could see the gate's current call while judging, which makes agreement cheaper than a blind pass. The harness prints those three bounds itself on every run. A second independent reviewer is the most valuable thing anyone could add to this project."
 
-**If the labels are reviewed by then**, this becomes the strongest answer in the deck instead of an honest gap. Worth doing before the round.
+**Why this is the strongest answer in the deck.** It concedes the number, produces a harder result underneath it, and then argues against its own evidence before the panel can. The bounds are printed by the tool rather than recited, which is the difference between a caveat and a control.
 
 ### "What happens when it doesn't know?"
 
@@ -138,7 +142,7 @@ Answer with the specific decisions, not a disclaimer.
 
 > "The architecture arguments are the work. Attribute decomposition instead of the lexical primitive I'd originally specified, because I worked the flagship example by hand and found the primitive couldn't decide it. Splitting base equivalence from form compatibility, because one table conflating them would let a form rule authorise an identity change. Keeping the model's output as a recorded observation so decisions replay without it.
 >
-> And the lexicon and the corpus are judgment — 58 bases, 18 form pairs, 120 cases each with a written rationale. The thirty labels that need cooking judgment are the ones I won't let a model supply, and `BROKE.md` 010 is me catching myself putting three fabricated ones in during a test."
+> And the lexicon and the corpus are judgment — 58 bases, 18 form pairs, 120 cases each with a written rationale. The thirty labels that need cooking judgment are the ones I wouldn't let a model supply; I reviewed them myself, case by case, and my name is on each one. `BROKE.md` 010 is me catching myself putting three fabricated ones in during a test."
 
 ---
 
@@ -149,7 +153,7 @@ Answer with the specific decisions, not a disclaimer.
 | `BROKE.md` | Entries 006, 007, 012, 014. Fourteen failures with root causes is the strongest single artifact here |
 | `README.md` §5 | The table of where a model was deliberately not used |
 | The viewer | `make serve`, then `/view/…` — the per-dimension breakdown lands faster than any explanation |
-| `EVALUATION.md` | For the corpus question, which will come |
+| `EVALUATION.md` | For the corpus question, which will come — §"The result the review unlocked" and §"What the agreement is worth" |
 
 ## If you get one sentence
 

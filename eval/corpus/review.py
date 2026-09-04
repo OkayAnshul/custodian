@@ -86,12 +86,69 @@ def _context():
     return snapshot, SubstitutionTables.from_taxonomy(default_taxonomy())
 
 
+def write_record(corpus, snapshot, tables) -> int:
+    """The sheet, after the review: what was decided, by whom, and against what."""
+    from eval.corpus.schema import CaseClass
+
+    reviewed = [c for c in corpus.cases
+                if c.case_class is CaseClass.BENIGN_DIVERGENCE
+                and c.label_source is LabelSource.HUMAN]
+    if not reviewed:
+        print("Nothing awaiting review, and nothing reviewed either.")
+        return 0
+
+    reviewers = sorted({c.reviewed_by for c in reviewed if c.reviewed_by})
+    lines = [
+        "# Benign divergence — the reviewed labels",
+        "",
+        f"{len(reviewed)} cases, judged by {', '.join(reviewers)}. Nothing is awaiting review.",
+        "",
+        "These are the labels that do not follow from how a case was built — whether one "
+        "ingredient stands in acceptably for another is a judgment about cooking, and this "
+        "file records the judgment that was made, next to the evidence it was made against.",
+        "",
+        "The reasoning behind each call, including the rule that governs when a substitution "
+        "may be rejected at all, is in `decisions.txt`. Re-running "
+        "`python -m eval.corpus.review --apply --as NAME` overwrites these with a new "
+        "reviewer's calls.",
+        "",
+        "| case | asked → offered | policy | base | form | call | gate |",
+        "|---|---|---|---|---|---|---|",
+    ]
+    for case in reviewed:
+        e = _evidence(case, snapshot, tables)
+        lines.append(
+            f"| `{case.case_id}` | {e['asked']} → {e['offered']} | `{e['policy']}` | "
+            f"{e['base_score']} | {e['form_score']} | **{case.expect.outcome}** | {e['gate_says']} |"
+        )
+    disagree = [c for c in reviewed
+                if str(c.expect.outcome) != _evidence(c, snapshot, tables)["gate_says"]]
+    lines += [
+        "",
+        f"The gate matches the reviewer on {len(reviewed) - len(disagree)} of {len(reviewed)}.",
+        "",
+        "What that agreement is and is not: one reviewer, no adjudication, 15 distinct "
+        "substitutions each applied to both variants of its pair — and the reviewer could see "
+        "the gate's current call while judging, which makes agreement cheaper than an "
+        "independent pass would be. `EVALUATION.md` states those bounds beside every number "
+        "that rests on them.",
+        "",
+    ]
+    SHEET.write_text("\n".join(lines))
+    print(f"wrote {SHEET.relative_to(Path.cwd())} — {len(reviewed)} reviewed cases, "
+          f"nothing pending")
+    return 0
+
+
 def write_sheet() -> int:
     corpus, pending = _load()
     snapshot, tables = _context()
     if not pending:
-        print("Nothing awaiting review.")
-        return 0
+        # A sheet that still lists 30 cases as pending, after they have been
+        # judged, is worse than no sheet: it is the document a reader checks to
+        # see whether the review actually happened. So the file becomes the
+        # record of what was decided rather than a stale request for decisions.
+        return write_record(corpus, snapshot, tables)
 
     lines = [
         "# Benign divergence — labels awaiting review",

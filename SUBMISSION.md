@@ -49,12 +49,13 @@ No vector store, no RAG, no agent framework. The sanitizer is rules rather than 
 
 ## Evidence
 
-- **549 tests**, 13 running against the live Razorpay test-mode API on every run with credentials present — the gateway contract suite, and the hosted checkout page rendered against an order Razorpay actually issued.
+- **551 tests**, 13 running against the live Razorpay test-mode API on every run with credentials present — the gateway contract suite, and the hosted checkout page rendered against an order Razorpay actually issued.
 - **120-case corpus**, four classes, DEV/TEST split, each case with a written rationale. Clean approval 100%, adversarial catch 100%, false-approval 0% on the TEST split.
+- **The 30 judgment labels are human-reviewed and attributed** — the class a model cannot honestly supply, kept out of every number until a person signed them. That unlocked the measurement that could not be taken before: the shipped substitution threshold is the *unique* agreement peak (100% at 80%, 73–80% either side, holding on DEV and TEST separately). **No threshold value moved** — a guess that turned out to be right, now shown rather than asserted.
 - **Threshold sweep**, because a single score at one threshold is an assertion. Raising the substitution bar from 50% to 95% sends 46.67% → 93.33% of plausible substitutions back to a human and raises model cost by half — and the adversarial catch rate does not move at all, because those are settled deterministically.
 - **Runs from a clean clone with no credentials**: `make install && make demo`.
 
-**Stated plainly:** the UPI mandate is modelled, not integrated — Reserve Pay is not reachable from a self-serve test account. Order creation, the payable link, fetch and capture are live Razorpay calls, and a live test renders the hosted page against a real order; completing a payment still needs a person with a card, and that browser leg is the one part of the loop nothing here has walked. And 30 corpus labels are the kind that need cooking judgment; they have had a model's second pass and no human sign-off, and no headline number rests on them.
+**Stated plainly:** the UPI mandate is modelled, not integrated — Reserve Pay is not reachable from a self-serve test account. Order creation, the payable link, fetch and capture are live Razorpay calls, and a live test renders the hosted page against a real order; completing a payment still needs a person with a card, and that browser leg is the one part of the loop nothing here has walked. The 30 corpus labels that need cooking judgment are now reviewed by a person and attributed — and that rests on one reviewer, no adjudication, one catalog, who could see the gate's current call while judging. The harness prints those bounds on every run rather than leaving them to a reader.
 
 ---
 

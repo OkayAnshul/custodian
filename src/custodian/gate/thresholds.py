@@ -92,7 +92,17 @@ class Thresholds(Contract):
         return canonical_hash(self.canonical())
 
 
-#: The starting point. Corpus-driven tuning on the dev split replaces these
-#: numbers; until the corpus exists they are stated guesses, and are labelled as
-#: such rather than presented as calibrated.
-DEFAULT = Thresholds(version="v0-untuned")
+#: These numbers were stated guesses — ``v0-untuned`` — until the 30
+#: benign-divergence labels carried a human's name and made the question
+#: answerable. **Not one value moved.** What changed is that the sweep can now
+#: score each setting against a person's judgment instead of against drafts, and
+#: ``substitution_faithful_bp = 8_000`` turns out to be the unique agreement
+#: peak: 100% against the reviewed labels, 73–80% at every other setting on the
+#: dial, holding separately on DEV (n=20) and TEST (n=10).
+#:
+#: So the name says *reviewed*, not *tuned*. Tuning implies the values were
+#: fitted; these were checked and left alone. The evidence is also narrow and
+#: the name should not outrun it: one reviewer, on one catalog, who could see
+#: the gate's current behaviour while judging — see EVALUATION.md, which states
+#: all three bounds next to the number.
+DEFAULT = Thresholds(version="v1-reviewed")

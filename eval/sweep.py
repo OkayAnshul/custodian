@@ -60,6 +60,13 @@ class Point:
     #: Fraction of benign-divergence orders sent back to a human. Needs no
     #: ground truth — it is behaviour, not correctness.
     benign_hold_bp: int
+    #: Agreement with the reviewed benign-divergence labels. Zero until those
+    #: labels carry a human's name: scored against drafts it would be measuring
+    #: the corpus against itself, which is the reason this column did not exist
+    #: while they were drafts.
+    benign_accuracy_bp: int
+    #: How many of those cases the figure above rests on.
+    benign_judged: int
     escalation_rate_bp: int
 
     @property
@@ -106,6 +113,7 @@ def sweep(dial: str, values: list[int], *, split: Split | None = None) -> list[P
         graded = [r for r in results if r.case.label_source is not LabelSource.PROPOSED]
         benign = [r for r in results if r.case.case_class is CaseClass.BENIGN_DIVERGENCE]
         held = sum(r.decision.outcome is Outcome.HOLD for r in benign)
+        judged = [r for r in benign if r.case.label_source is LabelSource.HUMAN]
         escalating = sum(1 for r in results if r.escalated)
         points.append(Point(
             dial=dial, value_bp=value,
@@ -115,6 +123,9 @@ def sweep(dial: str, values: list[int], *, split: Split | None = None) -> list[P
             false_approval_bp=bp.FULL - _caught(graded),
             ambiguous_hold_bp=_rate(graded, CaseClass.AMBIGUOUS, Outcome.HOLD, Outcome.HOLD),
             benign_hold_bp=bp.from_ratio(held, len(benign)) if benign else 0,
+            benign_accuracy_bp=(bp.from_ratio(sum(r.correct for r in judged), len(judged))
+                                if judged else 0),
+            benign_judged=len(judged),
             escalation_rate_bp=bp.from_ratio(escalating, len(results)) if results else 0,
         ))
     return points
@@ -142,6 +153,28 @@ def render(points: list[Point], title: str) -> None:
     if bends:
         first = min(bends, key=lambda p: p.value_bp)
         print(f"  clean orders start being held at {bp.to_str(first.value_bp)}: {first.friction}.")
+    if points[0].benign_judged:
+        # The measurement the reviewed labels unlocked: does moving this dial
+        # bring the gate closer to, or further from, a person's judgment about
+        # the substitutions themselves? Reported separately from friction,
+        # because "held more often" and "agreed with more often" are different
+        # claims and a dial can buy one while spending the other.
+        best = max(p.benign_accuracy_bp for p in points)
+        worst = min(p.benign_accuracy_bp for p in points)
+        default = next((p for p in points
+                        if p.value_bp == getattr(DEFAULT, points[0].dial)), None)
+        n = points[0].benign_judged
+        if best == worst:
+            print(f"  agreement with the {n} reviewed labels is flat at "
+                  f"{bp.to_str(best)} across this dial — moving it changes how often")
+            print(f"  a substitution is held, and not whether the call matches the reviewer.")
+        else:
+            print(f"  agreement with the {n} reviewed labels runs {bp.to_str(worst)} to "
+                  f"{bp.to_str(best)} across this dial"
+                  + (f", {bp.to_str(default.benign_accuracy_bp)} at the default."
+                     if default else "."))
+            peak = [p for p in points if p.benign_accuracy_bp == best]
+            print(f"  best at: {', '.join(bp.to_str(p.value_bp) for p in peak[:6])}")
     if all(p.adversarial_catch_bp == bp.FULL for p in points):
         print(f"  catch rate is flat at 100% across the whole range — every adversarial case")
         print(f"  in this corpus is settled by a deterministic check, so no threshold buys")
@@ -156,10 +189,14 @@ def to_csv(points: list[Point], path: Path) -> None:
     with path.open("w", newline="") as handle:
         writer = csv.writer(handle)
         writer.writerow(["dial", "threshold_bp", "clean_approval_bp", "false_hold_bp",
-                         "adversarial_catch_bp", "false_approval_bp", "ambiguous_hold_bp"])
+                         "adversarial_catch_bp", "false_approval_bp", "ambiguous_hold_bp",
+                         "benign_hold_bp", "benign_accuracy_bp", "benign_judged",
+                         "escalation_rate_bp"])
         for p in points:
             writer.writerow([p.dial, p.value_bp, p.clean_approval_bp, p.false_hold_bp,
-                             p.adversarial_catch_bp, p.false_approval_bp, p.ambiguous_hold_bp])
+                             p.adversarial_catch_bp, p.false_approval_bp, p.ambiguous_hold_bp,
+                             p.benign_hold_bp, p.benign_accuracy_bp, p.benign_judged,
+                             p.escalation_rate_bp])
 
 
 def main() -> int:

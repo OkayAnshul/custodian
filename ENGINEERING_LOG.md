@@ -452,3 +452,24 @@ Not done, and stated rather than hidden:
 **Where this stands.** Everything a viewer will see has now been run against the real thing at least twice, and the build is green for the first time since 21 August. Two things remain open and are stated rather than hidden: the 30 benign-divergence labels still carry a model's second pass and no human sign-off, and the browser leg of the checkout page is unrun.
 
 **Confidence.** High on the machinery, the argument and now the presentation. Unchanged on calibration, which is where it should be: the thresholds are still `v0-untuned` and the sweep says precisely what tuning them would cost.
+---
+
+## Day 13 — sitting 8, 2026-09-03–04 — the review, and the measurement it made possible
+
+**Objective.** Review the 30 benign-divergence labels with a person, and follow through wherever the answer changes something.
+
+**Completed.**
+- **All 30 labels reviewed and applied as `HUMAN`, attributed to OkayAnshul.** 15 distinct substitutions, each judged once and applied to both variants of its pair — the pair differs only in goal prose the gate never sees and in the DEV/TEST split, so a split label inside a pair would be a claim that the gate is wrong rather than a judgment about food. `decisions.txt` carries the reasoning; `REVIEW.md` is now a record of what was decided rather than a stale request for decisions.
+- **The rule that governs the class, settled first because it decides several cases at once.** REJECT means a hard constraint failed or the two items are unrelated; anything related but possibly wrong is HOLD. Consequence, stated rather than discovered later: the only REJECT in the class is `benign-009`, a policy violation. No substitution is ever rejected on its merits.
+- **ADR-028 closed — considered, rejected.** It had pre-registered its own settling condition: a human review of `benign-007` and `benign-014`, rejecting if both came back REJECT. Both came back HOLD. Closing on a condition stated in advance is worth more than the answer itself.
+- **The measurement the review unlocked.** `eval/sweep.py` now scores each threshold against the reviewed labels, which was impossible while they were drafts. `substitution_faithful_bp = 8000` is the *unique* agreement peak — 100%, against 73–80% everywhere else on the dial, falling off on both sides, holding separately on DEV (n=20) and TEST (n=10). Two tests assert both the peak and the split-survival.
+- **`v0-untuned` → `v1-reviewed`**, ADR-032. Not one value moved: the shipped guess was already optimal, so the name says reviewed rather than tuned. Fitting numbers to 30 labels and reporting against the same 30 would prove nothing; nothing was fitted, and the name should make that visible.
+- **The harness report reworked.** A human-signed class must not silently become a headline number — applying the labels moved 30 cases into the graded set and deleted the entire "awaiting review" section, warning and all. Benign divergence now has its own row and its own block naming the reviewer, the agreement, and the three things that bound it.
+
+**Tests.** 551 passing, 20 skipped. With Razorpay credentials: 564 passing, 7 skipped.
+
+**What broke.** Nothing, and one thing nearly did quietly: applying the labels made the report *better-looking* and less honest in the same commit. The class disappeared into `ALL` at 100% with no caveat attached, because every warning in that code path was conditioned on the labels being drafts. Caveats attached to a state rather than to a claim evaporate the moment the state changes, which is a general lesson and not a bug I can point at a line for.
+
+**Where this stands.** The one item that was blocked on a person is done. What is left is a second reviewer — the bounds on this agreement are exactly what an independent pass would tighten — the browser leg of the checkout page, and the pitch recording.
+
+**Confidence.** Raised, and specifically on the part that was weakest. Calibration was the honest gap through the whole build; it is now a measurement with its limits printed by the tool rather than recited in prose. The limits are real: one reviewer who could see the gate's answers, on one catalog.

@@ -151,3 +151,41 @@ def test_tightening_the_threshold_buys_no_extra_catch_rate():
 
     points = sweep("min_confidence_bp", [0, 5_000, 10_000])
     assert {p.adversarial_catch_bp for p in points} == {bp.FULL}
+
+
+def test_the_default_substitution_threshold_is_the_agreement_peak():
+    """The result the reviewed labels unlocked, and the reason for `v1-reviewed`.
+
+    Before the 30 benign-divergence labels carried a human's name, no setting of
+    this dial could be scored for correctness — only for how much friction it
+    bought. Now it can, and the shipped default is the unique maximum: agreement
+    falls off on both sides of 80%, so the number is a choice the corpus
+    supports rather than a guess nobody had examined.
+
+    Asserted rather than quoted, because `thresholds.py` and `EVALUATION.md`
+    both now rest on it being a peak and not a plateau.
+    """
+    from custodian.gate.thresholds import DEFAULT
+    from eval.sweep import sweep
+
+    points = {p.value_bp: p for p in
+              sweep("substitution_faithful_bp", [5_000, 7_000, 8_000, 8_500, 9_000, 9_500])}
+    assert DEFAULT.substitution_faithful_bp == 8_000
+    assert all(p.benign_judged == 30 for p in points.values()), "labels must be human-reviewed"
+
+    peak = points[8_000].benign_accuracy_bp
+    assert peak == bp.FULL
+    assert all(p.benign_accuracy_bp < peak for value, p in points.items() if value != 8_000)
+
+
+def test_the_peak_survives_the_split_it_was_not_chosen_on():
+    """Chosen on DEV, confirmed on TEST — the discipline the corpus exists for."""
+    from eval.corpus.schema import Split
+    from eval.sweep import sweep
+
+    for split in (Split.DEV, Split.TEST):
+        points = {p.value_bp: p for p in
+                  sweep("substitution_faithful_bp", [7_000, 8_000, 9_000], split=split)}
+        assert points[8_000].benign_accuracy_bp == bp.FULL
+        assert points[7_000].benign_accuracy_bp < bp.FULL
+        assert points[9_000].benign_accuracy_bp < bp.FULL

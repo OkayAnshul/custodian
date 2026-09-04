@@ -242,7 +242,7 @@ chain intact: 20 events
 
 ## If asked
 
-**"Isn't 100% suspicious?"** — Yes, and the harness says so in its own output. Three classes have labels that follow from how each case was built; scoring 100% says the implementation matches its specification, not that the specification is right. The class where that question lives is benign divergence, and its 30 labels are drafts. I won't quote a number that rests on labels a model drafted.
+**"Isn't 100% suspicious?"** — Yes, and the harness says so in its own output. Three classes have labels that follow from how each case was built; scoring 100% says the implementation matches its specification, not that the specification is right. The class where that question lives is benign divergence — those 30 labels were drafts and are now reviewed by a person, attributed, case by case. That unlocked the measurement that couldn't be taken before: the shipped substitution threshold is the *unique* agreement peak, 100% at 80% and 73–80% either side, holding on DEV and TEST separately. No value moved. And the bounds on that: one reviewer, no adjudication, one catalog, and they could see the gate's call while judging. The harness prints all three every run.
 
 **"Why is the LLM there at all?"** — Two places. Turning "ingredients for a Thai curry, under ₹2,000" into structured constraints, which is genuinely language. And breaking ties on form pairs nobody has judged — turmeric whole for turmeric powder. It's asked one question, sees no price or budget or mandate, and answers into a three-value enum with `UNSURE` available.
 

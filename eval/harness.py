@@ -223,7 +223,7 @@ def report(results: list[Outcome_], *, thresholds: Thresholds, split: str) -> No
     print(f"\nCorpus — {split} split, thresholds {thresholds.version}")
     print("─" * 78)
     print(f"  {'class':22} {'n':>4} {'correct':>9} {'reasons':>9}  escalations")
-    for name in ("CLEAN", "ADVERSARIAL", "AMBIGUOUS", "ALL"):
+    for name in ("CLEAN", "BENIGN_DIVERGENCE", "ADVERSARIAL", "AMBIGUOUS", "ALL"):
         m = metrics.get(name)
         if not m:
             continue
@@ -249,13 +249,40 @@ def report(results: list[Outcome_], *, thresholds: Thresholds, split: str) -> No
               f"{bp.to_str(bp.from_ratio(adversarial.total - caught, adversarial.total)):>8}"
               f"   attacks that got through")
 
+    judged = [r for r in results if r.case.label_source is LabelSource.HUMAN]
+
     if clean and adversarial and clean.accuracy_bp == bp.FULL and adversarial.accuracy_bp == bp.FULL:
         print(f"\n  what a perfect derived score does and does not mean")
         print(f"    CLEAN, ADVERSARIAL and AMBIGUOUS have labels that follow from how each case")
         print(f"    was built. A forged price is a rejection by construction. Scoring 100% on")
         print(f"    them says the implementation matches its specification — it does not say the")
         print(f"    specification is right. The class where that question actually lives is")
-        print(f"    benign divergence, and its labels are still drafts.")
+        if judged:
+            print(f"    benign divergence, and its labels are a person's judgment — read the next")
+            print(f"    block, which says what that agreement is worth and what it is not.")
+        else:
+            print(f"    benign divergence, and its labels are still drafts.")
+
+    if judged:
+        # A human-signed class is a measurement rather than a draft, and it is
+        # still a narrow one. Reporting the number without the three things that
+        # bound it would be the same overclaim the drafts were kept out of.
+        matched = sum(r.correct for r in judged)
+        reviewers = sorted({r.case.reviewed_by for r in judged if r.case.reviewed_by})
+        pairs = len({r.case.case_id.replace("-oos", "") for r in judged})
+        print(f"\n  benign divergence — {len(judged)} cases, labels HUMAN, "
+              f"reviewed by {', '.join(reviewers)}")
+        print(f"    agreement with these labels {bp.to_str(bp.from_ratio(matched, len(judged))):>8}")
+        print(f"    This is the class where the specification itself is the question, and its")
+        print(f"    labels are now a person's judgment rather than a model's. Three things")
+        print(f"    bound what the agreement is worth:")
+        print(f"      · one reviewer, no adjudication — {pairs} distinct substitutions, each")
+        print(f"        judged once and applied to both variants of its pair.")
+        print(f"      · the reviewer saw what the gate does today while judging it. The evidence")
+        print(f"        sheet shows that column, which makes anchoring possible and agreement")
+        print(f"        cheaper than an independent pass would be.")
+        print(f"      · it says the gate matches this reviewer on this catalog. That is a")
+        print(f"        measurement where there was none, and it is not a general result.")
 
     if proposed:
         matched = sum(r.correct for r in proposed)
