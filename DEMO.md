@@ -1,6 +1,10 @@
 # Demo
 
-Four minutes. Every number below is produced live by `scripts/demo.py` — nothing here is a slide.
+**Four minutes fifty-five**, as scripted below — the beats sum to 4:55 before you draw breath between them, so budget five and a half. Every number is produced live by `scripts/demo.py`; nothing here is a slide.
+
+> **If the cap is a hard four minutes,** cut beat 3 and open beat 4 with its one line — *"the merchant's own copy is attacker-controlled, and the agent follows it"* — over the same screen. That lands at 4:10 and loses nothing the gate demonstrates, because beat 4 shows the defence anyway.
+
+**One command sets everything up:** `make pitch` starts the server on the live gateway, creates a verified order so the checkout page and payable link are real, opens pitch mode and the decision viewer, and prints the run sheet. Then press record.
 
 ```bash
 set -a && . ./.env && set +a                        # live Razorpay test-mode order in step 1

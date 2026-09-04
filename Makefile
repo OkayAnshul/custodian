@@ -14,6 +14,7 @@ help:
 	@echo "  make eval       the corpus, DEV and TEST"
 	@echo "  make money      what Custodian saves, and what it costs"
 	@echo "  make sweep      the threshold curve"
+	@echo "  make pitch      preflight for recording: server, live order, both pages"
 	@echo "  make serve      the API and decision viewer on :8000"
 	@echo "  make review     lay out the 30 drafted labels for human review"
 	@echo "  make record     record real model responses (needs GROQ_API_KEY)"
@@ -54,6 +55,13 @@ money:
 .PHONY: sweep
 sweep:
 	@$(PY) -m eval.sweep --split ALL --csv docs/sweep.csv
+
+# Everything between a cold machine and "press record": server on the live
+# gateway, a real order so the checkout page and payable link work, both
+# surfaces open, and the run sheet printed.
+.PHONY: pitch
+pitch:
+	@bash scripts/pitch.sh
 
 .PHONY: serve
 serve:
