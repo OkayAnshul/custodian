@@ -13,7 +13,18 @@
 ![python](https://img.shields.io/badge/python-3.12%2B-1c5566)
 ![failures documented](https://img.shields.io/badge/failures%20documented-16-8a5d0a)
 
-**[🔎 See it working](https://okayanshul.github.io/custodian/)** · **[🎤 Pitch mode](https://okayanshul.github.io/custodian/pitch.html)** · [Screenshots & output](docs/WALKTHROUGH.md) · [What broke](BROKE.md) · [Limitations](LIMITATIONS.md) · [Evaluation](EVALUATION.md)
+### Two live pages — nothing to clone, nothing to install
+
+[![See it working](https://img.shields.io/badge/%F0%9F%94%8E_SEE_IT_WORKING-open_the_evidence_page-1c5566?style=for-the-badge)](https://okayanshul.github.io/custodian/)
+&nbsp;
+[![Pitch mode](https://img.shields.io/badge/%F0%9F%8E%A4_PITCH_MODE-the_four_minute_walkthrough-12968c?style=for-the-badge)](https://okayanshul.github.io/custodian/pitch.html)
+
+| | | |
+|---|---|---|
+| 🔎 | **[okayanshul.github.io/custodian](https://okayanshul.github.io/custodian/)** | Screenshots, charts and real terminal output. Every claim below, shown rather than asserted — including a live Razorpay test-mode payment settled at the derived amount. |
+| 🎤 | **[.../custodian/pitch.html](https://okayanshul.github.io/custodian/pitch.html)** | The four-minute walkthrough as eight beats, the whole path from CSV to settled payment step by step, the failure arc, and 28 anticipated questions with answers. |
+
+[Screenshots & output](docs/WALKTHROUGH.md) · [What broke](BROKE.md) · [Limitations](LIMITATIONS.md) · [Evaluation](EVALUATION.md) · [Decisions](DECISIONS.md)
 
 </div>
 
@@ -339,7 +350,9 @@ Stated plainly, because a reviewer will find them anyway and the honest version 
 
 <div align="center">
 
-**[🔎 See it working](https://okayanshul.github.io/custodian/)** · [Screenshots & real output](docs/WALKTHROUGH.md) · [What broke](BROKE.md)
+### [🔎 See it working](https://okayanshul.github.io/custodian/) &nbsp;·&nbsp; [🎤 Pitch mode](https://okayanshul.github.io/custodian/pitch.html)
+
+[Screenshots & real output](docs/WALKTHROUGH.md) · [What broke](BROKE.md) · [Limitations](LIMITATIONS.md)
 
 <sub>Every figure and screenshot in this README was produced by running the code.</sub>
 
