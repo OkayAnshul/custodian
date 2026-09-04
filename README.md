@@ -13,7 +13,7 @@
 ![python](https://img.shields.io/badge/python-3.12%2B-1c5566)
 ![failures documented](https://img.shields.io/badge/failures%20documented-16-8a5d0a)
 
-**[🔎 See it working](https://okayanshul.github.io/custodian/)** · [Screenshots & real output](docs/WALKTHROUGH.md) · [What broke](BROKE.md) · [Limitations](LIMITATIONS.md) · [Evaluation](EVALUATION.md)
+**[🔎 See it working](https://okayanshul.github.io/custodian/)** · **[🎤 Pitch mode](https://okayanshul.github.io/custodian/pitch.html)** · [Screenshots & output](docs/WALKTHROUGH.md) · [What broke](BROKE.md) · [Limitations](LIMITATIONS.md) · [Evaluation](EVALUATION.md)
 
 </div>
 
@@ -49,6 +49,8 @@ Every one of those numbers is printed by `make money`.
 > **Why this and not a guardrail.** A guardrail inspects text and guesses. Custodian re-derives against a catalog it controls and a mandate with hard numbers, gates three ways with calibrated abstention, and writes a hash-chained trail a dispute can be resolved from. Different mechanism, different failure surface.
 >
 > **Why this and not Vulcan.** Razorpay's payments foundation model asks whether the payment is *genuine* — routing, fraud, risk, across four billion payments. Custodian asks whether the purchase was *what was asked for*. Different question, and nothing in the stack was answering it.
+>
+> **Why it is hard to copy.** The moat is not the code — it is the hand-authored Indian grocery lexicon and a 120-case corpus with a written rationale each, thirty of which needed cooking judgment a model cannot honestly supply. That is authoring work rather than engineering work, which is the honest shape of the problem and the reason a weekend clone of the architecture would not reproduce the result.
 
 ---
 
@@ -259,7 +261,22 @@ GROQ_API_KEY=...                       # optional: make demo-groq calls the mode
 
 ---
 
-## 8. What I deliberately did not build
+## 8. What I considered and rejected
+
+Thirty-three decisions are recorded with the alternatives they turned down, because an architecture is only worth the options it refused. **Twelve of the thirty-three are decisions *not* to do something.** Six a reviewer is most likely to push on:
+
+| Decision | What was rejected, and why |
+|---|---|
+| **Attribute decomposition, not lexical similarity** | The problem statement specified containment similarity. Worked by hand, that primitive scores the statement's *own* flagship pair identically — so the deterministic layer would contribute nothing on exactly the cases the project exists to decide. **Rejected:** lexical-first with attributes as tie-breaker — *"two scoring systems to build, tune and explain, to keep a sentence in a document literally true."* |
+| **The model runs upstream; its verdict is recorded evidence** | A decision a model participates in that still replays without one. **Rejected:** re-consulting the model at replay — *"what the model returned is evidence rather than an oracle to re-consult."* `decide()` has no client to call even if someone wanted it to. |
+| **A failed dimension caps the outcome** | **Rejected:** re-tuning the weights, and maintaining a blocking-code list alone. Both let a future weight change silently re-litigate which violations can be ignored. *"Weights decide how much a dimension contributes. They should not decide whether a failure counts."* |
+| **Reason codes are a closed set** | 49 codes, each with merchant-facing text. **Rejected:** an LLM-authored explanation field — *"it reads better and proves less."* A free-text explanation from a model is a second, unverifiable model output sitting where the audit trail should be. |
+| **Re-confirmation records authority, it does not rewrite the decision** | **Rejected:** flipping a held order to `APPROVE`, which erases the fact that anyone had to be asked. *"An audit trail that loses the difference between 'passed' and 'was waved through' is not an audit trail."* |
+| **A second provider, not a second model** | **Rejected:** a cheaper model from the same vendor — it shares a wire format and proves only that the model id is a parameter. A second *provider* has a different structured-output API, response shape and error hierarchy. **Refused:** models without enforced schemas — *"an unenforced schema turns 'the output is constrained' into a hope."* |
+
+One decision is closed as **considered and rejected**: a form-incompatibility floor, declined for lack of evidence, having registered *in advance* the exact review that would settle it. The review happened, returned the answer that closed it against the fix, and the uncomfortable consequence is stated out loud rather than left to be discovered — *no substitution in this system is ever rejected on its merits; rejection is reserved for authority and arithmetic.*
+
+### And the things not built at all
 
 | Considered | Why not |
 |---|---|

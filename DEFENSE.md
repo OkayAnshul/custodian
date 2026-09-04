@@ -14,9 +14,9 @@ The one that kills the submission if answered vaguely. Don't argue the category 
 
 > "A guardrail reads text and forms an opinion about it. Custodian doesn't read the agent's output — it re-derives the answer independently from a catalog it controls and a mandate with hard numbers, and compares. When the agent says a tin of coconut milk costs ₹99, nothing inspects that claim for plausibility; it's looked up and it's ₹199, so the order is rejected on arithmetic.
 >
-> Measured: fifteen percent of cart lines reach a model. Zero adversarial cases do."
+> Measured: 24 of 162 cart lines reach a model — under fifteen percent. Zero adversarial cases do."
 
-If pressed on where a model *is* used: two places, both deliberate, and §6 of the README lists what was kept out and why.
+If pressed on where a model *is* used: two places, both deliberate, and §4 of the README lists what was kept out and why.
 
 ### "Why is the LLM there at all?"
 
@@ -104,7 +104,7 @@ Fixed structurally rather than by re-tuning weights: any `FAIL` or `UNCERTAIN` c
 
 ### Payments
 
-**30s.** Behind a four-method Protocol. The fake and the real Razorpay client pass one contract suite; twelve of those tests run against the live test-mode API, and a thirteenth renders the hosted checkout page against an order Razorpay issued.
+**30s.** Behind a four-method Protocol. The fake and the real Razorpay client pass one contract suite; fourteen of those run against the live test-mode API — twelve from the contract suite, plus one that renders the hosted checkout page against an order Razorpay issued and one that asserts the served process picks the live gateway at all.
 
 **The bug worth volunteering.** `BROKE.md` 006. The Protocol had `create_order` then `capture(order)`. Razorpay is `order → a human pays → authorized payment → capture`. An unpaid order has zero payments and nothing to capture. `FakeGateway` passed the whole contract, through every phase up to that point, against an API I had *imagined*.
 
@@ -151,7 +151,7 @@ Answer with the specific decisions, not a disclaimer.
 | | |
 |---|---|
 | `BROKE.md` | Entries 006, 007, 012, 016. Sixteen failures with root causes is the strongest single artifact here |
-| `README.md` §5 | The table of where a model was deliberately not used |
+| `README.md` §4 | The table of where a model was deliberately not used |
 | The viewer | `make serve`, then `/view/…` — the per-dimension breakdown lands faster than any explanation |
 | `EVALUATION.md` | For the corpus question, which will come — §"The result the review unlocked" and §"What the agreement is worth" |
 

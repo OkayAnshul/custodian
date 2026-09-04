@@ -2,7 +2,9 @@
 
 Kept from the first hour, because the submission form's twelfth field asks what broke and how you got out, and a file written honestly at the end reads like fiction.
 
-Dates are all **2026-08-21**: the whole build happened in four sittings on one day. The "plan phase" numbers map to the problem statement's fifteen-day plan, not to calendar days — see the note at the top of `ENGINEERING_LOG.md`.
+Entries **001–011 are all dated 2026-08-21** — that much of the build happened in four sittings on one day, and their "plan phase" numbers map to the problem statement's fifteen-day plan rather than to calendar days. Entries **012–016 carry their own later dates**, because the work continued across nine sittings in total; see the note at the top of `ENGINEERING_LOG.md`.
+
+*That paragraph used to say "dates are all 2026-08-21" and stopped being true the moment entry 012 was written. It sat directly above entry 011, which is about a fabricated timeline, for eleven days.*
 
 Entries are in the order they happened. Nothing is removed once it is fixed.
 
@@ -383,6 +385,7 @@ And the label provenance design recorded *whether* a judgment had been made, not
 **What changed to prevent recurrence.** `test_a_confident_verdict_cannot_resolve_an_unplaceable_item` feeds a `FAITHFUL` verdict at 9500bp into exactly that case and asserts the outcome is still `HOLD`, and its sibling asserts the guard does not over-reach into ordinary escalations.
 
 **Lesson.** This is BROKE.md 006 in a different costume. There, a fake gateway satisfied a contract the real provider could not, and it passed for four phases of work because nobody had run the real thing. Here, hand-written fixtures satisfied an abstention guarantee that a real model broke on the first call — and for the same reason: **a stand-in written by the person who also wrote the expectations agrees with them.** It is not a test until something you did not author has a chance to disagree.
+
 ---
 
 ## 013 — The demo's payable link worked exactly once
@@ -415,6 +418,7 @@ The code that chose a stable reference did so deliberately, and its docstring gi
 **What changed to prevent recurrence.** `tests/test_payment_link_reuse.py` — a first mint creates; a second returns the existing link; a link for a different amount is never handed back; a `paid`, `cancelled` or `expired` link is not reused; a failure that is not a duplicate still raises rather than becoming a lookup; and a listing entry with no usable amount is skipped rather than trusted. `tests/test_api.py` covers the settle path surviving a gateway that will not mint at all.
 
 **Lesson.** BROKE.md 006 arriving a third time from the same direction: the parts that only run against real credentials are the parts nobody has run. What made this one slower to see is that it *had* run — once, successfully, when the code was written — and nothing afterwards was a fresh account. **A failure that only appears on the second run is invisible to a suite that starts clean every time**, and it is exactly the failure a demo hits, because a demo is by definition the second run.
+
 ---
 
 ## 014 — The build was red for ten runs and I read it as noise
@@ -444,6 +448,7 @@ Every other CI step passed the whole time. The tests, the corpus, the sweep, the
 **Why the fix works.** It makes the file and its generator agree, which is the property the CI step exists to assert. `test_the_committed_corpus_is_what_the_generator_produces` now asserts it locally too, so the failure surfaces in `make test` instead of only in a place I had learned to ignore.
 
 **Lesson.** A check that cannot pass is indistinguishable from one that always fails, and after the second red run I stopped reading it. Worse, the thing it was protecting was real: the corpus in the repository was not the corpus the code produced, which is the exact condition that makes every number resting on it unverifiable — and the check was telling me so, correctly, ten times. The tell was that the build went red on a specific commit and stayed red; a flaky build wanders, a broken invariant does not. And the local shortcut is what let it run: `make check` was "what CI runs" in every document, and it was not.
+
 ---
 
 ## 015 — The server could not serve the page it documents
@@ -473,6 +478,7 @@ The credential was sitting in `.env` the whole time. Nothing read it.
 **What changed to prevent recurrence.** Two tests. One asserts the selector returns the fake with no credentials *and* with a `rzp_live_` key. The other, `live`-marked, asserts it returns `razorpay-test` when test credentials are present — the condition that makes the documented walkthrough possible.
 
 **Lesson.** Every test of this route constructed the app itself, and constructing it was the bug. A test that builds its subject with the dependency injected can never catch a wiring error in the one place the dependency is chosen for real — and the more carefully the tests inject, the more completely that line is uncovered. It is BROKE.md 006 again, one layer out: there, a fake satisfied a contract the real provider could not; here, a fake was silently *substituted for* the real provider in the only process that ships. The documentation was right, the code was wrong, and the gap between them had exactly one line in it.
+
 ---
 
 ## 016 — A payment settled and the ledger did not know

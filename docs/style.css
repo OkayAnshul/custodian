@@ -1,0 +1,135 @@
+/* Custodian — shared across the evidence page and the pitch deck.
+   One source of truth for the palette: the two surfaces are one product,
+   and duplicated tokens are how two surfaces stop looking like one. */
+
+:root{
+  --paper:#f6f7f5; --raised:#fdfdfc; --ink:#12171c; --muted:#575f5a; --faint:#868e88;
+  --rule:#dde2dd; --accent:#1c5566; --accent-soft:#e6eff1;
+  --pass:#17693f; --hold:#8a5d0a; --reject:#9c2f1c;
+  --term-bg:#11171b; --term-ink:#d6ded8;
+  --s-raw:#e08a2b; --s-ing:#12968c; --surface:#fdfdfc; --grid:#e6eae6;
+  --sans:"Public Sans",system-ui,-apple-system,sans-serif;
+  --serif:"Newsreader",Georgia,serif;
+  --mono:"JetBrains Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+  --measure:68ch; --wide:min(1120px,100% - 3rem);
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --paper:#0e1216; --raised:#161c21; --ink:#e6eae5; --muted:#9ca69f; --faint:#727c76;
+  --rule:#252d33; --accent:#6fb3c6; --accent-soft:#152b33;
+  --pass:#4bbd83; --hold:#d9a441; --reject:#e0745c;
+  --term-bg:#080b0d; --term-ink:#cfd8d2;
+  --s-raw:#d95926; --s-ing:#1baf7a; --surface:#161c21; --grid:#232b31;
+}}
+:root[data-theme="dark"]{
+  --paper:#0e1216; --raised:#161c21; --ink:#e6eae5; --muted:#9ca69f; --faint:#727c76;
+  --rule:#252d33; --accent:#6fb3c6; --accent-soft:#152b33;
+  --pass:#4bbd83; --hold:#d9a441; --reject:#e0745c;
+  --term-bg:#080b0d; --term-ink:#cfd8d2;
+  --s-raw:#d95926; --s-ing:#1baf7a; --surface:#161c21; --grid:#232b31;
+}
+*{box-sizing:border-box}
+body{background:var(--paper);color:var(--ink);font-family:var(--sans);font-size:17px;line-height:1.65;
+  -webkit-font-smoothing:antialiased;margin:0}
+.wrap{width:var(--wide);margin:0 auto;padding:0 0 6rem}
+.col{max-width:var(--measure)}
+h1,h2,h3{font-family:var(--serif);font-weight:500;text-wrap:balance;margin:0}
+h1{font-size:clamp(2.7rem,6.5vw,4.4rem);line-height:1;letter-spacing:-.025em}
+h2{font-size:clamp(1.55rem,3vw,2.1rem);line-height:1.14;margin:0 0 .7rem}
+h3{font-size:1.1rem;margin:0 0 .3rem}
+p{margin:0 0 1rem}
+a{color:var(--accent)}
+a:focus-visible,summary:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
+.eyebrow{font-family:var(--mono);font-size:.69rem;letter-spacing:.15em;text-transform:uppercase;
+  color:var(--faint);margin:0 0 .55rem}
+header{padding:5.5rem 0 2.5rem}
+.lede{font-family:var(--serif);font-size:clamp(1.25rem,2.5vw,1.6rem);line-height:1.42;margin:1.7rem 0 0;max-width:56ch}
+.meta{display:flex;flex-wrap:wrap;gap:.4rem 1.5rem;margin-top:1.9rem;font-size:.85rem;color:var(--muted)}
+code{font-family:var(--mono);font-size:.86em}
+.band{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--rule);
+  border-block:1px solid var(--rule);margin:3rem 0 0}
+.band div{background:var(--paper);padding:1.15rem 1.25rem}
+.band b{display:block;font-family:var(--mono);font-size:.78rem;letter-spacing:.1em}
+.band span{font-size:.85rem;color:var(--muted);line-height:1.45;display:block;margin-top:.25rem}
+.band .a b{color:var(--pass)} .band .h b{color:var(--hold)} .band .r b{color:var(--reject)}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
+  border:1px solid var(--rule);border-radius:3px;overflow:hidden;margin:2.4rem 0 0}
+.stats div{padding:1.15rem 1.3rem;border-right:1px solid var(--rule)}
+.stats div:last-child{border-right:0}
+.stats b{display:block;font-family:var(--serif);font-size:1.85rem;line-height:1.1;
+  font-variant-numeric:tabular-nums;letter-spacing:-.01em}
+.stats span{display:block;font-size:.8rem;color:var(--muted);margin-top:.3rem;line-height:1.4}
+section{padding:3.6rem 0 0}
+pre{background:var(--term-bg);color:var(--term-ink);font-family:var(--mono);font-size:.75rem;
+  line-height:1.55;padding:1.1rem 1.25rem;border-radius:4px;overflow-x:auto;margin:1.4rem 0}
+figure{margin:1.7rem 0 0}
+figure img{width:100%;display:block;border:1px solid var(--rule);border-radius:5px;background:var(--raised)}
+figcaption{font-size:.85rem;color:var(--muted);margin-top:.75rem;max-width:64ch;line-height:1.55}
+figcaption b{color:var(--ink);font-weight:600}
+table{width:100%;border-collapse:collapse;font-size:.88rem;margin:1.3rem 0}
+th,td{text-align:left;padding:.5rem .8rem .5rem 0;border-bottom:1px solid var(--rule);vertical-align:top}
+th{font-family:var(--mono);font-size:.67rem;letter-spacing:.1em;text-transform:uppercase;color:var(--faint);font-weight:400}
+.chip{font-family:var(--mono);font-size:.71rem;padding:.1rem .42rem;border:1px solid var(--rule);
+  border-radius:3px;color:var(--muted);white-space:nowrap}
+.note{border-left:2px solid var(--accent);background:var(--accent-soft);padding:1rem 1.2rem;
+  margin:1.7rem 0;border-radius:0 3px 3px 0;font-size:.93rem}
+.note p:last-child{margin:0}
+/* the pipeline — order is the information, so it is drawn as a sequence */
+.pipe{display:grid;gap:.5rem;margin:1.8rem 0 0}
+.pipe .step{display:grid;grid-template-columns:auto 1fr;gap:.9rem;align-items:start;
+  border:1px solid var(--rule);border-radius:4px;padding:.85rem 1.05rem;background:var(--raised)}
+.pipe .step.gate{border-color:var(--accent);border-width:1px 1px 1px 3px}
+.pipe .n{font-family:var(--mono);font-size:.7rem;color:var(--faint);padding-top:.2rem}
+.pipe h3{font-family:var(--sans);font-size:.95rem;font-weight:600;margin:0 0 .15rem}
+.pipe p{font-size:.87rem;color:var(--muted);margin:0}
+.pipe .arrow{text-align:center;color:var(--faint);font-size:.8rem;line-height:1}
+.dims{display:grid;grid-template-columns:repeat(auto-fit,minmax(232px,1fr));gap:0 1.6rem;margin:1.4rem 0 0}
+.dims div{border-top:1px solid var(--rule);padding:.7rem 0}
+.dims b{font-family:var(--mono);font-size:.73rem;display:block;letter-spacing:.02em}
+.dims span{font-size:.85rem;color:var(--muted);line-height:1.45}
+.chart{width:100%;height:auto;display:block;margin:1.5rem 0 0;overflow:visible}
+.chart .cy{font:400 12px var(--sans);fill:var(--muted)}
+.chart .cv{font:500 12px var(--mono);fill:var(--ink);font-variant-numeric:tabular-nums}
+.chart .cl{font:400 12px var(--sans);fill:var(--muted)}
+.chart .ct{font:400 11.5px var(--sans);fill:var(--faint)}
+.chart .cpk{font:500 12px var(--mono);fill:var(--ink)}
+.chart .grid{stroke:var(--grid);stroke-width:1}
+.honest{border:1px solid var(--rule);border-radius:3px;padding:1.25rem 1.4rem;margin-top:.7rem}
+.honest h3{font-family:var(--sans);font-size:.94rem;font-weight:600;margin-bottom:.25rem}
+.honest p{font-size:.89rem;color:var(--muted);margin:0}
+.broke{border-top:1px solid var(--rule);padding:1.15rem 0}
+.broke h3{font-family:var(--sans);font-size:.98rem;font-weight:600}
+.broke p{font-size:.9rem;color:var(--muted);margin:.3rem 0 0}
+.broke .id{font-family:var(--mono);font-size:.7rem;color:var(--faint);letter-spacing:.08em}
+footer{margin-top:4.5rem;padding-top:2rem;border-top:1px solid var(--rule);font-size:.9rem;color:var(--muted)}
+@media (max-width:680px){
+  body{font-size:16px} header{padding:3rem 0 1.5rem}
+  .band{grid-template-columns:1fr} .stats div{border-right:0;border-bottom:1px solid var(--rule)}
+  pre{font-size:.66rem}
+}
+@media (prefers-reduced-motion:no-preference){a{transition:opacity .15s}a:hover{opacity:.72}}
+
+/* --- the mode switch: evidence ⇄ pitch -------------------------------------
+   A plain link, deliberately. It must work when scripts do not. */
+.modeswitch{position:fixed;top:0;right:0;z-index:60;display:flex;gap:.55rem;align-items:center;
+  padding:.5rem .8rem;background:var(--raised);border:1px solid var(--rule);border-top:0;
+  border-right:0;border-radius:0 0 0 5px;font-size:.78rem}
+.modeswitch a{font-family:var(--mono);font-size:.72rem;letter-spacing:.04em;text-decoration:none;
+  padding:.2rem .5rem;border-radius:3px}
+.modeswitch a[aria-current]{background:var(--accent-soft);color:var(--accent)}
+.modeswitch a:not([aria-current]){color:var(--muted)}
+.modeswitch a:not([aria-current]):hover{color:var(--ink);background:var(--paper)}
+@media (max-width:680px){.modeswitch{position:static;border:0;border-bottom:1px solid var(--rule);
+  border-radius:0;justify-content:flex-end}}
+
+/* --- decision cards: what was chosen, and what was turned down ------------- */
+.why{display:grid;gap:0;margin:1.6rem 0 0;border:1px solid var(--rule);border-radius:4px;overflow:hidden}
+.why > div{padding:1.15rem 1.3rem;border-bottom:1px solid var(--rule)}
+.why > div:last-child{border-bottom:0}
+.why h3{font-family:var(--sans);font-size:.97rem;font-weight:600;margin:0 0 .3rem}
+.why p{font-size:.9rem;color:var(--muted);margin:0 0 .45rem}
+.why p:last-child{margin:0}
+.why .no{font-size:.87rem;color:var(--muted)}
+.why .no b{font-family:var(--mono);font-size:.7rem;letter-spacing:.08em;text-transform:uppercase;
+  color:var(--reject);font-weight:500;margin-right:.4rem}
+.why blockquote{margin:.5rem 0 0;padding-left:.85rem;border-left:2px solid var(--accent);
+  font-family:var(--serif);font-size:1rem;font-style:italic;color:var(--ink)}

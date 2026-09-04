@@ -9,115 +9,14 @@
 <meta property="og:description" content="The stack proves an agent was permitted to spend. Nothing checks whether it bought what the human asked for.">
 <meta property="og:image" content="img/hold-dimensions.png">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400&family=Public+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap">
-<style>
-:root{
-  --paper:#f6f7f5; --raised:#fdfdfc; --ink:#12171c; --muted:#575f5a; --faint:#868e88;
-  --rule:#dde2dd; --accent:#1c5566; --accent-soft:#e6eff1;
-  --pass:#17693f; --hold:#8a5d0a; --reject:#9c2f1c;
-  --term-bg:#11171b; --term-ink:#d6ded8;
-  --s-raw:#e08a2b; --s-ing:#12968c; --surface:#fdfdfc; --grid:#e6eae6;
-  --sans:"Public Sans",system-ui,-apple-system,sans-serif;
-  --serif:"Newsreader",Georgia,serif;
-  --mono:"JetBrains Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
-  --measure:68ch; --wide:min(1120px,100% - 3rem);
-}
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
-  --paper:#0e1216; --raised:#161c21; --ink:#e6eae5; --muted:#9ca69f; --faint:#727c76;
-  --rule:#252d33; --accent:#6fb3c6; --accent-soft:#152b33;
-  --pass:#4bbd83; --hold:#d9a441; --reject:#e0745c;
-  --term-bg:#080b0d; --term-ink:#cfd8d2;
-  --s-raw:#d95926; --s-ing:#1baf7a; --surface:#161c21; --grid:#232b31;
-}}
-:root[data-theme="dark"]{
-  --paper:#0e1216; --raised:#161c21; --ink:#e6eae5; --muted:#9ca69f; --faint:#727c76;
-  --rule:#252d33; --accent:#6fb3c6; --accent-soft:#152b33;
-  --pass:#4bbd83; --hold:#d9a441; --reject:#e0745c;
-  --term-bg:#080b0d; --term-ink:#cfd8d2;
-  --s-raw:#d95926; --s-ing:#1baf7a; --surface:#161c21; --grid:#232b31;
-}
-*{box-sizing:border-box}
-body{background:var(--paper);color:var(--ink);font-family:var(--sans);font-size:17px;line-height:1.65;
-  -webkit-font-smoothing:antialiased;margin:0}
-.wrap{width:var(--wide);margin:0 auto;padding:0 0 6rem}
-.col{max-width:var(--measure)}
-h1,h2,h3{font-family:var(--serif);font-weight:500;text-wrap:balance;margin:0}
-h1{font-size:clamp(2.7rem,6.5vw,4.4rem);line-height:1;letter-spacing:-.025em}
-h2{font-size:clamp(1.55rem,3vw,2.1rem);line-height:1.14;margin:0 0 .7rem}
-h3{font-size:1.1rem;margin:0 0 .3rem}
-p{margin:0 0 1rem}
-a{color:var(--accent)}
-a:focus-visible,summary:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
-.eyebrow{font-family:var(--mono);font-size:.69rem;letter-spacing:.15em;text-transform:uppercase;
-  color:var(--faint);margin:0 0 .55rem}
-header{padding:5.5rem 0 2.5rem}
-.lede{font-family:var(--serif);font-size:clamp(1.25rem,2.5vw,1.6rem);line-height:1.42;margin:1.7rem 0 0;max-width:56ch}
-.meta{display:flex;flex-wrap:wrap;gap:.4rem 1.5rem;margin-top:1.9rem;font-size:.85rem;color:var(--muted)}
-code{font-family:var(--mono);font-size:.86em}
-.band{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--rule);
-  border-block:1px solid var(--rule);margin:3rem 0 0}
-.band div{background:var(--paper);padding:1.15rem 1.25rem}
-.band b{display:block;font-family:var(--mono);font-size:.78rem;letter-spacing:.1em}
-.band span{font-size:.85rem;color:var(--muted);line-height:1.45;display:block;margin-top:.25rem}
-.band .a b{color:var(--pass)} .band .h b{color:var(--hold)} .band .r b{color:var(--reject)}
-.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
-  border:1px solid var(--rule);border-radius:3px;overflow:hidden;margin:2.4rem 0 0}
-.stats div{padding:1.15rem 1.3rem;border-right:1px solid var(--rule)}
-.stats div:last-child{border-right:0}
-.stats b{display:block;font-family:var(--serif);font-size:1.85rem;line-height:1.1;
-  font-variant-numeric:tabular-nums;letter-spacing:-.01em}
-.stats span{display:block;font-size:.8rem;color:var(--muted);margin-top:.3rem;line-height:1.4}
-section{padding:3.6rem 0 0}
-pre{background:var(--term-bg);color:var(--term-ink);font-family:var(--mono);font-size:.75rem;
-  line-height:1.55;padding:1.1rem 1.25rem;border-radius:4px;overflow-x:auto;margin:1.4rem 0}
-figure{margin:1.7rem 0 0}
-figure img{width:100%;display:block;border:1px solid var(--rule);border-radius:5px;background:var(--raised)}
-figcaption{font-size:.85rem;color:var(--muted);margin-top:.75rem;max-width:64ch;line-height:1.55}
-figcaption b{color:var(--ink);font-weight:600}
-table{width:100%;border-collapse:collapse;font-size:.88rem;margin:1.3rem 0}
-th,td{text-align:left;padding:.5rem .8rem .5rem 0;border-bottom:1px solid var(--rule);vertical-align:top}
-th{font-family:var(--mono);font-size:.67rem;letter-spacing:.1em;text-transform:uppercase;color:var(--faint);font-weight:400}
-.chip{font-family:var(--mono);font-size:.71rem;padding:.1rem .42rem;border:1px solid var(--rule);
-  border-radius:3px;color:var(--muted);white-space:nowrap}
-.note{border-left:2px solid var(--accent);background:var(--accent-soft);padding:1rem 1.2rem;
-  margin:1.7rem 0;border-radius:0 3px 3px 0;font-size:.93rem}
-.note p:last-child{margin:0}
-/* the pipeline — order is the information, so it is drawn as a sequence */
-.pipe{display:grid;gap:.5rem;margin:1.8rem 0 0}
-.pipe .step{display:grid;grid-template-columns:auto 1fr;gap:.9rem;align-items:start;
-  border:1px solid var(--rule);border-radius:4px;padding:.85rem 1.05rem;background:var(--raised)}
-.pipe .step.gate{border-color:var(--accent);border-width:1px 1px 1px 3px}
-.pipe .n{font-family:var(--mono);font-size:.7rem;color:var(--faint);padding-top:.2rem}
-.pipe h3{font-family:var(--sans);font-size:.95rem;font-weight:600;margin:0 0 .15rem}
-.pipe p{font-size:.87rem;color:var(--muted);margin:0}
-.pipe .arrow{text-align:center;color:var(--faint);font-size:.8rem;line-height:1}
-.dims{display:grid;grid-template-columns:repeat(auto-fit,minmax(232px,1fr));gap:0 1.6rem;margin:1.4rem 0 0}
-.dims div{border-top:1px solid var(--rule);padding:.7rem 0}
-.dims b{font-family:var(--mono);font-size:.73rem;display:block;letter-spacing:.02em}
-.dims span{font-size:.85rem;color:var(--muted);line-height:1.45}
-.chart{width:100%;height:auto;display:block;margin:1.5rem 0 0;overflow:visible}
-.chart .cy{font:400 12px var(--sans);fill:var(--muted)}
-.chart .cv{font:500 12px var(--mono);fill:var(--ink);font-variant-numeric:tabular-nums}
-.chart .cl{font:400 12px var(--sans);fill:var(--muted)}
-.chart .ct{font:400 11.5px var(--sans);fill:var(--faint)}
-.chart .cpk{font:500 12px var(--mono);fill:var(--ink)}
-.chart .grid{stroke:var(--grid);stroke-width:1}
-.honest{border:1px solid var(--rule);border-radius:3px;padding:1.25rem 1.4rem;margin-top:.7rem}
-.honest h3{font-family:var(--sans);font-size:.94rem;font-weight:600;margin-bottom:.25rem}
-.honest p{font-size:.89rem;color:var(--muted);margin:0}
-.broke{border-top:1px solid var(--rule);padding:1.15rem 0}
-.broke h3{font-family:var(--sans);font-size:.98rem;font-weight:600}
-.broke p{font-size:.9rem;color:var(--muted);margin:.3rem 0 0}
-.broke .id{font-family:var(--mono);font-size:.7rem;color:var(--faint);letter-spacing:.08em}
-footer{margin-top:4.5rem;padding-top:2rem;border-top:1px solid var(--rule);font-size:.9rem;color:var(--muted)}
-@media (max-width:680px){
-  body{font-size:16px} header{padding:3rem 0 1.5rem}
-  .band{grid-template-columns:1fr} .stats div{border-right:0;border-bottom:1px solid var(--rule)}
-  pre{font-size:.66rem}
-}
-@media (prefers-reduced-motion:no-preference){a{transition:opacity .15s}a:hover{opacity:.72}}
-</style>
+<link rel="stylesheet" href="style.css">
 </head>
 <body>
+<nav class="modeswitch" aria-label="View">
+  <a href="index.html" aria-current="page">evidence</a>
+  <a href="pitch.html">pitch mode →</a>
+</nav>
+
 <div class="wrap">
 
 <header>
@@ -312,6 +211,45 @@ footer{margin-top:4.5rem;padding-top:2rem;border-top:1px solid var(--rule);font-
     <figcaption>The complete trail for a <b>real test-mode payment</b>, each event's <code>prev</code> being its predecessor's <code>hash</code>. Every decision replays byte-for-byte from this record <b>with the model client mocked to raise if it is called</b> — the verdict is recorded evidence, so the model participates once and is never consulted twice.</figcaption>
   </figure>
   <div class="note col"><p><strong>Walking this leg for real found two defects nothing else could.</strong> The server could not serve its own documented checkout page — it ran on the fake gateway, so the walkthrough returned 409 at its third line for anyone who followed it. And worse: this Razorpay account captures automatically, so a genuinely settled payment left <em>no settlement event</em>, because Custodian's own capture arrived second and was refused as a duplicate. A fake gateway is not wrong about anything it models; it simply has no opinion about an account setting.</p></div>
+</section>
+
+<section>
+  <p class="eyebrow">Why this, and not that</p>
+  <h2>The decisions worth arguing with</h2>
+  <div class="col"><p>Thirty-three decisions are recorded with the alternatives that were rejected, because an architecture is only as good as the options it turned down. Six that a reviewer is most likely to push on:</p></div>
+  <div class="why">
+    <div>
+      <h3>Attribute decomposition, not lexical similarity</h3>
+      <p>The problem statement specified containment similarity with a model on ties. Worked by hand, that primitive scores the statement's <em>own</em> flagship example pair identically — 0.3333 both ways. So the deterministic layer would contribute nothing on exactly the cases the project exists to decide.</p>
+      <p class="no"><b>Rejected</b> lexical-first with attributes as tie-breaker — “two scoring systems to build, tune and explain, to keep a sentence in a document literally true.”</p>
+    </div>
+    <div>
+      <h3>The model runs upstream; its verdict is recorded evidence</h3>
+      <p>A decision a model participates in, that still replays without one. The verdict is written to the ledger as an <em>observation</em> — the same standing as a catalog price — and <code>decide()</code> is pure: no clock, no network, no randomness. It has no client to call even if someone wanted it to.</p>
+      <blockquote>What the model returned is evidence rather than an oracle to re-consult.</blockquote>
+    </div>
+    <div>
+      <h3>A failed dimension caps the outcome, whatever the average says</h3>
+      <p>Three options: re-tune the weights, maintain a list of blocking codes, or make it a structural rule on dimension status. The third, because the first two both let a future weight change silently re-litigate which violations can be ignored.</p>
+      <blockquote>Weights decide how much a dimension contributes. They should not decide whether a failure counts.</blockquote>
+    </div>
+    <div>
+      <h3>Reason codes are a closed set; explanation is rendered, never authored</h3>
+      <p>49 codes, each with one line of merchant-facing text. “Why did Custodian hold this order?” must be answerable without calling a model again.</p>
+      <p class="no"><b>Rejected</b> an LLM-authored explanation field — “it reads better and proves less.” A free-text explanation from a model is a second, unverifiable model output sitting where the audit trail should be.</p>
+    </div>
+    <div>
+      <h3>Re-confirmation records authority; it does not rewrite the decision</h3>
+      <p>The obvious implementation flips a held order to <code>APPROVE</code>. That erases the fact that anyone had to be asked — which is exactly the fact a dispute turns on, and exactly the number a false-hold rate is measured from.</p>
+      <blockquote>An audit trail that loses the difference between “passed” and “was waved through” is not an audit trail.</blockquote>
+    </div>
+    <div>
+      <h3>A second provider, to make swappability structural</h3>
+      <p>Not a cheaper model on the same provider — that only proves the model id is a parameter, which nobody doubted. A second <em>provider</em> has a different system-prompt mechanism, a different structured-output API, a different response shape and a different error hierarchy. Everything the abstraction has to absorb, it now absorbs.</p>
+      <p class="no"><b>Refused</b> models without enforced schemas — “an unenforced schema turns ‘the output is constrained’ into a hope.”</p>
+    </div>
+  </div>
+  <div class="col"><p style="margin-top:1.3rem">Twelve of the thirty-three record a decision <strong>not</strong> to do something. One is closed as <em>considered and rejected</em> — it registered, in advance, the evidence that would settle it, and was closed only when that evidence arrived.</p></div>
 </section>
 
 <section>
