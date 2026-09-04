@@ -1,4 +1,4 @@
-# The pitch — three surfaces, six minutes as written
+# The pitch — three surfaces, 5:47
 
 **Read the `SAY` blocks aloud. Do the `DO` lines.** Every word is checked against the
 repository, so you cannot overclaim by reading it.
@@ -91,179 +91,151 @@ and stop. *(This block is for questions — it is not part of the timed run belo
 
 Then offer the repo. Do not draw the diagram unless they ask twice.
 
-# 0 · Open — 1:20   `SITE`
+# 0 · Open — 40s   `SITE`
 
-**DO** — Tab 1, press `→` twice to **beat 2**. Start here, not at the beginning.
-**POINT AT** — nothing for the first sentence: look at the room, not the screen. Then the big
-`0.3333` in the middle on "identically".
+**DO** — Tab 1, press `→` twice to **beat 2**.
+**POINT AT** — nothing at first: look at the room. Then `0.3333` on "identically".
 
-> In March, Razorpay and Sarvam shipped a voice agent that completes payments **without a
-> PIN**, with Swiggy as launch partner. And Razorpay's stated position is that agentic
-> shopping doesn't rewrite commercial liability — so when that agent orders the wrong thing,
-> **the merchant** handles the dispute.
+> In March, Razorpay and Sarvam shipped a voice agent that pays **without a PIN**, with Swiggy
+> as launch partner. Razorpay's own position is that agentic shopping doesn't rewrite
+> commercial liability — so when that agent orders the wrong thing, **the merchant** eats it.
 >
-> Reserve Pay proves the agent was allowed to spend. Vulcan asks whether the payment is
-> genuine. The Dispute Auto-Responder cleans up afterwards. **Nothing asks whether the
-> purchase was what the human actually asked for.**
+> Reserve Pay proves the agent was allowed to spend. Vulcan asks if the payment is genuine.
+> The Dispute Auto-Responder cleans up afterwards. **Nothing asks whether the purchase was
+> what the human actually asked for.**
 >
 > I'm Anshul. **Custodian is a merchant-side layer that treats an AI buyer as an untrusted
-> client** — it re-derives what the agent claims against the merchant's own catalog and the
-> user's mandate, and records the decision in a tamper-evident ledger, before money moves.
->
-> **Here's why that's harder than it sounds.** Coconut milk is out of stock. An agent offers
-> coconut cream — fine. It offers almond milk — not fine. The obvious check is text
-> similarity, and text similarity scores those two **identically**. Point three three three,
-> both. Same number, opposite answers.
->
-> You already know the shape of the fix, though: you'd never trust a browser that posted its
-> own price — you look it up server-side. **An agent is just another untrusted client**, and
-> nobody has been treating it like one.
+> client** — it re-derives every claim against the merchant's own catalog and the user's
+> mandate before money moves, and writes the decision to a tamper-evident ledger.
 
-**Pause two seconds after "treating it like one."** That is the beat where the room decides
-whether this is a guardrail demo or something else — give it the silence.
+**Pause two seconds.**
 
 ---
 
-# 1 · Where each layer stops — 36s   `SITE`
+# 1 · Why it's hard — 30s   `SITE`
 
-**DO** — press `←` twice to **beat 0**.
-**POINT AT** — the empty **Purpose** row. (The `SHIPPED · MARCH` card is already spent — you
-opened on it.)
+**POINT AT** — the two sides of the `0.3333` panel.
 
-> Four layers. Three are solved — MCP for talking to systems, ACP and UCP for building a
-> cart, AP2 and UAP for proving the agent was **permitted** to spend. Every one stops before
-> the question of *what* was bought, and that's deliberate: a payment rail shouldn't be
-> adjudicating whether coconut cream is an acceptable substitute. Which means the check has
-> to happen at the merchant.
+> Here's the hard part. Coconut milk is out of stock. An agent substitutes coconut cream —
+> fine. Almond milk — not fine. **Text similarity scores those two identically.** Same number,
+> opposite answers. So you can't solve this by reading the agent's output more carefully.
 >
-> So this checks **purpose alignment, not fraud** — and it treats both sides as untrusted: the
-> buying agent for what it claims, and the merchant's own catalog text for what it contains.
+> But you already know the shape of the fix: you'd never trust a browser that posted its own
+> price. You look it up server-side. **An agent is just another untrusted client** — nobody
+> has been treating it like one.
 
 ---
 
-# 2 · How it decides — 43s   `SITE`  ← the differentiator
+# 2 · The growth half — 30s   `SITE`  ← the track's own word
 
-**DO** — press `→` twice to **beat 2**, scroll past the collision to the decomposition rows.
-**POINT AT** — the blue `coconut` chips on rows one and two, then `almond` on row three.
+**DO** — press `→` to **beat 1**, the transactability chart.
+**POINT AT** — the `18` bar, then the `69`.
 
-> Every product — in the catalog and in the request — breaks into a base ingredient and a
-> form. Coconut milk is coconut, milk. Coconut cream is coconut, cream: same base, and
-> milk-to-cream is a listed pair. Faithful. Almond milk is **almond** — different base, no
-> recorded relationship. Rejected.
+> And this track is **AI Growth** and agentic commerce, so here's the growth half.
+>
+> A merchant whose catalog an agent can't read gets **zero** agentic orders. Not fewer — zero.
+> Seventy rows of a real kirana export: an AI buyer can act on **eighteen**. After ingest,
+> **sixty-nine**.
+>
+> That's the revenue argument. Making a store transactable is what puts it in the market at
+> all — and verification is what lets the merchant leave it switched on.
+
+---
+
+# 3 · How it decides — 35s   `SITE`  ← the differentiator
+
+**DO** — press `←`, scroll to the four decomposition rows.
+**POINT AT** — the blue `coconut` chips, then `almond`.
+
+> Every product, in the catalog and the request, breaks into a base ingredient and a form.
+> Coconut, milk. Coconut, cream — same base, listed pair, faithful. Almond, milk — different
+> base, no relationship, rejected.
 >
 > Arithmetic, against a hand-authored **Indian** grocery lexicon: transliterated pack sizes,
-> `pav kilo` and `¼ kg` and `250gm` all resolving to one quantity, bilingual product names.
-> **No model called for either of those.** A generic guardrail wrapper has none of it.
->
-> A model is asked only when the tables genuinely can't decide — that fourth row. Twenty-four
-> of a hundred and sixty-two cart lines. Zero adversarial cases.
+> bilingual names. **No model called for either.** A model is asked only where the tables
+> genuinely can't decide — twenty-four of a hundred and sixty-two cart lines. **Zero
+> adversarial cases.**
 
 ---
 
-# 3 · Now watch it run — 2:27 of talking, plus the payment   `TERMINAL`  ← the proof
+# 4 · Watch it run — 1:50   `TERMINAL`  ← the proof
 
-**DO** — switch to the terminal. Type it where they can see:
+**DO** — switch to the terminal. Type where they can see: `make live`
 
-```bash
-make live
-```
-
-Narrate over it. One line per stage — the script pauses for you.
-
-> This is the merchant's actual export. Empty price column, stock spelled four ways, pack
-> sizes living inside the product name.
+> The merchant's real export — empty price column, stock spelled four ways. Seventy rows in,
+> seventy items out, content-hashed, so every later price check is relative to *that*
+> snapshot.
 >
-> Seventy rows in, seventy items out, and it names every resolution it had to make —
-> content-hashed, so every later price check is relative to *that* snapshot. One item it
-> can't place, and that one escalates rather than guesses.
+> This is what the agent may see. It never gets the raw description — that's where injection
+> lives, and the merchant's own copy is untrusted too.
 >
-> Here's what the agent is allowed to see — and note there are **two** untrusted parties in
-> this system, not one. The agent is untrusted for what it claims. But the merchant's own
-> catalog text is attacker-controlled too, because no merchant writes every word in their own
-> feed — so the agent never gets the raw description, which is where injection lives.
+> Now an untrusted agent builds a cart. It asserts ninety-nine rupees for a one-ninety-nine
+> item, and adds a fourteen-fifty wok nobody asked for.
+
+**Let the REJECT land.**
+
+> **Rejected** — on arithmetic. And notice nothing escalated: deterministic checks run first
+> and refuse on their own authority, so a bad cart never reaches a model.
 >
-> Now an untrusted agent builds a cart. It asserts ninety-nine rupees for an item the catalog
-> prices at one ninety-nine, and it adds a fourteen-fifty wok nobody asked for.
-
-**PAUSE — let the `REJECT` land.**
-
-> **Rejected** — on arithmetic, not on a model's opinion. It asserted eighteen ninety-three;
-> the catalog says twenty ninety-three. And notice nothing escalated: deterministic checks run
-> first and can refuse on their own authority, so a bad cart never reaches a model.
+> Now a human tries to confirm it anyway — **refused.** A constraint you can wave through is
+> advisory. So the agent resubmits, corrected. The price is right; the wok isn't. That
+> **holds** — and the human completes it, while the record still reads hold, naming who
+> overrode it. That's the number a false-hold rate is measured from.
 >
-> And now watch a human try to confirm it anyway — **refused.** A constraint you can wave
-> through is advisory. So the agent has to come back with a corrected cart.
->
-> Price fixed. The wok is still there, and that's a judgment a human owns, so it **holds**
-> rather than refusing. The human confirms *that* — and the record still reads hold, with a
-> separate entry naming who overrode it. "Held, then a human said yes at 14:32" is the
-> truthful entry, and it's the number a false-hold rate is measured from.
->
-> Real Razorpay order, opened for two thousand and ninety-three rupees — **the figure the
-> server re-derived.** The agent's number never reaches the gateway at all.
+> Real Razorpay order — two thousand ninety-three rupees, **the figure the server re-derived.**
 
-**DO** — the script prints a checkout URL and **waits**. Open it in Tab 2. Pay with
-`5267 3181 8797 5449`, any future expiry, any CVV.
+**DO** — open the checkout URL, pay with `5267 3181 8797 5449`.
 
-> And it stops here, because no API call performs this step. Someone has to put a card in.
-> That's the honest gap in the system and I'd rather stand in it than hide it.
+> It stops here because no API call does this step. Someone puts a card in. That's the honest
+> gap, and I'd rather stand in it than hide it.
 
-**DO** — pay. Come back to the terminal as it prints the settled chain.
+**DO** — come back as the chain prints.
 
-> Settled. And there's the whole trail — intent, snapshot, decision, the human's override,
-> the order, the payment. Each entry's hash is the next one's parent, so you can't edit one
-> without breaking the chain. It replays byte for byte with the model client mocked to raise
-> if anything calls it.
-
-*If the payment stalls: Ctrl-C, switch to the decision you settled before recording, and say
-"here's one from earlier — same path." Do not wait on camera.*
+> Settled. Intent, snapshot, decision, the override, the order, the payment — each entry's
+> hash is the next one's parent. And it replays byte for byte with the model client mocked to
+> raise if anything calls it, because the model's answer was recorded as evidence.
 
 ---
 
-# 4 · What it's worth, and what it costs — 41s   `SITE`
+# 5 · What it's worth — 35s   `SITE`
 
-**DO** — back to Tab 1, press `→` to **beat 5**.
-**POINT AT** — the peak at 80%, and the fall-off on *both* sides.
+**DO** — Tab 1, `→` to **beat 5**.
+**POINT AT** — the peak at 80%, and the fall-off both sides.
 
-> Across a hundred and twenty orders: thirty-one thousand six hundred rupees stopped or
-> held — and **zero of sixty clean orders held.** The cost in the same breath, because a
-> saving without its cost is advertising.
+> A hundred and twenty orders: thirty-one thousand six hundred rupees stopped or held — and
+> **zero of sixty clean orders held.** No friction on the orders that were fine, which is the
+> number that decides whether a merchant keeps it on.
 >
-> This threshold was a guess when I shipped it. Thirty of my test labels are cooking
-> judgments a model can't honestly supply, so I reviewed them by hand and signed each one.
-> That made this measurable — and the guess turns out to be the **only** setting that agrees
-> completely. Falls off both sides. Holds on both halves of the split separately.
->
-> Not one value moved. So the version string says reviewed, not tuned.
+> This threshold was a guess. Thirty labels are cooking judgments a model can't honestly
+> supply, so I reviewed them by hand and signed each one — and the guess turns out to be the
+> **only** setting that agrees completely. Falls off both sides. Holds on both halves of the
+> split. Not one value moved.
 
 ---
 
-# 5 · Why you can believe any of it — 39s   `GITHUB`
+# 6 · Why believe it — 30s   `GITHUB`
 
-**DO** — switch to Tab 3. Show the README top — the green CI badge — then click **`BROKE.md`**
-and scroll.
+**DO** — Tab 3. The green CI badge, then click **`BROKE.md`**.
 
-> Everything I've said is in a public repo that runs from a clean clone with no credentials.
-> Five hundred and fifty-seven tests, green.
+> Public repo, runs from a clean clone with no credentials, five hundred and fifty-seven
+> tests green.
 >
-> And this is the file I'd actually read first. Seventeen failures, written as they happened,
-> with root causes. Fifteen of the seventeen were found by running the real thing rather than
-> reasoning about it — including the last one, this week, where a payment settled and the
-> ledger didn't record it, because the account auto-captures and my capture arrived second.
->
-> Money moved without a record. That's the one thing this ledger may not do, and it's written
-> down rather than quietly fixed.
+> And this is the file I'd read first. Seventeen failures with root causes — fifteen found by
+> running the real thing rather than reasoning about it. Including one this week where a
+> payment settled and the ledger didn't record it, because the account auto-captures and my
+> capture arrived second. **Money moved without a record.** That's the one thing this ledger
+> may not do, and it's written down rather than quietly fixed.
 
 ---
 
-# 6 · Close — 26s   `SITE or GITHUB`
+# 7 · Close — 25s
 
 > Everything in the stack proves the agent was **allowed** to spend. Custodian is the first
 > thing that checks it bought the **right thing** — with arithmetic, not a model's opinion.
 >
-> And the number you should push on is my hundred percent agreement: that's one reviewer, me,
-> no adjudication, one catalog, who could see the gate's answers while judging. The harness
-> prints those three caveats itself on every run.
+> And the number to push on is my hundred percent agreement: one reviewer, me, no
+> adjudication, one catalog, who could see the gate's answers while judging. The harness
+> prints those caveats itself, every run.
 >
 > Thank you.
 
@@ -273,34 +245,31 @@ and scroll.
 
 | § | Surface | Measured |
 |---|---|---|
-| 0 · Open | site | 1:20 |
-| 1 · Where each layer stops | site | 0:36 |
-| 2 · How it decides | site | 0:43 |
-| 3 · **Live run** | terminal | 2:27 talking |
-| 3 · **the payment itself** | browser | ~0:30 |
-| 4 · The numbers | site | 0:41 |
-| 5 · The repo | github | 0:39 |
-| 6 · Close | either | 0:26 |
-| | | **7:30** including the payment |
+| 0 · Open — their stack, their liability, what this is | site | 0:44 |
+| 1 · Why it's hard | site | 0:31 |
+| 2 · **The growth half** | site | 0:28 |
+| 3 · How it decides | site | 0:28 |
+| 4 · **Live run** | terminal | 1:32 talking |
+| 4 · the payment itself | browser | ~0:30 |
+| 5 · What it's worth | site | 0:36 |
+| 6 · Why believe it | github | 0:33 |
+| 7 · Close | either | 0:25 |
+| | | **5:47** including the payment |
 
-Counted from the words at 160 a minute.
+Counted from the words at 160 a minute, not estimated. **This fits a five-to-six minute slot
+as written.**
 
-**Read this before you rehearse.** The opening has grown three times — the Razorpay stakes, the
-definition, and the collision now all live in the first eighty seconds, and each was added for
-a good reason. Together they put the run at 7:30, which is longer than almost any slot. **The
-opening is now the strongest part and the most expensive part.** Decide the slot first, then
-cut from the ladder below; do not try to trim live.
-
-### Cut ladder
+### If you need less
 
 | Target | Drop | Lands at |
 |---|---|---|
-| **6:00** | §1's middle paragraph, and §5's second half | ~6:05 |
-| **5:00** | …and §0's browser analogy *(keep it if the room is technical)*, and half of §3's narration | ~5:05 |
-| **4:30** | …and the live payment — say *"I have one settled from earlier"* and show the finished chain | ~4:20 |
+| **5:00** | §1 — the collision is on screen, so point at it and say only *"same number, opposite answers"* | ~5:10 |
+| **4:30** | …and the live payment: *"I have one settled from earlier"*, then show the finished chain | ~4:30 |
 
-**Never cut:** §2, the confirm-refused moment in §3, and the self-criticism in §6. Those are the
-differentiator, the part most builds skip, and the most credible thirty seconds you have.
+**Never cut:** §2 (growth is the track's own word), §3 (the differentiator), the
+confirm-refused moment in §4, or the self-criticism in §7.
+
+---
 
 ## After — the questions
 
