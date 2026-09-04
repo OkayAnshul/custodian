@@ -46,7 +46,7 @@ most commodity thirty seconds you have.
 
 | Slot | Drop | Lands at |
 |---|---|---|
-| **6 min** | nothing | 5:47 |
+| **6 min** | nothing | 5:45 |
 | **5 min** | the optional close at the end | 5:25 |
 | **4½ min** | …and §3 — open §4 with *"the merchant's own copy is attacker-controlled"* | 4:52 |
 | **4 min** | …and §1's middle paragraph, and the threshold half of §5 | ~4:05 |
@@ -241,7 +241,7 @@ is worth more than any number on the page.
 # The live demo — if you want to run it
 
 Only do this if your slot has room, or if a judge asks to see it run. It is **not** part of
-the 5:47.
+the 5:45.
 
 **DO** — switch to the terminal and type:
 
