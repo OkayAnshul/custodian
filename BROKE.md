@@ -444,3 +444,32 @@ Every other CI step passed the whole time. The tests, the corpus, the sweep, the
 **Why the fix works.** It makes the file and its generator agree, which is the property the CI step exists to assert. `test_the_committed_corpus_is_what_the_generator_produces` now asserts it locally too, so the failure surfaces in `make test` instead of only in a place I had learned to ignore.
 
 **Lesson.** A check that cannot pass is indistinguishable from one that always fails, and after the second red run I stopped reading it. Worse, the thing it was protecting was real: the corpus in the repository was not the corpus the code produced, which is the exact condition that makes every number resting on it unverifiable — and the check was telling me so, correctly, ten times. The tell was that the build went red on a specific commit and stayed red; a flaky build wanders, a broken invariant does not. And the local shortcut is what let it run: `make check` was "what CI runs" in every document, and it was not.
+---
+
+## 015 — The server could not serve the page it documents
+
+**2026-09-04 · severity: the one walkthrough in the docs, impossible as written**
+
+**What broke.** `LIMITATIONS.md` has carried these three lines since the checkout page was written:
+
+```
+make serve                              # with RAZORPAY_KEY_ID in .env
+# verify, settle, then open http://127.0.0.1:8000/checkout/<request_id>
+# test card 4111 1111 1111 1111, any future expiry, any CVV
+```
+
+Following them returns **409** at the third line, every time, for anybody.
+
+**Root cause.** `make serve` runs `uvicorn custodian.api.app:app`, and the module-level app is built by `create_app()` with no argument — which defaults to `FakeGateway`. `GET /checkout/{request_id}` refuses to render unless the gateway is `razorpay-test`, and correctly so: the page embeds a live key id and an order id the provider issued, and neither exists on the fake. So the route declined to serve, exactly as designed, in a process that could never satisfy it.
+
+The credential was sitting in `.env` the whole time. Nothing read it.
+
+**Symptoms.** None anywhere. Every test of that route uses `TestClient(create_app(gateway=...))` and passes the gateway explicitly — including the `live`-marked one added the day before, which renders the page correctly against a real order and proved nothing about the server. The two paths had diverged at the only line that differs between them, and that line was in the Makefile.
+
+**Investigation.** Found by trying to walk the walkthrough. Three failures in a row before reaching the actual bug: no `uvicorn` binary, then `ModuleNotFoundError: custodian`, then the 409. The first two were a stale virtualenv — `make install` had never been re-run since `uvicorn` joined the dependencies, and the package was never installed at all, because `pytest` puts `src` on the path itself and so nothing local had ever needed the install to work.
+
+**Fix.** `app = create_app(gateway=_gateway_from_env())`. The served process reads `RAZORPAY_KEY_ID`/`_SECRET` and constructs the live gateway; `create_app` still defaults to the fake. Both halves are the point and they pull in opposite directions: a test suite must never be one stray credential away from calling a payment provider — and `make test` sources `.env`, so that is not hypothetical — while a served process that ignores the credential cannot host the page at all. A live key still falls back to the fake, loudly, on stderr.
+
+**What changed to prevent recurrence.** Two tests. One asserts the selector returns the fake with no credentials *and* with a `rzp_live_` key. The other, `live`-marked, asserts it returns `razorpay-test` when test credentials are present — the condition that makes the documented walkthrough possible.
+
+**Lesson.** Every test of this route constructed the app itself, and constructing it was the bug. A test that builds its subject with the dependency injected can never catch a wiring error in the one place the dependency is chosen for real — and the more carefully the tests inject, the more completely that line is uncovered. It is BROKE.md 006 again, one layer out: there, a fake satisfied a contract the real provider could not; here, a fake was silently *substituted for* the real provider in the only process that ships. The documentation was right, the code was wrong, and the gap between them had exactly one line in it.

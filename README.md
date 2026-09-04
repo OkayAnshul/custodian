@@ -295,8 +295,8 @@ Stated plainly, because a reviewer will find them anyway and the honest version 
 
 | Document | What it holds |
 |---|---|
-| [`DECISIONS.md`](DECISIONS.md) | 31 ADRs, each with the alternatives that were rejected |
-| [`BROKE.md`](BROKE.md) | Fourteen failures, with root cause and what changed to prevent recurrence |
+| [`DECISIONS.md`](DECISIONS.md) | 32 ADRs, each with the alternatives that were rejected |
+| [`BROKE.md`](BROKE.md) | Fifteen failures, with root cause and what changed to prevent recurrence |
 | [`ENGINEERING_LOG.md`](ENGINEERING_LOG.md) | Session by session, written as it happened |
 | [`ARCHITECTURE.md`](ARCHITECTURE.md) | Module map, contracts, ledger format, API |
 | [`THREAT_MODEL.md`](THREAT_MODEL.md) | Ten threats, and the architectural control for each |

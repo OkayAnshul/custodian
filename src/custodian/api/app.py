@@ -12,6 +12,7 @@ second one, because two decisions for one request would mean two orders.
 from __future__ import annotations
 
 import os
+import sys
 from pathlib import Path
 from typing import Any
 
@@ -347,4 +348,29 @@ def _authority(state, request_id: str) -> dict[str, Any]:
             "amount_paise": authority.amount_paise, "reason": authority.reason}
 
 
-app = create_app()
+def _gateway_from_env():
+    """The gateway the served process runs against, chosen from the environment.
+
+    ``create_app`` defaults to the fake on purpose: a test suite must never be
+    one stray credential away from calling a payment provider, and `make test`
+    sources `.env`. The process uvicorn starts is the opposite case. The hosted
+    checkout page *cannot exist* without a live key — it embeds one — so a
+    server started with credentials present should serve the real thing rather
+    than a 409 no operator can explain, which is what it did before and is why
+    the documented `make serve` walkthrough could not be followed.
+    """
+    if not (os.environ.get("RAZORPAY_KEY_ID") and os.environ.get("RAZORPAY_KEY_SECRET")):
+        return FakeGateway()
+    try:
+        from custodian.payments.razorpay_client import RazorpayGateway
+
+        return RazorpayGateway()
+    except PaymentError as exc:
+        # A live key, or a missing dependency. Refusing to start would be worse
+        # than serving the fake — every route except settlement works without a
+        # provider — but doing it silently would not.
+        print(f"custodian: falling back to the fake gateway — {exc}", file=sys.stderr)
+        return FakeGateway()
+
+
+app = create_app(gateway=_gateway_from_env())

@@ -61,7 +61,7 @@ No vector store, no RAG, no agent framework. The sanitizer is rules rather than 
 
 ## Field 12 — what broke and how you got out
 
-Fourteen entries in `BROKE.md`, written as they happened. Four worth the space, a fifth that matters more than any of them, and two more found on the last pass before submitting:
+Fifteen entries in `BROKE.md`, written as they happened. Four worth the space, a fifth that matters more than any of them, and two more found on the last pass before submitting:
 
 **The gate approved an order with a failed dimension.** Almond milk offered for coconut milk scored 34% on substitution, and seven passing dimensions carried the weighted mean to 85%, so it approved — the exact failure the project exists to prevent. I had written *"a constraint that can be outvoted by a good average is not a constraint"* as a comment inside the function where precisely that happened.
 

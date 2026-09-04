@@ -225,6 +225,34 @@ def test_the_checkout_page_is_only_offered_with_a_live_gateway(client):
     assert client.get("/checkout/req-1").status_code == 409
 
 
+def test_the_served_app_uses_the_fake_without_credentials(monkeypatch):
+    """`create_app` defaults to the fake; the served process reads the env.
+
+    Both halves matter. A test suite that picked up a stray credential would
+    start calling a payment provider — and `make test` sources `.env`, so that
+    is not hypothetical. A served process that ignored the credential could not
+    host the checkout page at all, because the page embeds a live key.
+    """
+    from custodian.api.app import _gateway_from_env
+
+    monkeypatch.delenv("RAZORPAY_KEY_ID", raising=False)
+    monkeypatch.delenv("RAZORPAY_KEY_SECRET", raising=False)
+    assert _gateway_from_env().name == "fake"
+
+    monkeypatch.setenv("RAZORPAY_KEY_ID", "rzp_live_notatestkey")
+    monkeypatch.setenv("RAZORPAY_KEY_SECRET", "whatever")
+    assert _gateway_from_env().name == "fake", "a live key must not be served"
+
+
+@pytest.mark.live
+@pytest.mark.skipif(not HAS_LIVE_KEYS, reason="no Razorpay test credentials")
+def test_the_served_app_uses_the_live_gateway_when_credentials_are_present():
+    """The condition that makes the documented `make serve` walkthrough possible."""
+    from custodian.api.app import _gateway_from_env
+
+    assert _gateway_from_env().name == "razorpay-test"
+
+
 @pytest.mark.live
 @pytest.mark.skipif(not HAS_LIVE_KEYS, reason="no Razorpay test credentials")
 def test_the_checkout_page_carries_the_order_a_payer_would_actually_pay():

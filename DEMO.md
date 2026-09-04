@@ -248,7 +248,7 @@ chain intact: 20 events
 
 **"What if payment succeeds but verification was wrong?"** — Capture re-reads the authority and compares the presented amount against the approved one. A mismatch is refused and recorded as `PAYMENT_FAILED` with both figures. It's the last point where money is reversible.
 
-**"What did you not build?"** — Multi-merchant, auth, dashboards, vector DBs, RAG, agent frameworks. Reaching for LangChain would actively cost points on AI judgment. And `BROKE.md` has fourteen entries — the one worth reading is 007, where the gate approved an order with a failed dimension because seven passing dimensions outvoted it.
+**"What did you not build?"** — Multi-merchant, auth, dashboards, vector DBs, RAG, agent frameworks. Reaching for LangChain would actively cost points on AI judgment. And `BROKE.md` has fifteen entries — the one worth reading is 007, where the gate approved an order with a failed dimension because seven passing dimensions outvoted it.
 
 **"Is that model answer real, or did you write it?"** — Real, and the distinction is enforced rather than promised. 28 responses were recorded from `openai/gpt-oss-120b` with provider, model, prompt digest, timestamp and the question as sent; a recording names the model that produced it and an authored fixture cannot. Run `--scorer groq` to have it asked live in front of you. `BROKE.md` 012 is what recording them cost me: a real answer broke an abstention guarantee my own fixture had preserved for the whole build.
 
