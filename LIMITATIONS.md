@@ -10,15 +10,26 @@ Stated plainly. A reviewer finds these anyway, and the honest version is shorter
 
 `GET /checkout/{request_id}` serves that page, and `POST /v1/checkout/callback/{request_id}` takes the result. The browser is an untrusted client, so the callback is verified as `HMAC-SHA256(order_id|payment_id)` under the key secret before anything is captured — six tests cover a genuine signature, a forged one, a real signature replayed against a different order, one replayed against a different payment, and one made with the wrong secret.
 
-**The page is rendered against a real order under test, and the browser leg is still unrun.** A `live`-marked test settles through the live gateway and asserts the page carries the order id Razorpay issued, the amount Custodian derived rather than the one the agent asserted, the Checkout script, and the callback path for that request. What it cannot cover is Razorpay's script executing and a person putting a card in, because that needs a browser:
+**The browser leg has been walked.** On 2026-09-04 a verified order was paid on that page in a real browser, end to end: Razorpay's Checkout script executed, a domestic test card went in, the callback came back and its signature verified, and the payment settled for **₹643.00 — the amount the gate derived, not the total the agent asserted**. The record for that request is complete and the chain verifies:
+
+```
+INTENT_RECEIVED → SNAPSHOT_TAKEN → DECISION_MADE → PAYMENT_INITIATED → PAYMENT_SETTLED
+   pay_TXqSYPMMtBM6te · CAPTURED · 64300 paise · authorised_by=APPROVED · captured_by=razorpay-test
+```
+
+To repeat it:
 
 ```
 make serve                              # with RAZORPAY_KEY_ID in .env
 # verify, settle, then open http://127.0.0.1:8000/checkout/<request_id>
-# test card 4111 1111 1111 1111, any future expiry, any CVV
+# test card 5267 3181 8797 5449 (domestic), any future expiry, any CVV
 ```
 
-So the honest reading is: everything the page depends on being right is checked, and the last leg — script, card, capture — has not been walked end to end. The Day-5 lesson in `BROKE.md` 006 was precisely that code which only runs against a credential nobody has is code nobody has run, and half of that gap is now closed rather than argued away.
+**Use that card, not `4111 1111 1111 1111`.** The international Visa test number is what this page and these documents printed for weeks, and a test account without international payments enabled declines it outright.
+
+Walking it found two defects that no test could have. The server could not serve the page at all — `make serve` ran on the fake gateway, so the documented walkthrough returned 409 at its third line (`BROKE.md` 015). And this account captures automatically, so the payment settled before Custodian's own capture call, which was refused as a duplicate and **wrote nothing** — a settled payment with a trail ending at `PAYMENT_INITIATED` (`BROKE.md` 016). The amount control held throughout; it was the record that was missing.
+
+The Day-5 lesson in `BROKE.md` 006 was that code which only runs against a credential nobody has is code nobody has run. The sharper version, now: a live credential is not sufficient either. It has to be one *configured the way a real merchant's is*, because a fake has no opinion about an account setting.
 
 **Model answers are recorded rather than called, on the default path.** Both positions have two implementations and all four are graded by contract suites against stubs shaped like each provider's real response objects — request shape, schema enforcement, refusals, malformed payloads, truncation, rate limits, and the distinction between a transport failure and a decline. What no stub covers is the network, so `scripts/record_fixtures.py` asked the real thing: **28 responses — 24 substitution verdicts and 4 intent parses — from `openai/gpt-oss-120b` on Groq, recorded 2026-08-30**, each stored in `data/fixtures/model_responses.json` with provider, model, prompt digest, timestamp and the question exactly as sent.
 

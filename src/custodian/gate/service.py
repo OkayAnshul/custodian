@@ -315,12 +315,58 @@ class Custodian:
 
         try:
             captured = gateway.capture(payment, idempotency_key=f"{request_id}:capture")
+            captured_by = "custodian"
         except AlreadyCaptured:
-            raise
+            # Two very different situations raise this, and only one is an error.
+            #
+            # If this request already has a settlement in the ledger, something
+            # is trying to capture twice and must be refused — that is what this
+            # exception exists for.
+            #
+            # But a provider can also capture on its own: an account with
+            # auto-capture enabled settles the moment the payer completes, so our
+            # call arrives second on a payment nobody has recorded yet. Money
+            # moved. Refusing to write it down would leave the trail ending at
+            # PAYMENT_INITIATED for a payment that succeeded, and a chain that
+            # cannot account for money that moved is the one failure this ledger
+            # may not have. Found by paying on the hosted page — BROKE.md 016.
+            if self._already_settled(request_id):
+                raise
+            captured = gateway.fetch(payment.payment_id)
+            captured_by = gateway.name
+
+        # Re-derived from what the provider now holds, not from what we sent. On
+        # the auto-capture path this is the first time the settled amount has
+        # been seen at all, so the approved amount is checked against it here as
+        # well as against the authorisation above.
+        if captured.amount_paise != authority.amount_paise:
+            self.ledger.append(
+                EventType.PAYMENT_FAILED, request_id,
+                observed={"gateway": gateway.name, **captured.as_observed()},
+                inferred={"refused": "AMOUNT_MISMATCH",
+                          "approved_amount_paise": authority.amount_paise,
+                          "presented_amount_paise": captured.amount_paise,
+                          "captured_by": captured_by},
+            )
+            raise AmountMismatch(
+                f"{request_id}: settled amount is {captured.amount_paise} paise, "
+                f"the decision approved {authority.amount_paise}."
+            )
+
         self.ledger.append(
             EventType.PAYMENT_SETTLED if captured.settled else EventType.PAYMENT_FAILED,
             request_id,
             observed={"gateway": gateway.name, **captured.as_observed()},
-            inferred={"authorised_by": authority.basis},
+            inferred={"authorised_by": authority.basis, "captured_by": captured_by},
         )
         return captured
+
+    def _already_settled(self, request_id: str) -> bool:
+        """Whether this request has a settlement in the record already.
+
+        The ledger is the authority on that, not the provider: the question is
+        not "has this payment been captured" but "have we already accounted for
+        it", and only one of those can tell a second attempt from a first.
+        """
+        return any(event.event_type is EventType.PAYMENT_SETTLED
+                   for event in self.ledger.read(request_id))

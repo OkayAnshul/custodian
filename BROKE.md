@@ -473,3 +473,38 @@ The credential was sitting in `.env` the whole time. Nothing read it.
 **What changed to prevent recurrence.** Two tests. One asserts the selector returns the fake with no credentials *and* with a `rzp_live_` key. The other, `live`-marked, asserts it returns `razorpay-test` when test credentials are present — the condition that makes the documented walkthrough possible.
 
 **Lesson.** Every test of this route constructed the app itself, and constructing it was the bug. A test that builds its subject with the dependency injected can never catch a wiring error in the one place the dependency is chosen for real — and the more carefully the tests inject, the more completely that line is uncovered. It is BROKE.md 006 again, one layer out: there, a fake satisfied a contract the real provider could not; here, a fake was silently *substituted for* the real provider in the only process that ships. The documentation was right, the code was wrong, and the gap between them had exactly one line in it.
+---
+
+## 016 — A payment settled and the ledger did not know
+
+**2026-09-04 · severity: money moved without a record, which is the one thing this ledger may not allow**
+
+**What broke.** Paying a verified order on the hosted page, for real, with a browser. The payment succeeded — Razorpay holds `pay_TXqMxyHK0PrDv5`, status `captured`, ₹643.00, against our order, and the order reads `paid`. Custodian's trail for that request:
+
+```
+INTENT_RECEIVED → SNAPSHOT_TAKEN → DECISION_MADE → PAYMENT_INITIATED
+```
+
+That is all. No settlement event. `POST /v1/checkout/callback/{id}` returned **409** and wrote nothing.
+
+**Expected.** A `PAYMENT_SETTLED` event naming the payment and the amount.
+
+**Root cause.** This Razorpay account has **auto-capture** enabled, so the payment is captured the instant the payer completes on the hosted page. Custodian's own `capture()` therefore arrives second and the provider answers `AlreadyCaptured` — which `service.capture()` re-raised bare, and the route turned into a 409.
+
+That exception exists for a real danger: two calls both moving money for one order. But it conflates two situations that are nothing alike. *We already captured this* is a double-spend attempt and must be refused. *The provider captured it before we could* is settlement that happened by another route, and refusing to write it down does not undo it — it only removes it from the record.
+
+Everything Custodian claims rests on a dispute being resolvable from the trail. A trail that ends at `PAYMENT_INITIATED` for money that actually moved is not a weaker claim, it is a false one.
+
+**What did work, and is worth separating out.** The amount check ran *before* the capture call and passed: the order was opened for the ₹643.00 the gate derived, and that is what Razorpay captured — not the agent's asserted total. ADR-026's control held. The failure is in the record, not in the money.
+
+**Symptoms.** A 409 on the callback and a page that said *"payment pay_… has already been captured"*. Both read like a duplicate submission, which is exactly what they say when the *first* attempt is the one being refused.
+
+**Investigation.** Three attempts on the order, and each one taught something. The first was declined outright — *"International cards are not supported"* — because `4111 1111 1111 1111`, the card printed on our own checkout page and in `LIMITATIONS.md` and `DEMO.md`, is the international Visa test number, which a test account without international payments enabled refuses. That decline is what proved the failure path worked end to end, since the page's own handler reported it. Switching to a domestic test card got a real capture, and then the 409.
+
+**Fix.** `AlreadyCaptured` is now resolved against the *ledger* rather than the provider: if this request already has a `PAYMENT_SETTLED` event, a second capture is refused exactly as before; if it does not, the provider settled it first, the payment is re-fetched, its amount is checked against the approved amount again, and it is recorded — with `captured_by` naming who moved the money, because "Custodian captured it" and "the provider captured it" are different facts and the record should not blur them. The card printed on the page and in the docs is now the domestic one. ADR-033.
+
+**Why the fix works.** The question was never "has this payment been captured" — the provider can answer that and it is not what we need to know. It is "have *we* accounted for it", and only the ledger can answer that. Deciding on the ledger makes the double-capture guard stronger rather than weaker: it now keys on our own record instead of on a provider state that two different situations share.
+
+**What changed to prevent recurrence.** `tests/test_auto_capture.py` — a gateway that captures on its own, as the account does. It asserts the settlement is recorded, that the record names who captured it, that a genuine second capture is still refused, and that an auto-captured payment for the wrong amount is refused *and* recorded rather than silently accepted.
+
+**Lesson.** `FakeGateway` does exactly what it is told and never captures on its own, so no fake could have produced this and no test would have found it. This is the third time in this file the same shape has appeared — 006, 013, 015 — and the sharpest version of it: the fake was not wrong about any behaviour it modelled, it simply had no opinion about an account setting, and the gap was a *configuration* on the provider's side that no amount of care in our own code would have surfaced. A live credential is not enough. It has to be a live credential configured the way a real merchant's is.

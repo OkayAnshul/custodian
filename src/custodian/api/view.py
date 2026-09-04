@@ -221,7 +221,10 @@ def checkout_page(*, request_id: str, key_id: str, order_id: str, amount_paise: 
     ``POST /v1/checkout/callback/{request_id}``, where the signature is checked
     before anything is captured — the browser is an untrusted client too.
 
-    Test card 4111 1111 1111 1111, any future expiry, any CVV.
+    Test card 5267 3181 8797 5449 (domestic Mastercard), any future expiry, any CVV.
+    Not 4111 1111 1111 1111 — that is the international Visa test card, and a
+    test account without international payments enabled declines it with
+    "International cards are not supported". See BROKE.md 016.
     """
     return _page(f"Pay — {request_id}", (
         f"<h1>Custodian</h1>"
@@ -236,7 +239,7 @@ def checkout_page(*, request_id: str, key_id: str, order_id: str, amount_paise: 
         f"<p><button id='pay' style='font:inherit;padding:9px 18px;border-radius:8px;"
         f"border:1px solid var(--line);background:var(--accent);color:#fff;cursor:pointer'>"
         f"Pay {_e(format_inr(amount_paise))}</button></p>"
-        f"<p class='why'>Test mode. Card 4111 1111 1111 1111, any future expiry, any CVV.</p>"
+        f"<p class='why'>Test mode. Card 5267 3181 8797 5449, any future expiry, any CVV.</p>"
         f"</div>"
         f"<script src='https://checkout.razorpay.com/v1/checkout.js'></script>"
         f"<script>\n"

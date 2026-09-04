@@ -150,7 +150,7 @@ Answer with the specific decisions, not a disclaimer.
 
 | | |
 |---|---|
-| `BROKE.md` | Entries 006, 007, 012, 015. Fifteen failures with root causes is the strongest single artifact here |
+| `BROKE.md` | Entries 006, 007, 012, 016. Sixteen failures with root causes is the strongest single artifact here |
 | `README.md` §5 | The table of where a model was deliberately not used |
 | The viewer | `make serve`, then `/view/…` — the per-dimension breakdown lands faster than any explanation |
 | `EVALUATION.md` | For the corpus question, which will come — §"The result the review unlocked" and §"What the agreement is worth" |

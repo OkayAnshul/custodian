@@ -128,7 +128,7 @@ def main() -> int:
         try:
             url = gateway.payment_link_for(order)
             print(f"  payable  {url}")
-            print("           (test card 4111 1111 1111 1111, any future expiry, any CVV)")
+            print("           (test card 5267 3181 8797 5449, any future expiry, any CVV)")
         except Exception as exc:
             print(f"  payable  link unavailable: {exc}")
 

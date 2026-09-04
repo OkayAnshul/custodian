@@ -507,3 +507,30 @@ So the version string was wrong in a new way. `v0-untuned` had stopped being tru
 **What the name is not claiming.** One reviewer, no adjudication, 15 distinct substitutions, one catalog — and the reviewer could see the gate's current call while judging, which makes agreement cheaper than an independent blind pass. Those three bounds are printed by the harness on every run and stated in `EVALUATION.md` beside every number that rests on them. `v1-reviewed` means *a person has been through these and the corpus supports them*, which is exactly as far as the evidence goes.
 
 **A property worth keeping.** The version travels with every decision and into the ledger, so a decision made under `v0-untuned` and one made under `v1-reviewed` are distinguishable in the record forever — even though the numbers behind them are identical. That is the point of versioning a threshold rather than hard-coding it: the record can say *which set of beliefs* a decision was made under, not merely which numbers.
+
+---
+
+## ADR-033 — A capture the provider performed is settlement, and is recorded as such
+
+**Date** 2026-09-04 · **Area** payments, ledger · **Status** Accepted
+
+**Problem.** A Razorpay account can be configured to capture automatically, and this one is. The payment is captured the moment the payer completes on the hosted page, so Custodian's `capture()` arrives second and gets `AlreadyCaptured`. That exception was re-raised bare, so a payment that had genuinely settled produced a 409 and **no ledger entry at all** (`BROKE.md` 016).
+
+**Options.** (1) Disable auto-capture on the account. (2) Treat `AlreadyCaptured` as success and record it. (3) Decide from the ledger which of the two situations this is.
+
+**Chosen.** (3).
+
+**Why not just turn auto-capture off.** It would fix this account and leave the code wrong. A merchant deploying this would have their own dashboard settings, and a verification layer that silently loses the settlement record on a common configuration is a defect wherever it is deployed. The provider's configuration is an input, not something to legislate.
+
+**Why not treat it as success outright.** `AlreadyCaptured` guards against two calls both moving money for one order, which is a real danger — an agent able to produce two idempotency keys would otherwise pay twice. Blanket-accepting it would delete that protection to fix a bookkeeping gap.
+
+**The distinction, and where it is drawn.** Two situations raise the same exception:
+
+- *We have already captured this.* A double-spend attempt. Refuse.
+- *The provider captured it before we could.* Settlement by another route. Record it.
+
+They are told apart by the **ledger**, not by the provider. The provider can only say whether the payment is captured, which is true in both cases and therefore useless here. The question is whether *we have accounted for it*, and the record is the only thing that knows. That makes the guard stronger than it was: it now keys on our own evidence rather than on a shared provider state.
+
+**The amount is checked twice on that path, deliberately.** Once before the capture call, as always, and again against the freshly fetched payment — because on the auto-capture path the settled amount is being seen for the first time after the money moved. A mismatch there is refused and recorded as `AMOUNT_MISMATCH`, exactly as ADR-026 requires, rather than being accepted because the provider had already acted.
+
+**`captured_by` is recorded.** "Custodian captured this" and "the provider captured this" are different facts about how money moved, and a dispute record that blurs them is worth less. The event names which.

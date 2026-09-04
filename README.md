@@ -236,13 +236,13 @@ The adversarial catch rate **does not move across any dial**. Every attack in th
 
 ```bash
 make install                           # or: python3 -m venv .venv && .venv/bin/pip install -e ".[dev]"
-make test                              # 551 tests, +13 with Razorpay credentials
+make test                              # 556 tests, +14 with Razorpay credentials
 make demo                              # all six demo scenarios
 make eval sweep                        # the corpus and the threshold curve
 make serve                             # http://127.0.0.1:8000
 
 # or directly:
-.venv/bin/pytest                       # 551 tests
+.venv/bin/pytest                       # 556 tests
 .venv/bin/python -m eval.harness --all # the corpus
 .venv/bin/python -m eval.sweep         # the threshold curve
 .venv/bin/python scripts/demo.py       # all six demo scenarios
@@ -255,7 +255,7 @@ RAZORPAY_KEY_ID=rzp_test_...
 RAZORPAY_KEY_SECRET=...
 ```
 
-Thirteen tests then run against the live API — the payment-gateway contract suite, and the checkout page rendered against an order Razorpay actually issued. `RazorpayGateway` refuses any key not beginning `rzp_test_` at construction — the gate is not calibrated, and a live key here would move real money on a decision the project does not claim is tuned.
+Fourteen tests then run against the live API — the payment-gateway contract suite, and the checkout page rendered against an order Razorpay actually issued. `RazorpayGateway` refuses any key not beginning `rzp_test_` at construction — the gate is not calibrated, and a live key here would move real money on a decision the project does not claim is tuned.
 
 ---
 
@@ -281,7 +281,7 @@ Custodian **consumes** the mandate as an input and **emits** what a dispute resp
 Stated plainly, because a reviewer will find them anyway and the honest version is shorter.
 
 - **The UPI mandate is modelled, not integrated.** Reserve Pay is not reachable from a self-serve test account. The mandate is constructed locally and checked deterministically. What this demonstrates is the layer *above* the mandate.
-- **Completing a payment needs a human.** Order creation, the payable link, fetch and capture are live Razorpay test-mode calls and the payment ids in the ledger are Razorpay's, but no API call makes a payment *happen*. `GET /checkout/{request_id}` serves the page a payer completes it on; a live test asserts that page carries the order Razorpay issued, the derived amount, and the callback path, and six more cover the signature check that makes the browser's word evidence. **What is still unrun is the browser leg itself** — Razorpay's script and a person with a test card — and `LIMITATIONS.md` says so rather than claiming otherwise.
+- **Completing a payment needs a human, and one has.** Order creation, the payable link, fetch and capture are live Razorpay test-mode calls and the payment ids in the ledger are Razorpay's, but no API call makes a payment *happen*. A verified order has now been paid on `GET /checkout/{request_id}` in a real browser: Checkout's script executed, the callback's signature verified, and **₹643.00 settled — the derived amount, not the agent's asserted total** — leaving a complete chain that verifies. Walking it found two defects nothing else could, `BROKE.md` 015 and 016, the second of which had a settled payment leaving no settlement event.
 - **The 30 judgment labels rest on one reviewer.** They are human-signed and attributed now, and the honest reading is in §6: a single pass, no adjudication, and the reviewer could see the gate's current call while judging. A second independent reviewer is the most valuable thing anyone could add — `python -m eval.corpus.review --sheet` lays out the evidence per case, and `--as NAME` is required to write a label.
 - **The lexicon covers one merchant.** 58 bases, 18 form-compatibility pairs, 5 base equivalences, sized to a 70-item catalog. Coverage against a different merchant is unmeasured.
 - **No allergen control.** `benign-008` approves groundnut oil for sunflower oil under an `EQUIVALENT` policy, and groundnut is peanut. The gate re-derives price, purpose and authority; it does not know what will hurt someone. A merchant shipping this would need that check, and it is a different one.
@@ -295,8 +295,8 @@ Stated plainly, because a reviewer will find them anyway and the honest version 
 
 | Document | What it holds |
 |---|---|
-| [`DECISIONS.md`](DECISIONS.md) | 32 ADRs, each with the alternatives that were rejected |
-| [`BROKE.md`](BROKE.md) | Fifteen failures, with root cause and what changed to prevent recurrence |
+| [`DECISIONS.md`](DECISIONS.md) | 33 ADRs, each with the alternatives that were rejected |
+| [`BROKE.md`](BROKE.md) | Sixteen failures, with root cause and what changed to prevent recurrence |
 | [`ENGINEERING_LOG.md`](ENGINEERING_LOG.md) | Session by session, written as it happened |
 | [`ARCHITECTURE.md`](ARCHITECTURE.md) | Module map, contracts, ledger format, API |
 | [`THREAT_MODEL.md`](THREAT_MODEL.md) | Ten threats, and the architectural control for each |

@@ -473,3 +473,23 @@ Not done, and stated rather than hidden:
 **Where this stands.** The one item that was blocked on a person is done. What is left is a second reviewer — the bounds on this agreement are exactly what an independent pass would tighten — the browser leg of the checkout page, and the pitch recording.
 
 **Confidence.** Raised, and specifically on the part that was weakest. Calibration was the honest gap through the whole build; it is now a measurement with its limits printed by the tool rather than recited in prose. The limits are real: one reviewer who could see the gate's answers, on one catalog.
+---
+
+## Day 14 — sitting 9, 2026-09-04 — the browser leg, walked
+
+**Objective.** Pay a verified order on the hosted page, in a real browser, for real. It was the last item in the project that had never been run.
+
+**Completed.**
+- **A verified order paid end to end.** `pay_TXqSYPMMtBM6te`, `CAPTURED`, **₹643.00 — the amount the gate derived, not the ₹643 the agent asserted** (they matched here; the control is that the order is opened for the derived figure regardless). Checkout's script executed, the callback returned, its `HMAC-SHA256(order_id|payment_id)` signature verified, and the chain reads `INTENT_RECEIVED → SNAPSHOT_TAKEN → DECISION_MADE → PAYMENT_INITIATED → PAYMENT_SETTLED` with no breaks.
+- **`BROKE.md` 015** — `make serve` ran the module-level app, which was `create_app()` with no gateway, so it served the *fake* and `GET /checkout/{id}` refused to render. The documented walkthrough returned 409 at its third line for anyone who followed it. The served process now reads the credentials; `create_app` still defaults to the fake, because `make test` sources `.env` and a suite one stray credential from a payment provider is not hypothetical.
+- **`BROKE.md` 016, and the serious one** — this account captures automatically. The payment settled the instant the payer completed, Custodian's own capture arrived second and was refused as a duplicate, and the callback wrote **nothing**: a settled payment whose trail ended at `PAYMENT_INITIATED`. `AlreadyCaptured` is now resolved against the ledger rather than the provider — *have we accounted for this*, not *is it captured* — the amount is re-checked against the freshly fetched payment, and `captured_by` records who moved the money. ADR-033, four tests.
+- **The test card in the docs was the wrong one.** `4111 1111 1111 1111` is the international Visa number; this account declines it with *"International cards are not supported"*. It was printed on the checkout page itself, in `LIMITATIONS.md` and in `DEMO.md`. Replaced with the domestic `5267 3181 8797 5449` — a demo-day failure avoided by about an hour.
+- Two environment facts, neither a repo defect: the venv had no `uvicorn` and the package was not installed at all. Every test passes because `pytest` puts `src` on the path itself, so nothing local had ever needed the install to work.
+
+**Tests.** 556 passing, 21 skipped. With Razorpay credentials: 570 passing, 7 skipped.
+
+**What broke.** Both of the above, and they rhyme with 006 and 013: the parts that only run against a real process are the parts nobody has run. 016 is the sharpest version yet, because the fake was not *wrong* about anything it modelled — it simply has no opinion about an account setting. A live credential is not enough; it has to be one configured the way a real merchant's is.
+
+**Where this stands.** Everything the project claimed but had not demonstrated is now demonstrated. The trail for a browser payment is complete and verifies, the labels are human-signed, the thresholds are measured, and the build is green. The one item left is the pitch recording.
+
+**Confidence.** High, and for a better reason than before: the last three sittings each found a real defect by running something rather than by reasoning about it, and the defects were in exactly the places the tests were most careful — injected gateways, hand-written fixtures, a checked-in corpus. That pattern is worth more to me than any of the individual fixes.
