@@ -44,7 +44,54 @@ back to if the live payment stalls on camera.
 
 ---
 
-# 0 · Open — 31s   `SITE`
+---
+
+## How to hint the architecture without lecturing
+
+**Never say "let me walk you through the architecture."** The moment you do, you are asking for
+four minutes you do not have, and the room stops watching the screen.
+
+Instead: **every architectural claim is delivered as the reason the screen looks like that.**
+One clause, attached to something they can already see. The architecture arrives as an
+explanation of evidence rather than as a diagram.
+
+| What is on screen | The clause that hints the architecture |
+|---|---|
+| 70 rows become 70 items | "…content-hashed, so every later price check is relative to *that* snapshot" |
+| The agent feed | "…the agent gets a narrower view than the system holds. That is a trust boundary, not a convenience" |
+| `REJECT`, nothing escalated | "…deterministic checks run first and can refuse on their own authority, so a bad cart never reaches a model" |
+| Confirm refused | "…the three outcomes differ in *kind*. Policy lives in infrastructure, not in anyone's discretion" |
+| `HOLD` at 90% | "…one failed dimension caps the outcome. Weights decide contribution, not whether a failure counts" |
+| The order amount | "…it opens for the figure the server re-derived. The agent's number never reaches the gateway" |
+| The chain | "…every entry separates what was *observed* from what was *inferred*" |
+| Replay | "…the model's answer was recorded as evidence, so the decision replays without calling it again" |
+
+That is the whole architecture — eight clauses, none longer than a breath, each one answering
+"why does it look like that?"
+
+**If someone asks "so what is it?"** — two sentences, never one:
+
+> Custodian is a merchant-side layer that treats an AI buyer as an untrusted client. Before
+> money moves it re-derives the purchase against the merchant's own catalog and the user's
+> mandate, and writes the decision to a tamper-evident ledger.
+
+*Do not open with this.* It is a definition, and a definition closes the gap a good opening is
+trying to create. Lead with the 0.3333 collision — something concrete the room snags on — and
+let them ask for the category.
+
+**If someone asks for the architecture directly,** give them the two-kinds-of-correctness frame
+and stop. *(This block is for questions — it is not part of the timed run below.)*
+
+> There are two kinds of correctness here. **Mechanical** — is the price right, is it inside
+> budget, is the mandate live. Computers are perfect at that, so it is integer arithmetic and
+> set membership, and it can reject on its own authority. And **semantic** — is coconut cream a
+> reasonable stand-in for coconut milk. That is genuinely language, so it is a table lookup
+> first, and a model only where the table has nothing to say. The whole design is that split,
+> and which side of it each question falls on.
+
+Then offer the repo. Do not draw the diagram unless they ask twice.
+
+# 0 · Open — 46s   `SITE`
 
 **DO** — Tab 1, press `→` twice to **beat 2**. Start here, not at the beginning.
 **POINT AT** — the big `0.3333` in the middle.
@@ -68,7 +115,7 @@ back to if the live payment stalls on camera.
 
 ---
 
-# 1 · The gap, and whose problem it is — 38s   `SITE`
+# 1 · The gap, and whose problem it is — 47s   `SITE`
 
 **DO** — press `←` twice to **beat 0**.
 **POINT AT** — the empty **Purpose** row, then the red `SHIPPED · MARCH` tag.
@@ -106,7 +153,7 @@ back to if the live payment stalls on camera.
 
 ---
 
-# 3 · Now watch it run — 1:54 of talking, plus the payment   `TERMINAL`  ← the proof
+# 3 · Now watch it run — 2:27 of talking, plus the payment   `TERMINAL`  ← the proof
 
 **DO** — switch to the terminal. Type it where they can see:
 
@@ -119,8 +166,9 @@ Narrate over it. One line per stage — the script pauses for you.
 > This is the merchant's actual export. Empty price column, stock spelled four ways, pack
 > sizes living inside the product name.
 >
-> Seventy rows in, seventy items out, and it names every resolution it had to make. One item
-> it *can't* place — that one escalates rather than guesses.
+> Seventy rows in, seventy items out, and it names every resolution it had to make —
+> content-hashed, so every later price check is relative to *that* snapshot. One item it
+> can't place, and that one escalates rather than guesses.
 >
 > Here's what the agent is allowed to see — and note there are **two** untrusted parties in
 > this system, not one. The agent is untrusted for what it claims. But the merchant's own
@@ -132,8 +180,9 @@ Narrate over it. One line per stage — the script pauses for you.
 
 **PAUSE — let the `REJECT` land.**
 
-> Rejected. Not on a model's opinion — on arithmetic. It asserted eighteen ninety-three; the
-> catalog says twenty ninety-three.
+> **Rejected** — on arithmetic, not on a model's opinion. It asserted eighteen ninety-three;
+> the catalog says twenty ninety-three. And notice nothing escalated: deterministic checks run
+> first and can refuse on their own authority, so a bad cart never reaches a model.
 >
 > And now watch a human try to confirm it anyway — **refused.** A constraint you can wave
 > through is advisory. So the agent has to come back with a corrected cart.
@@ -143,8 +192,8 @@ Narrate over it. One line per stage — the script pauses for you.
 > separate entry naming who overrode it. "Held, then a human said yes at 14:32" is the
 > truthful entry, and it's the number a false-hold rate is measured from.
 >
-> Real Razorpay order. Two thousand and ninety-three rupees — **the derived total, not the
-> claim.**
+> Real Razorpay order, opened for two thousand and ninety-three rupees — **the figure the
+> server re-derived.** The agent's number never reaches the gateway at all.
 
 **DO** — the script prints a checkout URL and **waits**. Open it in Tab 2. Pay with
 `5267 3181 8797 5449`, any future expiry, any CVV.
@@ -164,7 +213,7 @@ Narrate over it. One line per stage — the script pauses for you.
 
 ---
 
-# 4 · What it's worth, and what it costs — 44s   `SITE`
+# 4 · What it's worth, and what it costs — 41s   `SITE`
 
 **DO** — back to Tab 1, press `→` to **beat 5**.
 **POINT AT** — the peak at 80%, and the fall-off on *both* sides.
@@ -217,32 +266,29 @@ and scroll.
 
 | § | Surface | Measured |
 |---|---|---|
-| 0 · Open | site | 0:31 |
-| 1 · The gap | site | 0:38 |
+| 0 · Open | site | 0:46 |
+| 1 · The gap | site | 0:47 |
 | 2 · How it decides | site | 0:43 |
-| 3 · **Live run** | terminal | 1:54 talking |
+| 3 · **Live run** | terminal | 2:27 talking |
 | 3 · **the payment itself** | browser | ~0:30 |
-| 4 · The numbers | site | 0:44 |
+| 4 · The numbers | site | 0:41 |
 | 5 · The repo | github | 0:39 |
 | 6 · Close | either | 0:26 |
-| | | **6:05** including the payment |
+| | | **7:00** including the payment |
 
-These are counted from the words, at 160 a minute, not estimated. **You are over six minutes**
-— so unless your slot is generous, take one of the cuts below before you record.
+Counted from the words at 160 a minute. **The architecture hints cost about 45 seconds** —
+they are worth it, and they mean you must cut something else.
 
-**To reach 5:00** — drop §5's middle paragraph and §1's middle paragraph, and cut §3's
-narration to the five moments that matter: *the messy export · the forged cart · rejected ·
-confirm refused · settled.* That removes about 170 words and lands near **5:00** with the
-payment included.
+### Cut ladder
 
-**To reach 4:30** — also skip the live payment. Run `make live` up to the order, say *"and a
-person pays on the hosted page — I have one settled from earlier"*, and show the finished
-chain in the viewer. You keep every claim and lose only the pause.
+| Target | Drop | Lands at |
+|---|---|---|
+| **6:00** | §1's middle paragraph, and §5's second half | ~6:05 |
+| **5:00** | …and §0's browser analogy *(keep it if the room is technical)*, and half of §3's narration | ~5:05 |
+| **4:30** | …and the live payment — say *"I have one settled from earlier"* and show the finished chain | ~4:20 |
 
-**Never cut:** §2 (the differentiator), the confirm-refused moment in §3 (most builds demo the
-block and stop), and the caveat in §6 (conceding first is worth more than any number).
-
----
+**Never cut:** §2, the confirm-refused moment in §3, and the self-criticism in §6. Those are the
+differentiator, the part most builds skip, and the most credible thirty seconds you have.
 
 ## After — the questions
 
