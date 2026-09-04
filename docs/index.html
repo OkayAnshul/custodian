@@ -4,96 +4,118 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Custodian — the purpose layer for agentic commerce</title>
-<meta name="description" content="A merchant endpoint that re-derives what an AI agent bought before money moves. Screenshots and real output from a running system.">
+<meta name="description" content="A merchant endpoint that re-derives what an AI agent bought before money moves. Screenshots, charts and real output from a running system.">
 <meta property="og:title" content="Custodian">
-<meta property="og:description" content="The agentic commerce stack proves an agent was permitted to spend. Nothing checks whether it bought what the human asked for.">
-<meta property="og:image" content="img/decision-hold.png">
+<meta property="og:description" content="The stack proves an agent was permitted to spend. Nothing checks whether it bought what the human asked for.">
+<meta property="og:image" content="img/hold-dimensions.png">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400&family=Public+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap">
 <style>
 :root{
-  --paper:#f6f7f5; --raised:#fdfdfc; --ink:#12171c; --muted:#5c6660; --faint:#8a938c;
-  --rule:#dde2dd; --accent:#1c5566; --accent-soft:#e3edef;
+  --paper:#f6f7f5; --raised:#fdfdfc; --ink:#12171c; --muted:#575f5a; --faint:#868e88;
+  --rule:#dde2dd; --accent:#1c5566; --accent-soft:#e6eff1;
   --pass:#17693f; --hold:#8a5d0a; --reject:#9c2f1c;
   --term-bg:#11171b; --term-ink:#d6ded8;
+  --s-raw:#e08a2b; --s-ing:#12968c; --surface:#fdfdfc; --grid:#e6eae6;
   --sans:"Public Sans",system-ui,-apple-system,sans-serif;
   --serif:"Newsreader",Georgia,serif;
   --mono:"JetBrains Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
-  --measure:66ch; --wide:min(1080px,100% - 3rem);
+  --measure:68ch; --wide:min(1120px,100% - 3rem);
 }
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
-  --paper:#0e1216; --raised:#161c21; --ink:#e6eae5; --muted:#9aa49d; --faint:#6e7872;
+  --paper:#0e1216; --raised:#161c21; --ink:#e6eae5; --muted:#9ca69f; --faint:#727c76;
   --rule:#252d33; --accent:#6fb3c6; --accent-soft:#152b33;
   --pass:#4bbd83; --hold:#d9a441; --reject:#e0745c;
   --term-bg:#080b0d; --term-ink:#cfd8d2;
+  --s-raw:#d95926; --s-ing:#1baf7a; --surface:#161c21; --grid:#232b31;
 }}
 :root[data-theme="dark"]{
-  --paper:#0e1216; --raised:#161c21; --ink:#e6eae5; --muted:#9aa49d; --faint:#6e7872;
+  --paper:#0e1216; --raised:#161c21; --ink:#e6eae5; --muted:#9ca69f; --faint:#727c76;
   --rule:#252d33; --accent:#6fb3c6; --accent-soft:#152b33;
   --pass:#4bbd83; --hold:#d9a441; --reject:#e0745c;
   --term-bg:#080b0d; --term-ink:#cfd8d2;
+  --s-raw:#d95926; --s-ing:#1baf7a; --surface:#161c21; --grid:#232b31;
 }
 *{box-sizing:border-box}
-body{background:var(--paper);color:var(--ink);font-family:var(--sans);
-  font-size:17px;line-height:1.65;-webkit-font-smoothing:antialiased}
+body{background:var(--paper);color:var(--ink);font-family:var(--sans);font-size:17px;line-height:1.65;
+  -webkit-font-smoothing:antialiased;margin:0}
 .wrap{width:var(--wide);margin:0 auto;padding:0 0 6rem}
 .col{max-width:var(--measure)}
 h1,h2,h3{font-family:var(--serif);font-weight:500;text-wrap:balance;margin:0}
-h1{font-size:clamp(2.6rem,6vw,4rem);line-height:1.02;letter-spacing:-.02em}
-h2{font-size:clamp(1.5rem,3vw,2rem);line-height:1.15;margin:0 0 .6rem}
-h3{font-size:1.15rem;margin:0 0 .35rem}
+h1{font-size:clamp(2.7rem,6.5vw,4.4rem);line-height:1;letter-spacing:-.025em}
+h2{font-size:clamp(1.55rem,3vw,2.1rem);line-height:1.14;margin:0 0 .7rem}
+h3{font-size:1.1rem;margin:0 0 .3rem}
 p{margin:0 0 1rem}
 a{color:var(--accent)}
 a:focus-visible,summary:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
-strong{font-weight:600}
-.eyebrow{font-family:var(--mono);font-size:.7rem;letter-spacing:.14em;text-transform:uppercase;
-  color:var(--faint);margin:0 0 .5rem}
-header{padding:5rem 0 2.5rem}
-.lede{font-family:var(--serif);font-size:clamp(1.2rem,2.4vw,1.5rem);line-height:1.45;
-  color:var(--ink);margin:1.6rem 0 0;max-width:54ch}
-.meta{display:flex;flex-wrap:wrap;gap:.5rem 1.4rem;margin-top:1.8rem;font-size:.85rem;color:var(--muted)}
-.meta code{font-family:var(--mono);font-size:.8rem}
-/* the outcome band — the product's own vocabulary, used as the page's one bold mark */
+.eyebrow{font-family:var(--mono);font-size:.69rem;letter-spacing:.15em;text-transform:uppercase;
+  color:var(--faint);margin:0 0 .55rem}
+header{padding:5.5rem 0 2.5rem}
+.lede{font-family:var(--serif);font-size:clamp(1.25rem,2.5vw,1.6rem);line-height:1.42;margin:1.7rem 0 0;max-width:56ch}
+.meta{display:flex;flex-wrap:wrap;gap:.4rem 1.5rem;margin-top:1.9rem;font-size:.85rem;color:var(--muted)}
+code{font-family:var(--mono);font-size:.86em}
 .band{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--rule);
   border-block:1px solid var(--rule);margin:3rem 0 0}
-.band div{background:var(--paper);padding:1.1rem 1.2rem}
-.band b{display:block;font-family:var(--mono);font-size:.8rem;letter-spacing:.1em}
-.band span{font-size:.85rem;color:var(--muted);line-height:1.4;display:block;margin-top:.2rem}
+.band div{background:var(--paper);padding:1.15rem 1.25rem}
+.band b{display:block;font-family:var(--mono);font-size:.78rem;letter-spacing:.1em}
+.band span{font-size:.85rem;color:var(--muted);line-height:1.45;display:block;margin-top:.25rem}
 .band .a b{color:var(--pass)} .band .h b{color:var(--hold)} .band .r b{color:var(--reject)}
-section{padding:3.5rem 0 0}
-.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:0;
-  border:1px solid var(--rule);border-radius:3px;overflow:hidden;margin:2.5rem 0 0}
-.stats div{padding:1.2rem 1.3rem;border-right:1px solid var(--rule)}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
+  border:1px solid var(--rule);border-radius:3px;overflow:hidden;margin:2.4rem 0 0}
+.stats div{padding:1.15rem 1.3rem;border-right:1px solid var(--rule)}
 .stats div:last-child{border-right:0}
-.stats b{display:block;font-family:var(--serif);font-size:1.9rem;line-height:1.1;
+.stats b{display:block;font-family:var(--serif);font-size:1.85rem;line-height:1.1;
   font-variant-numeric:tabular-nums;letter-spacing:-.01em}
-.stats span{display:block;font-size:.82rem;color:var(--muted);margin-top:.35rem;line-height:1.35}
-pre{background:var(--term-bg);color:var(--term-ink);font-family:var(--mono);font-size:.76rem;
+.stats span{display:block;font-size:.8rem;color:var(--muted);margin-top:.3rem;line-height:1.4}
+section{padding:3.6rem 0 0}
+pre{background:var(--term-bg);color:var(--term-ink);font-family:var(--mono);font-size:.75rem;
   line-height:1.55;padding:1.1rem 1.25rem;border-radius:4px;overflow-x:auto;margin:1.4rem 0}
-figure{margin:1.8rem 0 0}
-figure img{width:100%;display:block;border:1px solid var(--rule);border-radius:4px}
-figcaption{font-size:.83rem;color:var(--muted);margin-top:.7rem;max-width:60ch;line-height:1.5}
-table{width:100%;border-collapse:collapse;font-size:.88rem;margin:1.4rem 0}
-th,td{text-align:left;padding:.55rem .8rem .55rem 0;border-bottom:1px solid var(--rule);vertical-align:top}
-th{font-family:var(--mono);font-size:.7rem;letter-spacing:.1em;text-transform:uppercase;color:var(--faint);font-weight:400}
-.chip{font-family:var(--mono);font-size:.72rem;padding:.12rem .45rem;border:1px solid var(--rule);
+figure{margin:1.7rem 0 0}
+figure img{width:100%;display:block;border:1px solid var(--rule);border-radius:5px;background:var(--raised)}
+figcaption{font-size:.85rem;color:var(--muted);margin-top:.75rem;max-width:64ch;line-height:1.55}
+figcaption b{color:var(--ink);font-weight:600}
+table{width:100%;border-collapse:collapse;font-size:.88rem;margin:1.3rem 0}
+th,td{text-align:left;padding:.5rem .8rem .5rem 0;border-bottom:1px solid var(--rule);vertical-align:top}
+th{font-family:var(--mono);font-size:.67rem;letter-spacing:.1em;text-transform:uppercase;color:var(--faint);font-weight:400}
+.chip{font-family:var(--mono);font-size:.71rem;padding:.1rem .42rem;border:1px solid var(--rule);
   border-radius:3px;color:var(--muted);white-space:nowrap}
 .note{border-left:2px solid var(--accent);background:var(--accent-soft);padding:1rem 1.2rem;
-  margin:1.8rem 0;border-radius:0 3px 3px 0;font-size:.92rem}
+  margin:1.7rem 0;border-radius:0 3px 3px 0;font-size:.93rem}
 .note p:last-child{margin:0}
-.honest{border:1px solid var(--rule);border-radius:3px;padding:1.4rem 1.5rem;margin:1.6rem 0 0}
-.honest h3{font-family:var(--sans);font-size:.95rem;font-weight:600;margin-bottom:.3rem}
-.honest p{font-size:.9rem;color:var(--muted);margin:0}
-.honest + .honest{margin-top:.7rem}
+/* the pipeline — order is the information, so it is drawn as a sequence */
+.pipe{display:grid;gap:.5rem;margin:1.8rem 0 0}
+.pipe .step{display:grid;grid-template-columns:auto 1fr;gap:.9rem;align-items:start;
+  border:1px solid var(--rule);border-radius:4px;padding:.85rem 1.05rem;background:var(--raised)}
+.pipe .step.gate{border-color:var(--accent);border-width:1px 1px 1px 3px}
+.pipe .n{font-family:var(--mono);font-size:.7rem;color:var(--faint);padding-top:.2rem}
+.pipe h3{font-family:var(--sans);font-size:.95rem;font-weight:600;margin:0 0 .15rem}
+.pipe p{font-size:.87rem;color:var(--muted);margin:0}
+.pipe .arrow{text-align:center;color:var(--faint);font-size:.8rem;line-height:1}
+.dims{display:grid;grid-template-columns:repeat(auto-fit,minmax(232px,1fr));gap:0 1.6rem;margin:1.4rem 0 0}
+.dims div{border-top:1px solid var(--rule);padding:.7rem 0}
+.dims b{font-family:var(--mono);font-size:.73rem;display:block;letter-spacing:.02em}
+.dims span{font-size:.85rem;color:var(--muted);line-height:1.45}
+.chart{width:100%;height:auto;display:block;margin:1.5rem 0 0;overflow:visible}
+.chart .cy{font:400 12px var(--sans);fill:var(--muted)}
+.chart .cv{font:500 12px var(--mono);fill:var(--ink);font-variant-numeric:tabular-nums}
+.chart .cl{font:400 12px var(--sans);fill:var(--muted)}
+.chart .ct{font:400 11.5px var(--sans);fill:var(--faint)}
+.chart .cpk{font:500 12px var(--mono);fill:var(--ink)}
+.chart .grid{stroke:var(--grid);stroke-width:1}
+.honest{border:1px solid var(--rule);border-radius:3px;padding:1.25rem 1.4rem;margin-top:.7rem}
+.honest h3{font-family:var(--sans);font-size:.94rem;font-weight:600;margin-bottom:.25rem}
+.honest p{font-size:.89rem;color:var(--muted);margin:0}
+.broke{border-top:1px solid var(--rule);padding:1.15rem 0}
+.broke h3{font-family:var(--sans);font-size:.98rem;font-weight:600}
+.broke p{font-size:.9rem;color:var(--muted);margin:.3rem 0 0}
+.broke .id{font-family:var(--mono);font-size:.7rem;color:var(--faint);letter-spacing:.08em}
 footer{margin-top:4.5rem;padding-top:2rem;border-top:1px solid var(--rule);font-size:.9rem;color:var(--muted)}
-@media (max-width:640px){
+@media (max-width:680px){
   body{font-size:16px} header{padding:3rem 0 1.5rem}
   .band{grid-template-columns:1fr} .stats div{border-right:0;border-bottom:1px solid var(--rule)}
-  pre{font-size:.68rem}
+  pre{font-size:.66rem}
 }
-@media (prefers-reduced-motion:no-preference){a{transition:opacity .15s}a:hover{opacity:.7}}
+@media (prefers-reduced-motion:no-preference){a{transition:opacity .15s}a:hover{opacity:.72}}
 </style>
-
-<style>html{color-scheme:light dark}body{margin:0}img{max-width:100%}</style>
 </head>
 <body>
 <div class="wrap">
@@ -101,24 +123,25 @@ footer{margin-top:4.5rem;padding-top:2rem;border-top:1px solid var(--rule);font-
 <header>
   <p class="eyebrow">Razorpay Buildathon · Track 01 · AI Growth &amp; Agentic Commerce</p>
   <h1>Custodian</h1>
-  <p class="lede">The agentic commerce stack proves an agent was <em>permitted</em> to spend. Nothing checks whether it bought what the human actually asked for. That gap lands on the merchant.</p>
+  <p class="lede">Every layer of the agentic commerce stack proves an agent was <em>permitted</em> to spend. None of them checks whether it bought what the human actually asked for. That gap lands on the merchant.</p>
   <div class="meta">
     <span><a href="https://github.com/OkayAnshul/custodian">github.com/OkayAnshul/custodian</a></span>
-    <span><code>make install &amp;&amp; make demo</code> — no credentials needed</span>
+    <span><code>make install &amp;&amp; make demo</code> — runs with no credentials</span>
+    <span>556 tests · 16 documented failures · one live settled payment</span>
   </div>
 </header>
 
 <div class="band">
-  <div class="a"><b>APPROVE</b><span>Every claim re-derived and matched. Money moves at the catalog price.</span></div>
-  <div class="h"><b>HOLD</b><span>Plausible, and a human decides. The record still says HOLD after they say yes.</span></div>
-  <div class="r"><b>REJECT</b><span>A constraint failed. No human can wave it through.</span></div>
+  <div class="a"><b>APPROVE</b><span>Every claim the agent made was re-derived and matched. Money moves at the catalog price.</span></div>
+  <div class="h"><b>HOLD</b><span>Plausible, and a human decides. The record still reads HOLD after they say yes.</span></div>
+  <div class="r"><b>REJECT</b><span>A hard constraint failed. No aggregate score and no human can wave it through.</span></div>
 </div>
 
 <div class="stats">
-  <div><b>₹31,655</b><span>of purchases that did not match intent, stopped or held across 120 orders</span></div>
+  <div><b>₹31,655</b><span>of mismatched purchases stopped or held, across 120 orders</span></div>
   <div><b>0 of 60</b><span>clean orders held. Zero friction on the orders that were fine</span></div>
   <div><b>24 / 162</b><span>cart lines reach a model. Zero adversarial cases do</span></div>
-  <div><b>556</b><span>tests from a clean clone; 14 more against live Razorpay test mode</span></div>
+  <div><b>69 of 70</b><span>catalog rows made buyable, from 18 as exported</span></div>
 </div>
 
 <section>
@@ -126,126 +149,207 @@ footer{margin-top:4.5rem;padding-top:2rem;border-top:1px solid var(--rule);font-
   <h2>Three layers are solved. The fourth is open.</h2>
   <div class="col">
     <table>
-      <tr><th>Layer</th><th>What it answers</th><th>Standard</th></tr>
+      <tr><th>Layer</th><th>The question it answers</th><th>Standard</th></tr>
       <tr><td>Communication</td><td>How does the agent talk to systems?</td><td><span class="chip">MCP · A2A</span></td></tr>
-      <tr><td>Commerce</td><td>How does it build a cart?</td><td><span class="chip">UCP · ACP</span></td></tr>
-      <tr><td>Authorization</td><td>Was it <em>permitted</em> to spend?</td><td><span class="chip">AP2 · UAP</span></td></tr>
-      <tr><td><strong>Purpose</strong></td><td><strong>Was this what was asked for?</strong></td><td><span class="chip">—</span></td></tr>
+      <tr><td>Commerce</td><td>How does it discover a catalog and build a cart?</td><td><span class="chip">UCP · ACP</span></td></tr>
+      <tr><td>Authorization</td><td>Was the agent <em>permitted</em> to spend?</td><td><span class="chip">AP2 · UAP</span></td></tr>
+      <tr><td><strong>Purpose</strong></td><td><strong>Was the purchase what was asked for?</strong></td><td><span class="chip">nothing</span></td></tr>
     </table>
-    <p>Razorpay and Sarvam shipped a voice agent that pays without a PIN, with Swiggy as launch partner, and stated plainly that agentic shopping does not rewrite commercial liability. So when that agent orders the wrong thing, <strong>the merchant handles the dispute</strong> — against a counterparty they did not build, on content they do not control, with no tooling to evaluate any given order.</p>
+    <p>AP2 proves a human mandated the spend within limits. It does not ask whether the cart matches the request, and NPCI's UAP is built the same way — the rail verifies that a payment request is genuine, without visibility into what is being bought. That is a deliberate scope boundary, which means the check has to happen somewhere else: <strong>at the merchant.</strong></p>
+    <p>Razorpay and Sarvam shipped a voice agent that pays without a PIN, with Swiggy as launch partner, and stated plainly that agentic shopping does not rewrite commercial liability. So when that agent orders the wrong thing, the merchant handles the dispute — against a counterparty they did not build, on content they do not control, with no tooling to evaluate any given order.</p>
   </div>
 </section>
 
 <section>
-  <p class="eyebrow">Output · the hard part</p>
-  <h2>The obvious primitive cannot decide this</h2>
-  <div class="col"><p>Coconut milk is out of stock. Coconut cream is a faithful substitute; almond milk is not. Lexical similarity scores them <em>identically</em>:</p></div>
+  <p class="eyebrow">The hard part</p>
+  <h2>One question is not plumbing</h2>
+  <div class="col">
+    <p><em>“Ingredients for a Thai curry, under ₹2,000.”</em> Coconut milk is out of stock. Coconut cream is a faithful substitute. Almond milk is not. The obvious primitive — lexical similarity — scores them <strong>identically</strong>:</p>
+  </div>
 <pre>  jaccard('coconut milk', 'coconut cream') = 0.3333
   jaccard('coconut milk', 'almond milk')   = 0.3333
-  identical scores, opposite ground truth
-
-  attribute decomposition decides both, without a model:
-    Coconut Cream 200 ml           base=coconut  form=cream  base_score=10000 form_score= 8500
-    Almond Milk 1 ltr Unsweetened  base=almond   form=milk   base_score= none form_score=10000
-
-  → APPROVE    alignment 98.33%    confidence 100.00%    charge ₹590.00
-      escalated to a model: nothing — decided by arithmetic</pre>
-  <div class="col"><p>Every product — in the catalog and in the request — reduces to <span class="chip">base · form · category</span> against a hand-authored Indian grocery lexicon. The model is left only the cases that genuinely need language: an unlisted form pair, a bundle, an item the taxonomy cannot place.</p></div>
+  identical scores, opposite ground truth</pre>
+  <div class="col">
+    <p>So Custodian does not compare strings. Every product — in the catalog <em>and</em> in the request — is decomposed into <code>base · form · category</code> against a hand-authored Indian grocery lexicon of 58 base ingredients and 18 form-compatibility pairs. Substitution is then scored on identity first, shape second:</p>
+  </div>
+<pre>  coconut milk → coconut cream    base coconut == coconut, form pair milk~cream = 8500   FAITHFUL
+  coconut milk → almond milk      base coconut != almond, no recorded relationship       REJECT</pre>
+  <div class="col">
+    <p>Both decided by integer arithmetic, with reason codes, <strong>without calling a model</strong>. The model is left only what genuinely needs language: an unlisted form pair, a bundle, an item the taxonomy cannot place. That is the whole design — and the reason the lexicon, not the code, is the part that took judgment.</p>
+  </div>
 </section>
 
 <section>
-  <p class="eyebrow">Screen · a held decision</p>
+  <p class="eyebrow">Mechanism</p>
+  <h2>How one order is decided</h2>
+  <div class="col"><p>The order of these steps is the design. Cheap, certain checks run first and can refuse on their own authority; a model is reached only by what survives them, which is why a rejected cart costs nothing.</p></div>
+  <div class="pipe">
+    <div class="step"><div class="n">01</div><div><h3>Ingest and sanitize the merchant's export</h3><p>Messy CSV in — prices inside item names, transliterated Hindi pack sizes, six spellings of “in stock”. Out comes a content-hashed snapshot and a narrow agent feed with injection payloads stripped and retained as evidence.</p></div></div>
+    <div class="arrow">↓</div>
+    <div class="step"><div class="n">02</div><div><h3>The agent submits an intent and a cart</h3><p>The cart's only price field is named <code>asserted_unit_price_paise</code> — named so that trusting it looks wrong. A test asserts no naked <code>price</code> field exists anywhere on the type.</p></div></div>
+    <div class="arrow">↓</div>
+    <div class="step gate"><div class="n">03</div><div><h3>Six deterministic checks, each able to reject alone</h3><p>Price integrity, budget, merchant scope, category scope, mandate fit and sanitizer state — all re-derived server-side from the catalog. Integer arithmetic and set membership. No model, no probability.</p></div></div>
+    <div class="arrow">↓</div>
+    <div class="step gate"><div class="n">04</div><div><h3>Only survivors reach binding and substitution</h3><p>Each cart line is bound back to the request line it claims to answer — re-derived, never trusted. Unbound lines are scope creep by construction. Substitution is scored on base and form.</p></div></div>
+    <div class="arrow">↓</div>
+    <div class="step gate"><div class="n">05</div><div><h3>Only genuine ties reach a model</h3><p>An unlisted form pair, or an item the taxonomy cannot place. One question, strict JSON, no price or budget or mandate in the prompt. The verdict is written to the ledger as an <em>observation</em>, with the same standing as a catalog price.</p></div></div>
+    <div class="arrow">↓</div>
+    <div class="step"><div class="n">06</div><div><h3><code>decide()</code> — a pure function</h3><p>Eight dimensions, weighted into one alignment score, with a rule that no weighting can override: any dimension at FAIL or UNCERTAIN caps the outcome at hold. Three outcomes out, plus a confidence computed from evidence coverage and threshold margin.</p></div></div>
+    <div class="arrow">↓</div>
+    <div class="step"><div class="n">07</div><div><h3>Hash-chained ledger, then settlement</h3><p>Every input, verdict and outcome is appended to an append-only chain. Approved orders open a Razorpay order <strong>for the amount Custodian derived</strong> — never the total the agent asserted.</p></div></div>
+  </div>
+</section>
+
+<section>
+  <p class="eyebrow">Screen · what a merchant actually sees</p>
   <h2>Eight dimensions, scored separately</h2>
-  <div class="col"><p>The agent's cart contains a ₹1,450 wok nobody asked for. It is correctly priced, in stock, and inside budget — every arithmetic check passes, and it is still wrong.</p></div>
+  <div class="col"><p>Alignment is not one number. Each dimension is scored on its own and carries its own reason code, so “why” is a byproduct of the structure rather than an explanation bolted on afterwards. This is the real product screen, re-derived from the ledger at the moment the page loaded:</p></div>
   <figure>
-    <img src="img/decision-hold.png" alt="Custodian decision page showing a HOLD outcome with eight dimensions scored separately">
-    <figcaption>The actual product screen, re-derived from the ledger when the page loaded. Seven dimensions pass; <code>SCOPE_CREEP</code> fails at 30.72%. Cart line <code>l3</code> binds to nothing anyone requested — scope creep <em>by construction, not by detection</em>. Note the record panel: replay reproduces exactly, chain intact, and nothing escalated to a model.</figcaption>
+    <img src="img/hold-dimensions.png" alt="The eight scored dimensions of a Custodian decision, seven passing and SCOPE_CREEP failing at 30.72 percent">
+    <figcaption>An order carrying a ₹1,450 wok nobody asked for. Seven dimensions pass; <b>SCOPE_CREEP fails at 30.72%</b>. Every reason code is drawn from a closed set of 49, each with merchant-facing text — a decision can never produce an explanation nobody wrote.</figcaption>
+  </figure>
+  <div class="dims">
+    <div><b>PRICE_INTEGRITY</b><span>Every quoted price re-derived against the catalog. A hard constraint.</span></div>
+    <div><b>BUDGET</b><span>The verified total against the human's stated ceiling — not the agent's arithmetic.</span></div>
+    <div><b>MERCHANT_SCOPE</b><span>Set membership against the merchants the human actually named.</span></div>
+    <div><b>CATEGORY_SCOPE</b><span>Every item inside a category the request covers.</span></div>
+    <div><b>MANDATE</b><span>Fit against the payment mandate: caps, window, merchant allowlist.</span></div>
+    <div><b>SANITIZATION</b><span>Whether catalog copy behind this order tripped the injection sanitizer.</span></div>
+    <div><b>SUBSTITUTION</b><span>Base identity, then form compatibility. The one place a model may be consulted.</span></div>
+    <div><b>SCOPE_CREEP</b><span>Cart value that traces back to nothing in the request.</span></div>
+  </div>
+</section>
+
+<section>
+  <p class="eyebrow">Screen · the failure a budget check cannot see</p>
+  <h2>Correctly priced, in stock, inside budget — and still wrong</h2>
+  <div class="col"><p>The wok passes every arithmetic test. The only thing wrong with it is that nobody asked for it, and that is visible only if you re-derive what each cart line is <em>for</em>:</p></div>
+  <figure>
+    <img src="img/hold-bindings.png" alt="Binding table showing two cart lines bound to requested items and one line unbound">
+    <figcaption>Two lines bind to the request at 100% fidelity. Line <code>l3</code> binds to <b>nothing</b>. That is scope creep <b>by construction, not by detection</b> — there is no classifier to evade and no pattern to phrase around, because the item simply has no request behind it.</figcaption>
+  </figure>
+  <figure>
+    <img src="img/hold-verdict.png" alt="Verdict banner reading HOLD at 90.55 percent alignment">
+    <figcaption>The outcome is <b>HOLD</b>, not reject. An unrequested item is the human's call — they may well want it — and a system that only ever blocks is one a merchant switches off. Re-confirmation lets the purchase complete without rewriting the record: it still reads HOLD, with a separate event naming who overrode it.</figcaption>
   </figure>
 </section>
 
 <section>
-  <p class="eyebrow">Screen · a rejection</p>
-  <h2>A constraint that can be outvoted is not a constraint</h2>
-  <div class="col"><p>Here the agent asserted <strong>₹443.00</strong> for a cart the catalog prices at <strong>₹643.00</strong>.</p></div>
+  <p class="eyebrow">Screen · the rule that cannot be outvoted</p>
+  <h2>A good average must not rescue a failed constraint</h2>
   <figure>
-    <img src="img/decision-reject.png" alt="Custodian decision page showing a REJECT outcome caused by a price mismatch">
-    <figcaption>Overall alignment is 86.36% — above the 80% approve line — and seven of eight dimensions pass. It rejects anyway, because <code>PRICE_INTEGRITY</code> is a hard constraint. This rule exists because the gate once approved an order with a failed dimension outvoted by seven passing ones; that failure is written up as entry 007 of sixteen in <code>BROKE.md</code>.</figcaption>
+    <img src="img/reject-verdict.png" alt="Verdict banner reading REJECT, agent asserted 443 rupees against 643 derived">
+    <figcaption>The agent asserted <b>₹443.00</b> for a cart the catalog prices at <b>₹643.00</b>. Overall alignment is <b>86.36% — above the 80% approve line</b>, and seven of eight dimensions pass.</figcaption>
   </figure>
+  <figure>
+    <img src="img/reject-price.png" alt="Dimension table showing PRICE_INTEGRITY failed with reason code PRICE_MISMATCH">
+    <figcaption>It rejects anyway. <code>PRICE_INTEGRITY</code> is a hard constraint, and <b>any dimension at FAIL or UNCERTAIN caps the outcome at hold</b> regardless of the aggregate. Weights decide how much a dimension contributes; they do not decide whether a failure counts. That rule exists because the gate once approved an order with a failed dimension outvoted by seven passing ones — written up as entry 007 of sixteen in <code>BROKE.md</code>.</figcaption>
+  </figure>
+</section>
+
+<section>
+  <p class="eyebrow">Measured · the growth half</p>
+  <h2>A merchant with unusable data is invisible to agents</h2>
+  <div class="col"><p>However good the checkout is. An AI buyer needs three things per row: a price it can read, an identity it can match against a request, and a stock signal it can evaluate. Of 70 rows in a real kirana export, it gets all three on <strong>18</strong>. After ingest, <strong>69</strong>.</p></div>
+  <svg viewBox="0 0 660 274" role="img" aria-label="Catalog fields an agent can act on, before and after ingest" class="chart"><text x="0" y="14" class="ct">of 70 rows</text><rect x="232" y="0" width="10" height="10" fill="var(--s-raw)" rx="2"/><text x="248" y="9" class="cl">raw export</text><rect x="336" y="0" width="10" height="10" fill="var(--s-ing)" rx="2"/><text x="352" y="9" class="cl">after ingest</text><text x="0" y="44" class="cy">price an agent can read</text><rect x="232" y="30" width="306.4" height="12" fill="var(--s-raw)" rx="3"><title>price an agent can read: 65 of 70</title></rect><text x="545.4" y="40" class="cv">65</text><rect x="232" y="44" width="330.0" height="12" fill="var(--s-ing)" rx="3"><title>price an agent can read: 70 of 70</title></rect><text x="569.0" y="54" class="cv">70</text><text x="0" y="92" class="cy">identity it can match</text><rect x="232" y="78" width="278.1" height="12" fill="var(--s-raw)" rx="3"><title>identity it can match: 59 of 70</title></rect><text x="517.1" y="88" class="cv">59</text><rect x="232" y="92" width="325.3" height="12" fill="var(--s-ing)" rx="3"><title>identity it can match: 69 of 70</title></rect><text x="564.3" y="102" class="cv">69</text><text x="0" y="140" class="cy">stock signal it can read</text><rect x="232" y="126" width="99.0" height="12" fill="var(--s-raw)" rx="3"><title>stock signal it can read: 21 of 70</title></rect><text x="338.0" y="136" class="cv">21</text><rect x="232" y="140" width="330.0" height="12" fill="var(--s-ing)" rx="3"><title>stock signal it can read: 70 of 70</title></rect><text x="569.0" y="150" class="cv">70</text><text x="0" y="188" class="cy">canonical pack size</text><text x="239.0" y="184" class="cv">0</text><rect x="232" y="188" width="320.6" height="12" fill="var(--s-ing)" rx="3"><title>canonical pack size: 68 of 70</title></rect><text x="559.6" y="198" class="cv">68</text><text x="0" y="236" class="cy" style="font-weight:600">ALL THREE — buyable from</text><rect x="232" y="222" width="84.9" height="12" fill="var(--s-raw)" rx="3"><title>ALL THREE — buyable from: 18 of 70</title></rect><text x="323.9" y="232" class="cv">18</text><rect x="232" y="236" width="325.3" height="12" fill="var(--s-ing)" rx="3"><title>ALL THREE — buyable from: 69 of 70</title></rect><text x="564.3" y="246" class="cv">69</text></svg>
+  <div class="col"><p>Pack size is the sharpest column: not one row carries it as its own field — it lives inside the product name, in Hindi as often as not (<code>rice pav kilo loose</code> → <code>rice/whole 250g</code>). That is the growth half of this track, and it is measured rather than claimed.</p></div>
+</section>
+
+<section>
+  <p class="eyebrow">Measured · what it is worth</p>
+  <h2>The saving, quoted with its cost</h2>
+  <svg viewBox="0 0 660 96" role="img" aria-label="Catalog value let through versus stopped or held" class="chart"><rect x="0" y="26" width="171.1" height="26" fill="var(--s-raw)" rx="3"><title>let through at catalog prices: ₹12,063</title></rect><rect x="173.1" y="26" width="446.9" height="26" fill="var(--s-ing)" rx="3"><title>stopped or held: ₹31,655</title></rect><text x="2" y="18" class="cv">₹12,063 let through</text><text x="179.1" y="18" class="cv">₹31,655 stopped or held — 72.41% of value</text><text x="0" y="70" class="ct">of ₹43,718 catalog value across 120 orders · 0 of 60 clean orders held</text></svg>
+  <div class="col">
+    <p>Both paths are runnable. “Without Custodian” is this repository's own naive buyer reading an unsanitised feed with its asserted totals settling — not an estimate. Of the ₹31,655 stopped or held, <strong>₹13,720 is items nobody asked for</strong>: inside budget, correctly priced, in stock, and still wrong. A further <strong>₹2,109</strong> is price the agent forged, which would have charged the wrong amount on orders that were otherwise fine.</p>
+    <p>The cost side is reported in the same breath, because a saving quoted without its cost is advertising: <strong>zero of 60 clean orders were held.</strong></p>
+  </div>
+</section>
+
+<section>
+  <p class="eyebrow">Measured · the evaluation</p>
+  <h2>The threshold was a guess. Now it is measured.</h2>
+  <div class="col">
+    <p>120 hand-built cases across four classes, DEV/TEST split, stratified. Three of the classes have labels that follow from how each case was built — a forged price is a rejection by definition — so scoring 100% on them says the implementation matches its specification, not that the specification is right.</p>
+    <p>The class where that question actually lives is <strong>benign divergence</strong>: 30 cases asking whether one ingredient acceptably stands in for another. That is a judgment about cooking, so those labels were kept out of every headline number until a person reviewed them case by case and signed each one. Doing that made a measurement possible that had not been:</p>
+  </div>
+  <svg viewBox="0 0 600 266" role="img" aria-label="Agreement with the reviewed labels across the substitution threshold" class="chart"><line x1="46" y1="212.1" x2="566" y2="212.1" class="grid"/><text x="38" y="216.1" class="cy" text-anchor="end">70%</text><line x1="46" y1="152.8" x2="566" y2="152.8" class="grid"/><text x="38" y="156.8" class="cy" text-anchor="end">80%</text><line x1="46" y1="93.4" x2="566" y2="93.4" class="grid"/><text x="38" y="97.4" class="cy" text-anchor="end">90%</text><line x1="46" y1="34.0" x2="566" y2="34.0" class="grid"/><text x="38" y="38.0" class="cy" text-anchor="end">100%</text><path d="M46.0,192.4 L161.6,192.4 L277.1,152.8 L392.7,34.0 L450.4,73.6 L508.2,152.8 L566.0,152.8" fill="none" stroke="var(--s-ing)" stroke-width="2" stroke-linejoin="round"/><circle cx="46.0" cy="192.4" r="4" fill="var(--s-ing)" stroke="var(--surface)" stroke-width="2"><title>50% threshold → 73.33% agreement</title></circle><text x="46.0" y="244" class="cv" text-anchor="middle">50</text><circle cx="161.6" cy="192.4" r="4" fill="var(--s-ing)" stroke="var(--surface)" stroke-width="2"><title>60% threshold → 73.33% agreement</title></circle><text x="161.6" y="244" class="cv" text-anchor="middle">60</text><circle cx="277.1" cy="152.8" r="4" fill="var(--s-ing)" stroke="var(--surface)" stroke-width="2"><title>70% threshold → 80.00% agreement</title></circle><text x="277.1" y="244" class="cv" text-anchor="middle">70</text><circle cx="392.7" cy="34.0" r="6" fill="var(--s-ing)" stroke="var(--surface)" stroke-width="2"><title>80% threshold → 100.00% agreement</title></circle><text x="392.7" y="244" class="cv" text-anchor="middle">80</text><circle cx="450.4" cy="73.6" r="4" fill="var(--s-ing)" stroke="var(--surface)" stroke-width="2"><title>85% threshold → 93.33% agreement</title></circle><text x="450.4" y="244" class="cv" text-anchor="middle">85</text><circle cx="508.2" cy="152.8" r="4" fill="var(--s-ing)" stroke="var(--surface)" stroke-width="2"><title>90% threshold → 80.00% agreement</title></circle><text x="508.2" y="244" class="cv" text-anchor="middle">90</text><circle cx="566.0" cy="152.8" r="4" fill="var(--s-ing)" stroke="var(--surface)" stroke-width="2"><title>95% threshold → 80.00% agreement</title></circle><text x="566.0" y="244" class="cv" text-anchor="middle">95</text><text x="392.7" y="19.0" class="cpk" text-anchor="middle">100% — the shipped default</text><text x="306" y="262" class="ct" text-anchor="middle">substitution_faithful_bp threshold</text></svg>
+  <div class="col">
+    <p>Agreement falls off on <strong>both</strong> sides of 80%, so it is a peak and not a plateau — and it holds separately on DEV (n=20) and on TEST (n=10), which is the split doing the job it exists for. <strong>Not one threshold value moved.</strong> The version string went from <code>v0-untuned</code> to <code>v1-reviewed</code> because the numbers were checked and left alone, which is a weaker and more honest claim than “tuned”.</p>
+  </div>
+  <div class="note col"><p><strong>And 100% agreement is exactly the shape of number that deserves suspicion.</strong> So the evaluation harness argues against its own result on every single run: one reviewer, no adjudication, 15 distinct substitutions, one catalog — and the reviewer could see the gate's current call while judging, which makes agreement cheaper than an independent blind pass would be. Those bounds are printed by the tool, not recited in prose.</p></div>
+</section>
+
+<section>
+  <p class="eyebrow">AI judgment</p>
+  <h2>Where a model is used, and where it is refused</h2>
+  <div class="col"><p>Meaningful use of AI means placed where it is load-bearing and absent where a lookup is strictly better. The table is the argument, so it is given in full:</p></div>
+  <div class="col">
+  <table>
+    <tr><th>Task</th><th>Tool</th><th>Why</th></tr>
+    <tr><td>Price verification</td><td><span class="chip">integer compare</span></td><td>A model would be strictly worse and non-deterministic</td></tr>
+    <tr><td>Budget &amp; mandate arithmetic</td><td><span class="chip">arithmetic</span></td><td>Must be auditable and reproducible from the ledger</td></tr>
+    <tr><td>Merchant &amp; category scope</td><td><span class="chip">set membership</span></td><td>A stated rule, not a probability</td></tr>
+    <tr><td>Unit normalisation</td><td><span class="chip">rules + table</span></td><td><code>250gm</code> = <code>1/4 kg</code> = <code>pav kilo</code> is parsing, not reasoning</td></tr>
+    <tr><td>Sanitizer triage</td><td><span class="chip">rules</span></td><td>Runs on every ingest; a classifier trained on our own fixtures and scored on the same corpus would be circular</td></tr>
+    <tr><td>Substitution fidelity</td><td><span class="chip">tables, then a model on ties</span></td><td>Base identity and form compatibility are lookups; only unlisted pairs need judgment</td></tr>
+    <tr><td>Ambiguous natural language</td><td><span class="chip">a model, once</span></td><td>The only place language understanding is genuinely required</td></tr>
+  </table>
+  <p><strong>Both model positions have two implementations</strong> — Claude and Groq, each behind one Protocol and graded by one contract suite. A test runs the same substitution through both scorers and asserts the resulting decision is <em>byte-identical</em>, which is possible because the model id lives on the verdict rather than on the decision. A consequence worth stating: the whole system runs on one free API key.</p>
+  <p>And the answers being replayed are real ones — <strong>28 responses recorded from a live model</strong> with provider, model, prompt digest and the question exactly as sent. The first run against them broke an abstention guarantee that hand-written fixtures had preserved for the entire build: a stand-in written by the person who also wrote the expectations agrees with them.</p>
+  </div>
 </section>
 
 <section>
   <p class="eyebrow">Record · real money</p>
-  <h2>The order is opened for the amount Custodian derived</h2>
-  <div class="col"><p>Never the total the agent asserted. A payer completes it on a hosted page, because no API call makes a payment <em>happen</em>.</p></div>
+  <h2>Money moves for the derived amount, or not at all</h2>
+  <div class="col"><p>An approved order opens a Razorpay order for the figure Custodian re-derived. No API call makes a payment <em>happen</em> — a person completes it on a hosted page, which is the one part of the loop that needs a human:</p></div>
   <figure>
-    <img src="img/razorpay-checkout-modal.png" alt="Razorpay Checkout in test mode, on a Custodian order for ₹643">
-    <figcaption>Razorpay's own Checkout, test mode, against a real order.</figcaption>
+    <img src="img/checkout-panel.png" alt="The hosted checkout panel showing the amount Custodian derived">
+    <figcaption>The payer sees the derived amount and is told so explicitly. The browser is treated as an untrusted client like everything else: the callback it returns is verified as <code>HMAC-SHA256(order_id|payment_id)</code> before anything is captured.</figcaption>
   </figure>
   <figure>
-    <img src="img/decision-settled.png" alt="Custodian decision page carrying a settled Razorpay payment">
-    <figcaption>The same decision page after payment, now carrying a settled payment id issued by Razorpay.</figcaption>
+    <img src="img/settled-chain.png" alt="Hash-chained ledger showing five events ending in PAYMENT_SETTLED">
+    <figcaption>The complete trail for a <b>real test-mode payment</b>, each event's <code>prev</code> being its predecessor's <code>hash</code>. Every decision replays byte-for-byte from this record <b>with the model client mocked to raise if it is called</b> — the verdict is recorded evidence, so the model participates once and is never consulted twice.</figcaption>
   </figure>
-<pre>  pay_TXqhfwpiOtrJFY   CAPTURED   64300 paise   authorised_by=APPROVED   captured_by=razorpay-test
-
-  INTENT_RECEIVED → SNAPSHOT_TAKEN → DECISION_MADE → PAYMENT_INITIATED → PAYMENT_SETTLED
-  chain intact · no breaks</pre>
-  <div class="note col">
-    <p><strong>Walking this leg for real found two defects nothing else could.</strong> The server could not serve its own documented checkout page, and — worse — this Razorpay account captures automatically, so a genuinely settled payment left <em>no settlement event</em>: Custodian's capture arrived second and was refused as a duplicate. A fake gateway has no opinion about an account setting. Both are written up as <code>BROKE.md</code> 015 and 016.</p>
-  </div>
+  <div class="note col"><p><strong>Walking this leg for real found two defects nothing else could.</strong> The server could not serve its own documented checkout page — it ran on the fake gateway, so the walkthrough returned 409 at its third line for anyone who followed it. And worse: this Razorpay account captures automatically, so a genuinely settled payment left <em>no settlement event</em>, because Custodian's own capture arrived second and was refused as a duplicate. A fake gateway is not wrong about anything it models; it simply has no opinion about an account setting.</p></div>
 </section>
 
 <section>
-  <p class="eyebrow">Output · what it is worth</p>
-  <h2>The saving, quoted with its cost</h2>
-<pre>  money that would settle unchecked              ₹41,609.00
-  money Custodian let through                    ₹12,063.00
-  money stopped or held for a human              ₹31,655.00   72.41% of value
-
-  of that, adversarial orders                    ₹20,199.00
-  price forged by the agent                       ₹2,109.00   would have charged the wrong amount
-  items nobody asked for                         ₹13,720.00   inside budget, correctly priced
-
-  clean orders sent back to a human            0 of 60         0.00% friction
-  cart lines that needed a model at all       24 of 162        14.81% of lines</pre>
-  <div class="col"><p>Both paths are runnable. “Without Custodian” is the naive buyer reading an unsanitised feed with its asserted totals settling — not an estimate.</p></div>
-</section>
-
-<section>
-  <p class="eyebrow">Output · the evaluation</p>
-  <h2>The threshold was a guess. Now it is measured.</h2>
-  <div class="col"><p>120 hand-built cases, four classes, DEV/TEST split. The 30 labels that are a judgment about cooking rather than a consequence of construction were kept out of every number until a person reviewed them case by case. That review made a measurement possible that had not been:</p></div>
-<pre>   threshold   agreement with the reviewed labels
-      70.00%          80.00%
-      80.00%         100.00%   ← shipped default
-      85.00%          93.33%
-      90.00%          80.00%</pre>
-  <div class="col"><p>Agreement falls off on <strong>both</strong> sides, so it is a peak and not a plateau — and it holds separately on DEV (n=20) and TEST (n=10). <strong>Not one threshold value moved.</strong> The version string went from <code>v0-untuned</code> to <code>v1-reviewed</code> because the numbers were checked and left alone, which is a weaker and more honest claim than “tuned”.</p></div>
+  <p class="eyebrow">The record of being wrong</p>
+  <h2>Sixteen failures, with root causes</h2>
+  <div class="col"><p><code>BROKE.md</code> is written as things break, not reconstructed afterwards. Four are worth the space here; the pattern across them is the point.</p></div>
+  <div class="broke"><p class="id">007 · the gate</p><h3>The gate approved an order with a failed dimension</h3><p>Almond milk offered for coconut milk scored 34% on substitution, and seven passing dimensions carried the weighted mean to 85% — so it approved. The exact failure the project exists to prevent. I had written <em>“a constraint that can be outvoted by a good average is not a constraint”</em> as a comment inside the function where precisely that happened. Fixed structurally rather than by re-tuning weights.</p></div>
+  <div class="broke"><p class="id">006 · payments</p><h3>The payment interface described a provider that does not exist</h3><p>It had <code>create_order</code> then <code>capture(order)</code>. Razorpay is <code>order → a human pays → authorized payment → capture</code>, and an unpaid order has zero payments on it. The fake had been passing the full contract suite against an API I had imagined. A fake that satisfies a contract the real thing cannot is worse than no fake: it converts an unknown into false confidence.</p></div>
+  <div class="broke"><p class="id">012 · the model</p><h3>The first real model answers broke the abstention guarantee</h3><p>Asked whether “Sparkle Glitter Pens 5 nos” substitutes for “glitter pens”, the model said FAITHFUL at 95% — which is correct — and an item the taxonomy could not place approved. My own fixture had said UNSURE, so the bug was invisible for as long as the answers were mine. <strong>A model can tell you two things are alike; it cannot tell you what they are.</strong></p></div>
+  <div class="broke"><p class="id">011 · the record</p><h3>I fabricated the project timeline</h3><p>The engineering log carried nine dated entries across a week that had not happened, while every commit was timestamped to one day. Found by comparing the log against <code>git log</code> — one command, run only because someone asked whether things were working. It is the worst entry in the file, because everything this project claims rests on its evidence being honest.</p></div>
+  <div class="col"><p style="margin-top:1.4rem">The through-line: the parts that only run against something real are the parts nobody has run, and the more carefully the tests inject their dependencies, the more completely the one line that chooses them for real goes uncovered.</p></div>
 </section>
 
 <section>
   <p class="eyebrow">What this does not claim</p>
-  <h2>The parts a reviewer should push on</h2>
-  <div class="honest">
-    <h3>100% agreement rests on one reviewer</h3>
-    <p>No adjudication, 15 distinct substitutions, one catalog — and the reviewer could see the gate's current call while judging, which makes agreement cheaper than a blind pass. The evaluation harness prints all three bounds on every run rather than leaving them to a reader.</p>
-  </div>
-  <div class="honest">
-    <h3>The UPI mandate is modelled, not integrated</h3>
-    <p>Reserve Pay is not reachable from a self-serve test account. The mandate is constructed locally and checked deterministically. What this demonstrates is the layer <em>above</em> the mandate.</p>
-  </div>
-  <div class="honest">
-    <h3>100% on the other three classes is weaker than it looks</h3>
-    <p>Their labels follow from how each case was built — a forged price is a rejection by definition. Scoring 100% says the implementation matches its specification. It does not say the specification is right.</p>
-  </div>
-  <div class="honest">
-    <h3>No allergen or dietary control</h3>
-    <p>One corpus case approves groundnut oil for sunflower oil under an equivalence policy, and groundnut is peanut. This system re-derives price, purpose and authority; it has no idea what will hurt someone.</p>
-  </div>
+  <h2>The parts to push on</h2>
+  <div class="honest"><h3>The strongest number rests on one reviewer</h3><p>100% agreement on the judgment labels: no adjudication, 15 distinct substitutions, one catalog, and a reviewer who could see the gate's answers while judging. A second independent pass is the most valuable thing anyone could add.</p></div>
+  <div class="honest"><h3>The UPI mandate is modelled, not integrated</h3><p>Reserve Pay is not reachable from a self-serve test account. The mandate is constructed locally and checked deterministically. What this demonstrates is the layer <em>above</em> the mandate — it consumes one as an input.</p></div>
+  <div class="honest"><h3>The lexicon covers exactly one merchant</h3><p>58 bases and 18 form pairs, sized to a 70-item catalog. Coverage against a different merchant is unmeasured. Scaling it is authoring work, not engineering work — which is the honest shape of the problem.</p></div>
+  <div class="honest"><h3>No allergen or dietary control</h3><p>One corpus case approves groundnut oil for sunflower oil under an equivalence policy, and groundnut is peanut. This re-derives price, purpose and authority; it has no idea what will hurt someone.</p></div>
+  <div class="honest"><h3>Single writer, one process</h3><p>SQLite with a mutex and <code>BEGIN IMMEDIATE</code>. Safe under a threaded server, and nothing here survives multiple processes writing one ledger.</p></div>
+</section>
+
+<section>
+  <p class="eyebrow">Run it</p>
+  <h2>Four commands, no credentials</h2>
+<pre>  git clone https://github.com/OkayAnshul/custodian &amp;&amp; cd custodian
+  make install          # virtualenv and dependencies
+  make demo             # all six scenarios above
+  make eval             # the corpus, DEV and TEST
+  make money            # the counterfactual, in rupees
+  make check            # everything CI runs</pre>
+  <div class="col"><p>With Razorpay test keys in <code>.env</code>, <code>make demo</code> also creates a live order and a payable link, and <code>make serve</code> hosts the checkout page. 556 tests run without any credentials at all; 14 more run against the live test-mode API when keys are present.</p></div>
 </section>
 
 <footer>
   <div class="col">
-    <p>Every figure and screenshot on this page was produced by running the code. <code>BROKE.md</code> carries sixteen failures with root causes, including three that only appeared when something real was run; <code>LIMITATIONS.md</code> states what is modelled, unfinished or deliberately out of scope.</p>
+    <p>Every figure, screenshot and chart on this page was produced by running the code. <a href="https://github.com/OkayAnshul/custodian/blob/main/BROKE.md">BROKE.md</a> carries sixteen failures with root causes; <a href="https://github.com/OkayAnshul/custodian/blob/main/LIMITATIONS.md">LIMITATIONS.md</a> states what is modelled, unfinished or deliberately out of scope; <a href="https://github.com/OkayAnshul/custodian/blob/main/EVALUATION.md">EVALUATION.md</a> carries the corpus and the bounds on every number here.</p>
     <p><a href="https://github.com/OkayAnshul/custodian">github.com/OkayAnshul/custodian</a></p>
   </div>
 </footer>
