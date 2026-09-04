@@ -14,6 +14,7 @@ help:
 	@echo "  make eval       the corpus, DEV and TEST"
 	@echo "  make money      what Custodian saves, and what it costs"
 	@echo "  make sweep      the threshold curve"
+	@echo "  make live       the whole loop live, ending in a real payment"
 	@echo "  make pitch      preflight for recording: server, live order, both pages"
 	@echo "  make serve      the API and decision viewer on :8000"
 	@echo "  make review     lay out the 30 drafted labels for human review"
@@ -59,6 +60,13 @@ sweep:
 # Everything between a cold machine and "press record": server on the live
 # gateway, a real order so the checkout page and payable link work, both
 # surfaces open, and the run sheet printed.
+# The whole loop live against the running server: the merchant's messy export,
+# ingest, the agent feed, a forged cart refused, a corrected one held, a human
+# confirming, a real Razorpay order, a person paying, and the settled chain.
+.PHONY: live
+live:
+	@$(PY) -u scripts/live.py
+
 .PHONY: pitch
 pitch:
 	@bash scripts/pitch.sh
