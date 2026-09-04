@@ -19,6 +19,10 @@ Two halves, both measured.
 
 Every one of those numbers is printed by `make money`.
 
+> ### 📸 [**Seeing it work**](docs/WALKTHROUGH.md) — screenshots and real output, if you would rather not run anything
+>
+> Every screen, every number, captured from an actual run: the decision viewer, a live Razorpay test-mode payment settled for the derived amount, the corpus, the money, the threshold curve.
+
 > **Why this and not a guardrail.** A guardrail inspects text and guesses. Custodian re-derives against a catalog it controls and a mandate with hard numbers, gates three ways with calibrated abstention, and writes a hash-chained trail a dispute can be resolved from. Different mechanism, different failure surface.
 >
 > **Why this and not Vulcan.** Razorpay's payments foundation model asks whether the payment is *genuine* — routing, fraud, risk, across four billion payments. Custodian asks whether the purchase was *what was asked for*. Different question, and nothing in the stack was answering it.

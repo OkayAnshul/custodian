@@ -240,6 +240,10 @@ chain intact: 20 events
 
 ---
 
+## If the screen fails
+
+[`docs/WALKTHROUGH.md`](docs/WALKTHROUGH.md) has every screen and every number as captured output. If the terminal, the network or the projector betrays you, open it and keep talking — the story is the same and none of it needs a live run.
+
 ## If asked
 
 **"Isn't 100% suspicious?"** — Yes, and the harness says so in its own output. Three classes have labels that follow from how each case was built; scoring 100% says the implementation matches its specification, not that the specification is right. The class where that question lives is benign divergence — those 30 labels were drafts and are now reviewed by a person, attributed, case by case. That unlocked the measurement that couldn't be taken before: the shipped substitution threshold is the *unique* agreement peak, 100% at 80% and 73–80% either side, holding on DEV and TEST separately. No value moved. And the bounds on that: one reviewer, no adjudication, one catalog, and they could see the gate's call while judging. The harness prints all three every run.
