@@ -9,7 +9,7 @@ The design principle: **each surface does only what it alone can do.**
 |---|---|---|
 | **pitch mode** (the site) | The argument — the collision, the gap, the numbers | 2:36 |
 | **the terminal** (`make live`) | The proof — it runs, and real money moves | 2:24 |
-| **GitHub** | The credibility — sixteen failures, green CI, a real repo | 0:39 |
+| **GitHub** | The credibility — seventeen failures, green CI, a real repo | 0:39 |
 
 Nothing is shown twice. The site never demos what the terminal proves; the terminal never
 argues what the site states.
@@ -180,10 +180,10 @@ Narrate over it. One line per stage — the script pauses for you.
 and scroll.
 
 > Everything I've said is in a public repo that runs from a clean clone with no credentials.
-> Five hundred and fifty-six tests, green.
+> Five hundred and fifty-seven tests, green.
 >
-> And this is the file I'd actually read first. Sixteen failures, written as they happened,
-> with root causes. Fourteen of the sixteen were found by running the real thing rather than
+> And this is the file I'd actually read first. Seventeen failures, written as they happened,
+> with root causes. Fifteen of the seventeen were found by running the real thing rather than
 > reasoning about it — including the last one, this week, where a payment settled and the
 > ledger didn't record it, because the account auto-captures and my capture arrived second.
 >

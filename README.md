@@ -8,10 +8,10 @@
 **None of them checks whether it bought what the human actually asked for.**
 
 [![CI](https://github.com/OkayAnshul/custodian/actions/workflows/ci.yml/badge.svg)](https://github.com/OkayAnshul/custodian/actions/workflows/ci.yml)
-![tests](https://img.shields.io/badge/tests-556%20passing-1c5566)
+![tests](https://img.shields.io/badge/tests-557%20passing-1c5566)
 ![coverage](https://img.shields.io/badge/coverage-93%25-1c5566)
 ![python](https://img.shields.io/badge/python-3.12%2B-1c5566)
-![failures documented](https://img.shields.io/badge/failures%20documented-16-8a5d0a)
+![failures documented](https://img.shields.io/badge/failures%20documented-17-8a5d0a)
 
 ### Two live pages — nothing to clone, nothing to install
 
@@ -336,7 +336,7 @@ make money                             # the counterfactual, in rupees
 make check                             # everything CI runs
 ```
 
-**556 tests** run from a clean clone with no credentials at all. With Razorpay test-mode keys in `.env`, 14 more run against the live API, `make demo` creates a real order, and `make serve` hosts the checkout page a payer completes it on:
+**557 tests** run from a clean clone with no credentials at all. With Razorpay test-mode keys in `.env`, 14 more run against the live API, `make demo` creates a real order, and `make serve` hosts the checkout page a payer completes it on:
 
 ```
 RAZORPAY_KEY_ID=rzp_test_...
@@ -398,7 +398,7 @@ Stated plainly, because a reviewer will find them anyway and the honest version 
 
 | Document | What it holds |
 |---|---|
-| [**`BROKE.md`**](BROKE.md) | **Sixteen failures**, with root cause and what changed to prevent recurrence |
+| [**`BROKE.md`**](BROKE.md) | **Seventeen failures**, with root cause and what changed to prevent recurrence |
 | [`DECISIONS.md`](DECISIONS.md) | 33 ADRs, each with the alternatives that were rejected |
 | [`EVALUATION.md`](EVALUATION.md) | The corpus, what it measures, and the bounds on every number |
 | [`LIMITATIONS.md`](LIMITATIONS.md) | What is modelled, unfinished, out of scope, or deliberate |

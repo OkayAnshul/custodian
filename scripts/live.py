@@ -70,7 +70,13 @@ def main() -> int:
     global PACED
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--fast", action="store_true", help="no pauses; for a dry run")
-    ap.add_argument("--request-id", default=f"live-{int(time.time()) % 100000}")
+    # Razorpay caps test-mode payment links at 30 for the life of an account and
+    # this one is there, so no new link can be minted. A link *already exists*
+    # under "final-1-b-link" for exactly this order's total, and the gateway
+    # reuses it — which is why the default is a fixed id rather than a fresh one.
+    # Pass --request-id to use your own; you will get no payable link, and the
+    # hosted checkout page is the settlement path regardless.
+    ap.add_argument("--request-id", default="final-1")
     args = ap.parse_args()
     PACED = not args.fast
     rid = args.request_id

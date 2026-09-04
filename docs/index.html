@@ -26,7 +26,7 @@
   <div class="meta">
     <span><a href="https://github.com/OkayAnshul/custodian">github.com/OkayAnshul/custodian</a></span>
     <span><code>make install &amp;&amp; make demo</code> — runs with no credentials</span>
-    <span>556 tests · 16 documented failures · one live settled payment</span>
+    <span>557 tests · 17 documented failures · one live settled payment</span>
   </div>
 </header>
 
@@ -331,7 +331,7 @@
 
 <section>
   <p class="eyebrow">The record of being wrong</p>
-  <h2>Sixteen failures, with root causes</h2>
+  <h2>Seventeen failures, with root causes</h2>
   <div class="col"><p><code>BROKE.md</code> is written as things break, not reconstructed afterwards. Four are worth the space here; the pattern across them is the point.</p></div>
   <div class="broke"><p class="id">007 · the gate</p><h3>The gate approved an order with a failed dimension</h3><p>Almond milk offered for coconut milk scored 34% on substitution, and seven passing dimensions carried the weighted mean to 85% — so it approved. The exact failure the project exists to prevent. I had written <em>“a constraint that can be outvoted by a good average is not a constraint”</em> as a comment inside the function where precisely that happened. Fixed structurally rather than by re-tuning weights.</p></div>
   <div class="broke"><p class="id">006 · payments</p><h3>The payment interface described a provider that does not exist</h3><p>It had <code>create_order</code> then <code>capture(order)</code>. Razorpay is <code>order → a human pays → authorized payment → capture</code>, and an unpaid order has zero payments on it. The fake had been passing the full contract suite against an API I had imagined. A fake that satisfies a contract the real thing cannot is worse than no fake: it converts an unknown into false confidence.</p></div>
@@ -359,12 +359,12 @@
   make eval             # the corpus, DEV and TEST
   make money            # the counterfactual, in rupees
   make check            # everything CI runs</pre>
-  <div class="col"><p>With Razorpay test keys in <code>.env</code>, <code>make demo</code> also creates a live order and a payable link, and <code>make serve</code> hosts the checkout page. 556 tests run without any credentials at all; 14 more run against the live test-mode API when keys are present.</p></div>
+  <div class="col"><p>With Razorpay test keys in <code>.env</code>, <code>make demo</code> also creates a live order and a payable link, and <code>make serve</code> hosts the checkout page. 557 tests run without any credentials at all; 14 more run against the live test-mode API when keys are present.</p></div>
 </section>
 
 <footer>
   <div class="col">
-    <p>Every figure, screenshot and chart on this page was produced by running the code. <a href="https://github.com/OkayAnshul/custodian/blob/main/BROKE.md">BROKE.md</a> carries sixteen failures with root causes; <a href="https://github.com/OkayAnshul/custodian/blob/main/LIMITATIONS.md">LIMITATIONS.md</a> states what is modelled, unfinished or deliberately out of scope; <a href="https://github.com/OkayAnshul/custodian/blob/main/EVALUATION.md">EVALUATION.md</a> carries the corpus and the bounds on every number here.</p>
+    <p>Every figure, screenshot and chart on this page was produced by running the code. <a href="https://github.com/OkayAnshul/custodian/blob/main/BROKE.md">BROKE.md</a> carries seventeen failures with root causes; <a href="https://github.com/OkayAnshul/custodian/blob/main/LIMITATIONS.md">LIMITATIONS.md</a> states what is modelled, unfinished or deliberately out of scope; <a href="https://github.com/OkayAnshul/custodian/blob/main/EVALUATION.md">EVALUATION.md</a> carries the corpus and the bounds on every number here.</p>
     <p><a href="https://github.com/OkayAnshul/custodian">github.com/OkayAnshul/custodian</a></p>
   </div>
 </footer>

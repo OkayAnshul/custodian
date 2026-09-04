@@ -273,7 +273,7 @@ body.showq .qbank{display:block}
   <h2>Everything proves the agent was <em>allowed</em> to spend.</h2>
   <p class="say" style="font-size:clamp(1.3rem,2.6vw,1.9rem)">Custodian is the first thing that checks it bought the <strong>right thing</strong> — and it does that with arithmetic, not with a model's opinion.</p>
   <div class="support">
-    <div><b>556</b><span>tests from a clean clone, no credentials</span></div>
+    <div><b>557</b><span>tests from a clean clone, no credentials</span></div>
     <div><b>16</b><span>failures recorded with root causes</span></div>
     <div><b>33</b><span>decisions with the alternatives they rejected</span></div>
   </div>
@@ -335,7 +335,7 @@ body.showq .qbank{display:block}
 <section class="part" id="arc">
   <p class="eyebrow">The failure arc</p>
   <h2>The same mistake, five times, getting sharper</h2>
-  <div class="col"><p>Sixteen failures are recorded with root causes. Five of them are one shape — <strong>a stand-in written by the author agrees with the author</strong> — and the file notices the rhyme four separate times. Assembled, it is the most useful thing in the project.</p></div>
+  <div class="col"><p>Seventeen failures are recorded with root causes. Six of them are one shape — <strong>a stand-in written by the author agrees with the author</strong> — and the file notices the rhyme four separate times. Assembled, it is the most useful thing in the project.</p></div>
   <div class="arc">
     <div><p class="id">006 · the fake gateway</p><h4>An interface that described a provider which does not exist</h4>
       <p><code>FakeGateway</code> passed the entire contract suite for four phases of work — against an API I had imagined. Razorpay is <code>order → a human pays → authorized payment → capture</code>; there is no call that turns an order into a payment.</p>
@@ -391,7 +391,7 @@ body.showq .qbank{display:block}
   <div class="qa"><h4>Is the payment real?</h4><p>Order creation, the payable link, fetch and capture are live Razorpay test-mode calls, and a verified order has been paid on the hosted page in a real browser — ₹643.00 settled at the derived amount, with a complete hash-chained trail behind it. The UPI mandate is modelled, not integrated: Reserve Pay isn't reachable from a self-serve test account. Do not blur that.</p></div>
 
   <p class="qgroup">The engineering</p>
-  <div class="qa"><h4>What broke?</h4><p>Sixteen failures with root causes, and five of them are one shape: a stand-in written by me agreed with me. The fake gateway, my own model fixtures, a suite that starts clean, dependency injection in every test, and finally the fake's silence about an account setting. Fourteen of the sixteen were found by running something real rather than by reasoning about it.</p></div>
+  <div class="qa"><h4>What broke?</h4><p>Seventeen failures with root causes, and six of them are one shape: a stand-in written by me agreed with me. The fake gateway, my own model fixtures, a suite that starts clean, dependency injection in every test, the fake's silence about an account setting — and most recently a fix that only handled the one error message I had seen. Fifteen of the seventeen were found by running something real rather than by reasoning about it.</p></div>
   <div class="qa"><h4>What did you consider and reject?</h4><p>Twelve of the thirty-three decision records are decisions <em>not</em> to do something. Lexical-first substitution scoring with attributes as a tie-breaker. An LLM-authored explanation field — “it reads better and proves less.” A form-incompatibility floor, declined for lack of evidence, with the test that would settle it registered in advance. Disabling the provider's auto-capture instead of handling it — the provider's configuration is an input, not something to legislate.</p></div>
   <div class="qa"><h4>Why integer paise and basis points everywhere?</h4><p>Floats have no canonical byte form, so a float in a ledger payload makes the hash chain non-reproducible across platforms. The serialiser refuses floats outright and names the offending JSON path, because a convention that “we use paise” degrades the first time someone writes <code>score=0.85</code> at 2am. A replay assertion written as <code>abs(a−b) &lt; 1e-9</code> is not the same claim as “the same decision”.</p></div>
   <div class="qa"><h4>How does a decision replay if a model was involved?</h4><p>The model runs <em>upstream</em>. Its verdict is written to the ledger as an observation with the same standing as a catalog price, and <code>decide()</code> is pure — it has no client to call even if someone wanted it to. Replay reads what the model said rather than re-asking, and the test mocks the model client to raise if touched.</p></div>

@@ -54,7 +54,7 @@ No vector store, no RAG, no agent framework. The sanitizer is rules rather than 
 
 ## Evidence
 
-- **556 tests**, 14 running against the live Razorpay test-mode API on every run with credentials present — the gateway contract suite, and the hosted checkout page rendered against an order Razorpay actually issued.
+- **557 tests**, 14 running against the live Razorpay test-mode API on every run with credentials present — the gateway contract suite, and the hosted checkout page rendered against an order Razorpay actually issued.
 - **120-case corpus**, four classes, DEV/TEST split, each case with a written rationale. Clean approval 100%, adversarial catch 100%, false-approval 0% on the TEST split.
 - **The 30 judgment labels are human-reviewed and attributed** — the class a model cannot honestly supply, kept out of every number until a person signed them. That unlocked the measurement that could not be taken before: the shipped substitution threshold is the *unique* agreement peak (100% at 80%, 73–80% either side, holding on DEV and TEST separately). **No threshold value moved** — a guess that turned out to be right, now shown rather than asserted.
 - **Threshold sweep**, because a single score at one threshold is an assertion. Raising the substitution bar from 50% to 95% sends 46.67% → 93.33% of plausible substitutions back to a human and raises model cost by half — and the adversarial catch rate does not move at all, because those are settled deterministically.
@@ -67,7 +67,7 @@ No vector store, no RAG, no agent framework. The sanitizer is rules rather than 
 
 ## Field 12 — what broke and how you got out
 
-Sixteen entries in `BROKE.md`, written as they happened. Four worth the space, a fifth that matters more than any of them, and two more found on the last pass before submitting:
+Seventeen entries in `BROKE.md`, written as they happened. Four worth the space, a fifth that matters more than any of them, and the rest found on the last passes before submitting:
 
 **The gate approved an order with a failed dimension.** Almond milk offered for coconut milk scored 34% on substitution, and seven passing dimensions carried the weighted mean to 85%, so it approved — the exact failure the project exists to prevent. I had written *"a constraint that can be outvoted by a good average is not a constraint"* as a comment inside the function where precisely that happened.
 

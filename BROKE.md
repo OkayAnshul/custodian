@@ -514,3 +514,33 @@ Everything Custodian claims rests on a dispute being resolvable from the trail. 
 **What changed to prevent recurrence.** `tests/test_auto_capture.py` — a gateway that captures on its own, as the account does. It asserts the settlement is recorded, that the record names who captured it, that a genuine second capture is still refused, and that an auto-captured payment for the wrong amount is refused *and* recorded rather than silently accepted.
 
 **Lesson.** `FakeGateway` does exactly what it is told and never captures on its own, so no fake could have produced this and no test would have found it. This is the third time in this file the same shape has appeared — 006, 013, 015 — and the sharpest version of it: the fake was not wrong about any behaviour it modelled, it simply had no opinion about an account setting, and the gap was a *configuration* on the provider's side that no amount of care in our own code would have surfaced. A live credential is not enough. It has to be a live credential configured the way a real merchant's is.
+---
+
+## 017 — The link reuse worked only for the error I had imagined
+
+**2026-09-04 · severity: the fix for 013, too narrow to survive the next refusal**
+
+**What broke.** Preparing to record, `make demo` printed:
+
+```
+settlement: razorpay-test  order order_TXxFadfPhaomml  ₹698.00
+            link unavailable: razorpay: could not create payment link: ServerError: test m
+```
+
+**Expected.** The payable link. A link for exactly this order — same reference, same ₹698, unpaid — was sitting on the account the whole time, and `BROKE.md` 013 had already built the code to find and reuse it.
+
+**Root cause.** That reuse was gated on `_is_duplicate_reference(exc)`, which matches the message for *"reference_id … already exists"*. The provider refused for a different reason this time — **Razorpay caps test-mode payment links at 30 per account, for the life of the account** — and *"test mode limit of 30 reached"* shares no words with the duplicate error. So the lookup never ran.
+
+I had fixed 013 by asking *"did it fail because the reference was taken?"* The useful question is *"is there already a link I can hand to a payer?"* — and the answer to that does not depend on why creation failed. Keying on the message made the fix exactly as wide as the one failure I had seen.
+
+**Symptoms.** Identical to 013 from the outside: a truncated error where the URL belongs. Six tests covered the reuse path and all of them passed, because every one of them raised the duplicate error — the only refusal I had thought to model.
+
+**Investigation.** Listing the account's links showed all thirty `created` and unpaid, including one matching the failing order exactly. Cancelling one and retrying proved the cap counts creations rather than live links, so no configuration change reaches it.
+
+**Fix.** `payment_link_for` now consults the lookup on *any* creation failure, and `_reusable_payment_link` returns `None` instead of raising when nothing is usable, so the caller re-raises the provider's own error — which says why creation failed and is the more actionable thing. The two conditions that make reuse safe are unchanged: the amount must equal what this order re-derived, and the link must still be payable.
+
+**Why the fix works.** It removes the provider's phrasing from the decision. A quota refusal, a rate limit and a duplicate reference now all reach the same question, and that question is about our order rather than about their error string.
+
+**What changed to prevent recurrence.** `test_a_quota_refusal_still_finds_the_link_that_already_exists` fails against the old gate. The wrong-amount and already-paid tests now assert the provider's error surfaces rather than a message about reuse.
+
+**Lesson.** The fix for a failure is written while looking at that failure, and it is very easy to encode the *symptom* — an error string — instead of the *condition* the code actually cares about. 013's test suite was six cases wide and one refusal deep. **A stand-in I wrote agreed with me again**, three entries after I wrote that sentence down as the lesson of 012, which suggests the pattern is easier to name than to escape.

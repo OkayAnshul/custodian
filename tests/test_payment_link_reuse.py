@@ -29,6 +29,19 @@ class _Duplicate(Exception):
                 "Please create a payment link with a different reference_id")
 
 
+class _QuotaReached(Exception):
+    """The other refusal that leaves a perfectly good link sitting there.
+
+    Razorpay caps test-mode payment links at 30 per account, for the lifetime
+    of the account — cancelling one does not free a slot. The message shares
+    no words with the duplicate-reference error, which is exactly why keying
+    reuse on the message text was wrong.
+    """
+
+    def __str__(self) -> str:
+        return "test mode limit of 30 reached for payment_link"
+
+
 class _Links:
     def __init__(self, existing: list[dict], *, refuse: bool = True):
         self.existing = existing
@@ -70,15 +83,31 @@ def test_minting_twice_returns_the_link_that_already_exists():
     assert links.listed == [{"reference_id": "demo-1-link"}]
 
 
+def test_a_quota_refusal_still_finds_the_link_that_already_exists():
+    """The real case, and the one the first fix missed.
+
+    The provider refused for a reason that has nothing to do with references,
+    and a usable link for this order was sitting there the whole time.
+    """
+    class _Capped(_Links):
+        def create(self, payload):
+            raise _QuotaReached()
+
+    links = _Capped([{"id": "plink_1", "status": "created", "amount": 69_800,
+                      "short_url": "https://rzp.io/rzp/EXIST01"}])
+    assert gateway_for(links).payment_link_for(ORDER) == "https://rzp.io/rzp/EXIST01"
+
+
 def test_a_link_for_a_different_amount_is_never_handed_back():
     """The amount is the one control this system is built around.
 
     A link minted under the same receipt for a different total is not this
-    order's link, however convenient returning it would be.
+    order's link, however convenient returning it would be — so the provider's
+    own refusal is re-raised rather than the wrong URL returned.
     """
     links = _Links([{"id": "plink_1", "status": "created", "amount": 145_000,
                      "short_url": "https://rzp.io/rzp/WRONG01"}])
-    with pytest.raises(PaymentError, match="145000p"):
+    with pytest.raises(PaymentError, match="already exists"):
         gateway_for(links).payment_link_for(ORDER)
 
 
@@ -87,16 +116,15 @@ def test_a_link_that_can_no_longer_take_money_is_not_reused(status):
     """A paid link keeps its URL. Handing it back invites a second payment."""
     links = _Links([{"id": "plink_1", "status": status, "amount": 69_800,
                      "short_url": "https://rzp.io/rzp/DONE01"}])
-    with pytest.raises(PaymentError, match=status):
+    with pytest.raises(PaymentError, match="already exists"):
         gateway_for(links).payment_link_for(ORDER)
 
 
-def test_a_failure_that_is_not_a_duplicate_still_raises():
-    """Only the duplicate-reference case falls through to a lookup.
+def test_a_failure_with_nothing_to_reuse_surfaces_the_providers_own_error():
+    """When the lookup finds nothing usable, the operator sees why creation failed.
 
-    Razorpay reports a rate limit and a malformed amount as the same exception
-    class, so the distinction has to be made on the message. Anything else must
-    surface as the failure it is rather than being turned into a lookup.
+    That is more actionable than a message about reuse, because the reason the
+    provider refused is the thing that has to be fixed.
     """
     class _Refuses(_Links):
         def create(self, payload):

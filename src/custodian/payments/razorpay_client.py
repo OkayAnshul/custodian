@@ -177,13 +177,22 @@ class RazorpayGateway:
                 ),
             )
         except PaymentError as exc:
-            if not _is_duplicate_reference(exc):
-                raise
-            return self._existing_payment_link(reference, order)
+            # Whatever the provider refused for — a duplicate reference, an
+            # exhausted test-mode quota, a rate limit — the useful question is
+            # the same: is there already a link for this order that we can
+            # hand to a payer? That does not depend on which error came back,
+            # and keying on the message was too narrow. See BROKE.md 017.
+            if (existing := self._reusable_payment_link(reference, order)) is not None:
+                return existing
+            raise
         return str(link["short_url"])
 
-    def _existing_payment_link(self, reference: str, order: OrderRef) -> str:
+    def _reusable_payment_link(self, reference: str, order: OrderRef) -> str | None:
         """The link already minted under ``reference``, if it is still payable.
+
+        Returns ``None`` rather than raising when there is nothing usable, so
+        the caller can re-raise the provider's own error — which says why the
+        creation failed and is the more actionable thing for an operator.
 
         Two things are proved before a URL out of the provider's records is
         handed to whoever is about to pay, because the wrong one either charges
@@ -212,13 +221,7 @@ class RazorpayGateway:
                 continue
             if str(entry.get("status")) == "created" and entry.get("short_url"):
                 return str(entry["short_url"])
-        found = ", ".join(
-            f"{entry.get('status')} at {entry.get('amount')}p" for entry in entries
-        ) or "no link at all"
-        raise PaymentError(
-            f"razorpay: reference {reference} is taken by a link that cannot be "
-            f"reused for {order.amount_paise}p — found {found}"
-        )
+        return None
 
     def capture(self, payment: PaymentRef, *, idempotency_key: str) -> PaymentRef:
         if not idempotency_key:
