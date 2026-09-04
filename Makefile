@@ -8,7 +8,7 @@ PY   := $(VENV)/bin/python
 .PHONY: help
 help:
 	@echo "  make install    virtualenv and dependencies"
-	@echo "  make test       the full suite (12 extra tests if .env has Razorpay keys)"
+	@echo "  make test       the full suite (14 extra tests if .env has Razorpay keys)"
 	@echo "  make demo       all six demo scenarios"
 	@echo "  make demo-groq  the same demo, with Groq breaking the substitution tie"
 	@echo "  make eval       the corpus, DEV and TEST"
