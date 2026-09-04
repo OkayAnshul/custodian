@@ -14,6 +14,11 @@ html{scroll-behavior:smooth}
 @media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
 body{scroll-snap-type:y proximity}
 .deck{width:min(1180px,100% - 4rem);margin:0 auto}
+/* the rail is fixed to the right edge, and its current-beat label is always
+   visible — so the deck has to leave room for it or the two collide. */
+@media (min-width:900px){.deck{width:min(1120px,100% - 20rem)}}
+/* 20rem, not 15: the rail plus its label is ~150px, and the deck is centred,
+   so the margin has to be twice the rail width for the right edge to clear it. */
 
 /* a beat: one idea, at a size that reads across a room */
 .beat{min-height:100vh;display:flex;flex-direction:column;justify-content:center;
@@ -147,9 +152,25 @@ body.showq .qbank{display:block}
     <tr><td>Authorization</td><td>Was it <em>permitted</em> to spend?</td><td><span class="chip">AP2 · UAP</span></td></tr>
     <tr><td><strong>Purpose</strong></td><td><strong>Was it what was asked for?</strong></td><td><span class="chip">nothing</span></td></tr>
   </table>
-  <div class="support">
-    <div><b>March</b><span>Razorpay + Sarvam shipped a voice agent that pays without a PIN. Swiggy as launch partner</span></div>
-    <div><b>The merchant</b><span>handles the dispute when that agent orders the wrong thing. Razorpay's stated position</span></div>
+  <div class="shipped">
+    <div class="who">
+      <span class="party">Razorpay</span>
+      <span class="op">+</span>
+      <span class="party">Sarvam</span>
+      <span class="op">→</span>
+      <span class="party">Swiggy</span>
+      <span class="op">as launch partner</span>
+      <span class="when">shipped · March</span>
+    </div>
+    <div class="what">A voice agent that <b>completes payments without a PIN</b>. Not a prototype, not a roadmap — live, on a product people order dinner from.</div>
+    <div class="said">
+      <q>The introduction of agentic shopping does not rewrite the rules of commercial liability.</q>
+      <cite>Razorpay's stated position</cite>
+    </div>
+    <div class="lands">
+      <span class="arrow">↳</span>
+      <p>So when that agent orders the wrong thing, <strong>the merchant handles the dispute.</strong> Against a counterparty they did not build, on content they do not control, with no tooling to evaluate any given order.</p>
+    </div>
   </div>
 </section>
 
@@ -165,13 +186,37 @@ body.showq .qbank{display:block}
   data-say="This is the case the whole project is about, and the obvious primitive cannot decide it. Lexical similarity scores the right answer and the wrong answer identically. So we don't use it. Every product reduces to base ingredient and form. Both decided by arithmetic. No model was called.">
   <p class="num"><span>Beat 02</span><span class="t">45s · the substitution</span><span class="flag">the differentiator</span></p>
   <h2>The obvious primitive cannot decide this</h2>
-<pre>  jaccard('coconut milk', 'coconut cream') = 0.3333
-  jaccard('coconut milk', 'almond milk')   = 0.3333
-  identical scores, opposite ground truth
-
-  coconut milk → coconut cream   base coconut == coconut, form milk~cream = 8500   FAITHFUL
-  coconut milk → almond milk     base coconut != almond, no relationship          REJECT</pre>
-  <p class="say">Decomposition, not comparison. 58 base ingredients, 18 form pairs, hand-authored — and the lexicon is the part that took judgment.</p>
+  <div class="collide">
+    <div class="side good">
+      <p class="pair">coconut milk <em>→</em> coconut cream</p>
+      <p class="verdict">✓ a fine substitute</p>
+    </div>
+    <div class="mid">
+      <span class="n">0.3333</span>
+      <span class="l">the same score</span>
+    </div>
+    <div class="side bad">
+      <p class="pair">coconut milk <em>→</em> almond milk</p>
+      <p class="verdict">✗ not a substitute</p>
+    </div>
+    <p class="note">Jaccard scores both at <code>1/3</code>. Containment scores both at <code>0.5</code>. <strong>Identical numbers, opposite answers</strong> — so this is not a problem you solve by comparing text more carefully. A test asserts this, so the premise is checkable rather than argued.</p>
+  </div>
+  <p class="say" style="margin-top:1.4rem">So Custodian does not compare text. It decomposes every product — in the catalog <em>and</em> in the request — into a <strong>base ingredient</strong> and a <strong>form</strong>, then scores identity first and shape second:</p>
+  <div class="decomp">
+    <div class="row"><span class="item">coconut milk</span>
+      <span class="parts"><span class="tok base">coconut</span><span class="plus">+</span><span class="tok">milk</span></span>
+      <span class="call">what was asked for</span></div>
+    <div class="row yes"><span class="item">coconut cream</span>
+      <span class="parts"><span class="tok base">coconut</span><span class="plus">+</span><span class="tok">cream</span></span>
+      <span class="call">✓ same base · milk~cream listed at 8500 → faithful</span></div>
+    <div class="row no"><span class="item">almond milk</span>
+      <span class="parts"><span class="tok base">almond</span><span class="plus">+</span><span class="tok">milk</span></span>
+      <span class="call">✗ different base · no recorded relationship → reject</span></div>
+    <div class="row ask"><span class="item">turmeric powder</span>
+      <span class="parts"><span class="tok base">turmeric</span><span class="plus">+</span><span class="tok">powder</span></span>
+      <span class="call">? same base · form pair unlisted → ask a model</span></div>
+  </div>
+  <p class="say" style="margin-top:1.3rem">58 base ingredients, 18 form pairs, hand-authored against a real Indian grocery catalog. The lexicon is the part that took judgment — and the reason this is hard to copy.</p>
   <div class="support">
     <div><b>0</b><span>models called to decide either of these</span></div>
     <div><b>24 / 162</b><span>cart lines that ever reach a model</span></div>

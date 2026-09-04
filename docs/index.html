@@ -55,7 +55,26 @@
       <tr><td><strong>Purpose</strong></td><td><strong>Was the purchase what was asked for?</strong></td><td><span class="chip">nothing</span></td></tr>
     </table>
     <p>AP2 proves a human mandated the spend within limits. It does not ask whether the cart matches the request, and NPCI's UAP is built the same way — the rail verifies that a payment request is genuine, without visibility into what is being bought. That is a deliberate scope boundary, which means the check has to happen somewhere else: <strong>at the merchant.</strong></p>
-    <p>Razorpay and Sarvam shipped a voice agent that pays without a PIN, with Swiggy as launch partner, and stated plainly that agentic shopping does not rewrite commercial liability. So when that agent orders the wrong thing, the merchant handles the dispute — against a counterparty they did not build, on content they do not control, with no tooling to evaluate any given order.</p>
+  </div>
+  <div class="shipped">
+    <div class="who">
+      <span class="party">Razorpay</span>
+      <span class="op">+</span>
+      <span class="party">Sarvam</span>
+      <span class="op">→</span>
+      <span class="party">Swiggy</span>
+      <span class="op">as launch partner</span>
+      <span class="when">shipped · March</span>
+    </div>
+    <div class="what">A voice agent that <b>completes payments without a PIN</b>. Not a prototype, not a roadmap — live, on a product people order dinner from.</div>
+    <div class="said">
+      <q>The introduction of agentic shopping does not rewrite the rules of commercial liability.</q>
+      <cite>Razorpay's stated position</cite>
+    </div>
+    <div class="lands">
+      <span class="arrow">↳</span>
+      <p>So when that agent orders the wrong thing, <strong>the merchant handles the dispute.</strong> Against a counterparty they did not build, on content they do not control, with no tooling to evaluate any given order.</p>
+    </div>
   </div>
 </section>
 
@@ -65,9 +84,21 @@
   <div class="col">
     <p><em>“Ingredients for a Thai curry, under ₹2,000.”</em> Coconut milk is out of stock. Coconut cream is a faithful substitute. Almond milk is not. The obvious primitive — lexical similarity — scores them <strong>identically</strong>:</p>
   </div>
-<pre>  jaccard('coconut milk', 'coconut cream') = 0.3333
-  jaccard('coconut milk', 'almond milk')   = 0.3333
-  identical scores, opposite ground truth</pre>
+  <div class="collide">
+    <div class="side good">
+      <p class="pair">coconut milk <em>→</em> coconut cream</p>
+      <p class="verdict">✓ a fine substitute</p>
+    </div>
+    <div class="mid">
+      <span class="n">0.3333</span>
+      <span class="l">the same score</span>
+    </div>
+    <div class="side bad">
+      <p class="pair">coconut milk <em>→</em> almond milk</p>
+      <p class="verdict">✗ not a substitute</p>
+    </div>
+    <p class="note">Jaccard scores both at <code>1/3</code>. Containment scores both at <code>0.5</code>. <strong>Identical numbers, opposite answers</strong> — so this is not a problem you solve by comparing text more carefully. A test asserts this, so the premise is checkable rather than argued.</p>
+  </div>
   <div class="col">
     <p>So Custodian does not compare strings. Every product — in the catalog <em>and</em> in the request — is decomposed into <code>base · form · category</code> against a hand-authored Indian grocery lexicon of 58 base ingredients and 18 form-compatibility pairs. Substitution is then scored on identity first, shape second:</p>
   </div>
