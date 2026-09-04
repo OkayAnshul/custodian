@@ -91,27 +91,31 @@ and stop. *(This block is for questions — it is not part of the timed run belo
 
 Then offer the repo. Do not draw the diagram unless they ask twice.
 
-# 0 · Open — 46s   `SITE`
+# 0 · Open — 58s   `SITE`
 
 **DO** — Tab 1, press `→` twice to **beat 2**. Start here, not at the beginning.
-**POINT AT** — the big `0.3333` in the middle.
+**POINT AT** — nothing for the first sentence: look at the room, not the screen. Then the big
+`0.3333` in the middle on "identically".
 
+> I'm Anshul. **Custodian is a merchant-side layer that treats an AI buyer as an untrusted
+> client** — it independently re-derives what the agent claims against the merchant's own
+> catalog and the user's mandate, and records the decision in a tamper-evident ledger, before
+> any money moves.
+>
+> **Here's why that's harder than it sounds.**
+>
 > Coconut milk is out of stock. An AI shopping agent offers you coconut cream — that's fine.
-> It offers you almond milk — that's not.
+> It offers you almond milk — that's not. The obvious way to check is text similarity, and
+> text similarity scores those two **identically**. Point three three three, both. Same
+> number, opposite answers.
 >
-> The obvious way to check that is text similarity. And text similarity scores those two
-> **identically**. Point three three three, both. Same number, opposite answers.
->
-> So this isn't a problem you solve by reading the agent's output more carefully.
->
-> Think about a browser posting a checkout that says the price is ninety-nine rupees. You'd
-> never charge that — you look it up server-side. **An AI agent is just another untrusted
-> client**, and nobody has been treating it like one.
->
-> I'm Anshul, this is Custodian, and it decides whether an AI agent bought what the human
-> actually asked for.
+> So this isn't a problem you solve by reading the agent's output more carefully. But you
+> already know the shape of the fix: you'd never trust a browser that posted its own price —
+> you look it up server-side. **An agent is just another untrusted client**, and nobody has
+> been treating it like one.
 
-**Pause two seconds.**
+**Pause two seconds after "treating it like one."** That is the beat where the room decides
+whether this is a guardrail demo or something else — give it the silence.
 
 ---
 
@@ -266,7 +270,7 @@ and scroll.
 
 | § | Surface | Measured |
 |---|---|---|
-| 0 · Open | site | 0:46 |
+| 0 · Open | site | 0:58 |
 | 1 · The gap | site | 0:47 |
 | 2 · How it decides | site | 0:43 |
 | 3 · **Live run** | terminal | 2:27 talking |
@@ -274,10 +278,10 @@ and scroll.
 | 4 · The numbers | site | 0:41 |
 | 5 · The repo | github | 0:39 |
 | 6 · Close | either | 0:26 |
-| | | **7:00** including the payment |
+| | | **7:12** including the payment |
 
-Counted from the words at 160 a minute. **The architecture hints cost about 45 seconds** —
-they are worth it, and they mean you must cut something else.
+Counted from the words at 160 a minute. **The opening definition and the architecture hints
+together cost about a minute** — both earn it, and both mean something else has to go.
 
 ### Cut ladder
 
