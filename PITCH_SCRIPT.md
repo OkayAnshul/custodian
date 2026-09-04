@@ -55,9 +55,14 @@ back to if the live payment stalls on camera.
 > The obvious way to check that is text similarity. And text similarity scores those two
 > **identically**. Point three three three, both. Same number, opposite answers.
 >
-> So this isn't a problem you solve by reading the agent's output more carefully. I'm Anshul,
-> this is Custodian, and it decides whether an AI agent bought what the human actually asked
-> for.
+> So this isn't a problem you solve by reading the agent's output more carefully.
+>
+> Think about a browser posting a checkout that says the price is ninety-nine rupees. You'd
+> never charge that — you look it up server-side. **An AI agent is just another untrusted
+> client**, and nobody has been treating it like one.
+>
+> I'm Anshul, this is Custodian, and it decides whether an AI agent bought what the human
+> actually asked for.
 
 **Pause two seconds.**
 
@@ -77,7 +82,8 @@ back to if the live payment stalls on camera.
 > partner, and stated that agentic shopping doesn't rewrite commercial liability. So when
 > that agent orders wrong, **the merchant** eats it. That shipped in March.
 >
-> This checks **purpose alignment, not fraud.**
+> This checks **purpose alignment, not fraud** — and it treats both sides as untrusted: the
+> buying agent for what it claims, and the merchant's own catalog text for what it contains.
 
 ---
 
@@ -116,8 +122,10 @@ Narrate over it. One line per stage — the script pauses for you.
 > Seventy rows in, seventy items out, and it names every resolution it had to make. One item
 > it *can't* place — that one escalates rather than guesses.
 >
-> Here's what the agent is allowed to see. Note it never gets the raw description — that's
-> where injection lives.
+> Here's what the agent is allowed to see — and note there are **two** untrusted parties in
+> this system, not one. The agent is untrusted for what it claims. But the merchant's own
+> catalog text is attacker-controlled too, because no merchant writes every word in their own
+> feed — so the agent never gets the raw description, which is where injection lives.
 >
 > Now an untrusted agent builds a cart. It asserts ninety-nine rupees for an item the catalog
 > prices at one ninety-nine, and it adds a fourteen-fifty wok nobody asked for.
@@ -161,9 +169,9 @@ Narrate over it. One line per stage — the script pauses for you.
 **DO** — back to Tab 1, press `→` to **beat 5**.
 **POINT AT** — the peak at 80%, and the fall-off on *both* sides.
 
-> Across a hundred and twenty orders: thirty-one thousand six hundred rupees of purchases
-> that didn't match intent, stopped or held — and **zero of sixty clean orders held.** The
-> cost quoted in the same breath, because a saving without its cost is advertising.
+> Across a hundred and twenty orders: thirty-one thousand six hundred rupees stopped or
+> held — and **zero of sixty clean orders held.** The cost in the same breath, because a
+> saving without its cost is advertising.
 >
 > This threshold was a guess when I shipped it. Thirty of my test labels are cooking
 > judgments a model can't honestly supply, so I reviewed them by hand and signed each one.
