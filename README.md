@@ -4,8 +4,9 @@
 
 ### The purpose layer for agentic commerce
 
-**Every layer of the stack proves an agent was _permitted_ to spend.**
-**None of them checks whether it bought what the human actually asked for.**
+**Make an Indian merchant transactable by an AI buyer end to end — then verify the agent bought what the human actually asked for.**
+
+*Track 01 — AI Growth &amp; Agentic Commerce. Two jobs: a messy catalog becomes an agent-readable feed, and every claim that agent makes is re-derived server-side before money moves.*
 
 [![CI](https://github.com/OkayAnshul/custodian/actions/workflows/ci.yml/badge.svg)](https://github.com/OkayAnshul/custodian/actions/workflows/ci.yml)
 ![tests](https://img.shields.io/badge/tests-557%20passing-1c5566)
@@ -69,12 +70,15 @@ Every one of those numbers is printed by `make money`.
 
 The agentic commerce stack settled into four layers. Three are solved or being solved:
 
-| Layer | What it answers | Standards |
+| Layer | What it answers | Standards the track names |
 |---|---|---|
 | Communication | How does the agent talk to systems? | MCP, A2A |
-| Commerce | How does it discover a catalog and build a cart? | UCP, ACP |
+| Commerce | How does it discover a catalog and build a cart? | UCP (Google), ACP (OpenAI/Stripe) |
 | Authorization | Was the agent *permitted* to spend? | AP2, and in India NPCI's UAP |
+| Settlement | How does value move? | x402, MPP; in India UPI |
 | **Purpose** | **Was the purchase what was asked for?** | **nothing** |
+
+**All four layers are solved or being solved. The fifth is open** — and *"policy enforcement lives in infrastructure, never in a prompt"* is the principle this one is built on.
 
 AP2 proves a human mandated the spend within limits. It does not ask whether the cart matches the request, and UAP is built the same way — NPCI's role stops at verifying a payment request is genuine, without visibility into what is being bought. That is a deliberate scope boundary at the rail, which means the check has to happen somewhere else: **at the merchant.**
 

@@ -1,4 +1,4 @@
-# The pitch — three surfaces, 5:47
+# The pitch — three surfaces, 6:09
 
 **Read the `SAY` blocks aloud. Do the `DO` lines.** Every word is checked against the
 repository, so you cannot overclaim by reading it.
@@ -91,7 +91,7 @@ and stop. *(This block is for questions — it is not part of the timed run belo
 
 Then offer the repo. Do not draw the diagram unless they ask twice.
 
-# 0 · Open — 40s   `SITE`
+# 0 · Open — 1:08   `SITE`
 
 **DO** — Tab 1, press `→` twice to **beat 2**.
 **POINT AT** — nothing at first: look at the room. Then `0.3333` on "identically".
@@ -100,19 +100,28 @@ Then offer the repo. Do not draw the diagram unless they ask twice.
 > as launch partner. Razorpay's own position is that agentic shopping doesn't rewrite
 > commercial liability — so when that agent orders the wrong thing, **the merchant** eats it.
 >
-> Reserve Pay proves the agent was allowed to spend. Vulcan asks if the payment is genuine.
-> The Dispute Auto-Responder cleans up afterwards. **Nothing asks whether the purchase was
-> what the human actually asked for.**
+> This track names the stack: MCP for communication, UCP and ACP for commerce, AP2 and UAP
+> for authorization, x402 and UPI for settlement. All four solved or being solved — and
+> **none of them asks whether the purchase was what was asked for.** Reserve Pay proves the
+> agent was allowed to spend. Vulcan asks if the payment is genuine. Nothing asks this. And
+> the gap sits exactly where Razorpay does — at the merchant.
 >
-> I'm Anshul. **Custodian is a merchant-side layer that treats an AI buyer as an untrusted
-> client** — it re-derives every claim against the merchant's own catalog and the user's
-> mandate before money moves, and writes the decision to a tamper-evident ledger.
+> I'm Anshul. Custodian does exactly what this track asks: **make an Indian merchant
+> transactable by an AI buyer end to end — then verify the agent bought what the human
+> actually asked for.**
+>
+> Two jobs. It ingests a messy real-world catalog and emits an agent-readable feed. And it
+> treats that buyer as an **untrusted client** — every claim re-derived server-side before
+> money moves, every decision written to a tamper-evident ledger.
+>
+> The principle underneath it: **policy enforcement lives in infrastructure, never in a
+> prompt.**
 
 **Pause two seconds.**
 
 ---
 
-# 1 · Why it's hard — 30s   `SITE`
+# 1 · Why it's hard — 31s   `SITE`
 
 **POINT AT** — the two sides of the `0.3333` panel.
 
@@ -126,7 +135,7 @@ Then offer the repo. Do not draw the diagram unless they ask twice.
 
 ---
 
-# 2 · The growth half — 30s   `SITE`  ← the track's own word
+# 2 · The growth half — 28s   `SITE`  ← the track's own word
 
 **DO** — press `→` to **beat 1**, the transactability chart.
 **POINT AT** — the `18` bar, then the `69`.
@@ -142,7 +151,7 @@ Then offer the repo. Do not draw the diagram unless they ask twice.
 
 ---
 
-# 3 · How it decides — 35s   `SITE`  ← the differentiator
+# 3 · How it decides — 28s   `SITE`  ← the differentiator
 
 **DO** — press `←`, scroll to the four decomposition rows.
 **POINT AT** — the blue `coconut` chips, then `almond`.
@@ -158,19 +167,17 @@ Then offer the repo. Do not draw the diagram unless they ask twice.
 
 ---
 
-# 4 · Watch it run — 1:50   `TERMINAL`  ← the proof
+# 4 · Watch it run — 1:24 talking, plus the payment   `TERMINAL`  ← the proof
 
 **DO** — switch to the terminal. Type where they can see: `make live`
 
 > The merchant's real export — empty price column, stock spelled four ways. Seventy rows in,
-> seventy items out, content-hashed, so every later price check is relative to *that*
-> snapshot.
+> seventy items out, content-hashed, so every later check is relative to *that* snapshot.
 >
-> This is what the agent may see. It never gets the raw description — that's where injection
-> lives, and the merchant's own copy is untrusted too.
+> This is what the agent may see. Never the raw description — that's where injection lives.
 >
-> Now an untrusted agent builds a cart. It asserts ninety-nine rupees for a one-ninety-nine
-> item, and adds a fourteen-fifty wok nobody asked for.
+> Now the agent builds a cart: ninety-nine rupees for a one-ninety-nine item, plus a
+> fourteen-fifty wok nobody asked for.
 
 **Let the REJECT land.**
 
@@ -191,13 +198,13 @@ Then offer the repo. Do not draw the diagram unless they ask twice.
 
 **DO** — come back as the chain prints.
 
-> Settled. Intent, snapshot, decision, the override, the order, the payment — each entry's
-> hash is the next one's parent. And it replays byte for byte with the model client mocked to
-> raise if anything calls it, because the model's answer was recorded as evidence.
+> Settled. Each entry's hash is the next one's parent — and it replays byte for byte with the
+> model client mocked to raise if anything calls it, because the model's answer was recorded
+> as evidence rather than re-asked.
 
 ---
 
-# 5 · What it's worth — 35s   `SITE`
+# 5 · What it's worth — 36s   `SITE`
 
 **DO** — Tab 1, `→` to **beat 5**.
 **POINT AT** — the peak at 80%, and the fall-off both sides.
@@ -213,7 +220,7 @@ Then offer the repo. Do not draw the diagram unless they ask twice.
 
 ---
 
-# 6 · Why believe it — 30s   `GITHUB`
+# 6 · Why believe it — 33s   `GITHUB`
 
 **DO** — Tab 3. The green CI badge, then click **`BROKE.md`**.
 
@@ -245,25 +252,25 @@ Then offer the repo. Do not draw the diagram unless they ask twice.
 
 | § | Surface | Measured |
 |---|---|---|
-| 0 · Open — their stack, their liability, what this is | site | 0:44 |
+| 0 · The track's ask, the gap, what this is | site | 1:08 |
 | 1 · Why it's hard | site | 0:31 |
 | 2 · **The growth half** | site | 0:28 |
 | 3 · How it decides | site | 0:28 |
-| 4 · **Live run** | terminal | 1:32 talking |
+| 4 · **Live run** | terminal | 1:24 talking |
 | 4 · the payment itself | browser | ~0:30 |
 | 5 · What it's worth | site | 0:36 |
 | 6 · Why believe it | github | 0:33 |
 | 7 · Close | either | 0:25 |
-| | | **5:47** including the payment |
+| | | **6:09** including the payment |
 
-Counted from the words at 160 a minute, not estimated. **This fits a five-to-six minute slot
-as written.**
+Counted from the words at 160 a minute, not estimated.
 
 ### If you need less
 
 | Target | Drop | Lands at |
 |---|---|---|
-| **5:00** | §1 — the collision is on screen, so point at it and say only *"same number, opposite answers"* | ~5:10 |
+| **5:30** | §1 — the collision is on screen, so point at it and say only *"same number, opposite answers"* | ~5:38 |
+| **5:00** | …and the four-layer list in §0 — say *"every layer of this stack proves permission; none asks purpose"* | ~5:05 |
 | **4:30** | …and the live payment: *"I have one settled from earlier"*, then show the finished chain | ~4:30 |
 
 **Never cut:** §2 (growth is the track's own word), §3 (the differentiator), the
