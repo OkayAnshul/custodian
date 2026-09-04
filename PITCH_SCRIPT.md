@@ -91,49 +91,52 @@ and stop. *(This block is for questions — it is not part of the timed run belo
 
 Then offer the repo. Do not draw the diagram unless they ask twice.
 
-# 0 · Open — 58s   `SITE`
+# 0 · Open — 1:20   `SITE`
 
 **DO** — Tab 1, press `→` twice to **beat 2**. Start here, not at the beginning.
 **POINT AT** — nothing for the first sentence: look at the room, not the screen. Then the big
 `0.3333` in the middle on "identically".
 
+> In March, Razorpay and Sarvam shipped a voice agent that completes payments **without a
+> PIN**, with Swiggy as launch partner. And Razorpay's stated position is that agentic
+> shopping doesn't rewrite commercial liability — so when that agent orders the wrong thing,
+> **the merchant** handles the dispute.
+>
+> Reserve Pay proves the agent was allowed to spend. Vulcan asks whether the payment is
+> genuine. The Dispute Auto-Responder cleans up afterwards. **Nothing asks whether the
+> purchase was what the human actually asked for.**
+>
 > I'm Anshul. **Custodian is a merchant-side layer that treats an AI buyer as an untrusted
-> client** — it independently re-derives what the agent claims against the merchant's own
-> catalog and the user's mandate, and records the decision in a tamper-evident ledger, before
-> any money moves.
+> client** — it re-derives what the agent claims against the merchant's own catalog and the
+> user's mandate, and records the decision in a tamper-evident ledger, before money moves.
 >
-> **Here's why that's harder than it sounds.**
+> **Here's why that's harder than it sounds.** Coconut milk is out of stock. An agent offers
+> coconut cream — fine. It offers almond milk — not fine. The obvious check is text
+> similarity, and text similarity scores those two **identically**. Point three three three,
+> both. Same number, opposite answers.
 >
-> Coconut milk is out of stock. An AI shopping agent offers you coconut cream — that's fine.
-> It offers you almond milk — that's not. The obvious way to check is text similarity, and
-> text similarity scores those two **identically**. Point three three three, both. Same
-> number, opposite answers.
->
-> So this isn't a problem you solve by reading the agent's output more carefully. But you
-> already know the shape of the fix: you'd never trust a browser that posted its own price —
-> you look it up server-side. **An agent is just another untrusted client**, and nobody has
-> been treating it like one.
+> You already know the shape of the fix, though: you'd never trust a browser that posted its
+> own price — you look it up server-side. **An agent is just another untrusted client**, and
+> nobody has been treating it like one.
 
 **Pause two seconds after "treating it like one."** That is the beat where the room decides
 whether this is a guardrail demo or something else — give it the silence.
 
 ---
 
-# 1 · The gap, and whose problem it is — 47s   `SITE`
+# 1 · Where each layer stops — 36s   `SITE`
 
 **DO** — press `←` twice to **beat 0**.
-**POINT AT** — the empty **Purpose** row, then the red `SHIPPED · MARCH` tag.
+**POINT AT** — the empty **Purpose** row. (The `SHIPPED · MARCH` card is already spent — you
+opened on it.)
 
 > Four layers. Three are solved — MCP for talking to systems, ACP and UCP for building a
-> cart, AP2 and UAP for proving the agent was **permitted** to spend. Every one of them stops
-> before the question of *what* was bought. That's deliberate: a payment rail shouldn't
-> adjudicate whether coconut cream is an acceptable substitute.
+> cart, AP2 and UAP for proving the agent was **permitted** to spend. Every one stops before
+> the question of *what* was bought, and that's deliberate: a payment rail shouldn't be
+> adjudicating whether coconut cream is an acceptable substitute. Which means the check has
+> to happen at the merchant.
 >
-> Razorpay and Sarvam shipped a voice agent that pays without a PIN, Swiggy as launch
-> partner, and stated that agentic shopping doesn't rewrite commercial liability. So when
-> that agent orders wrong, **the merchant** eats it. That shipped in March.
->
-> This checks **purpose alignment, not fraud** — and it treats both sides as untrusted: the
+> So this checks **purpose alignment, not fraud** — and it treats both sides as untrusted: the
 > buying agent for what it claims, and the merchant's own catalog text for what it contains.
 
 ---
@@ -270,18 +273,23 @@ and scroll.
 
 | § | Surface | Measured |
 |---|---|---|
-| 0 · Open | site | 0:58 |
-| 1 · The gap | site | 0:47 |
+| 0 · Open | site | 1:20 |
+| 1 · Where each layer stops | site | 0:36 |
 | 2 · How it decides | site | 0:43 |
 | 3 · **Live run** | terminal | 2:27 talking |
 | 3 · **the payment itself** | browser | ~0:30 |
 | 4 · The numbers | site | 0:41 |
 | 5 · The repo | github | 0:39 |
 | 6 · Close | either | 0:26 |
-| | | **7:12** including the payment |
+| | | **7:30** including the payment |
 
-Counted from the words at 160 a minute. **The opening definition and the architecture hints
-together cost about a minute** — both earn it, and both mean something else has to go.
+Counted from the words at 160 a minute.
+
+**Read this before you rehearse.** The opening has grown three times — the Razorpay stakes, the
+definition, and the collision now all live in the first eighty seconds, and each was added for
+a good reason. Together they put the run at 7:30, which is longer than almost any slot. **The
+opening is now the strongest part and the most expensive part.** Decide the slot first, then
+cut from the ladder below; do not try to trim live.
 
 ### Cut ladder
 
