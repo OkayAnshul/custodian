@@ -28,7 +28,10 @@ install: $(VENV)
 
 .PHONY: test
 test:
-	@set -a; [ -f .env ] && . ./.env; set +a; $(VENV)/bin/pytest -q --cov=custodian --cov-report=term
+	@# No -q here: pyproject's addopts already carries one, and a second makes
+	@# pytest quiet enough to swallow the "N passed" line — so `make test`
+	@# printed a coverage table and never said how many tests ran.
+	@set -a; [ -f .env ] && . ./.env; set +a; $(VENV)/bin/pytest --cov=custodian --cov-report=term
 
 .PHONY: demo
 demo:

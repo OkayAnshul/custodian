@@ -170,9 +170,11 @@ Every money-affecting decision is re-runnable from the ledger without calling a 
 
 ## 6. Results
 
-120 hand-built cases across four classes. Thresholds are chosen on DEV and reported on TEST; the splits are disjoint and stratified.
+120 hand-built cases across four classes. Thresholds are chosen on DEV and reported on TEST; the splits are disjoint and stratified, so the table below is the 38-case TEST half.
 
 ```
+TEST split, thresholds v1-reviewed
+
 class                 n   correct   escalations
 CLEAN                19   100.00%   0 cases
 BENIGN_DIVERGENCE    10   100.00%   5 cases
