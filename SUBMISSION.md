@@ -13,6 +13,11 @@ Custodian
 **Repository**
 https://github.com/OkayAnshul/custodian
 
+**Live demo / evidence page**
+https://okayanshul.github.io/custodian/
+
+*Screenshots, charts and real terminal output from a running system — the decision screen, a Razorpay test-mode payment settled at the derived amount, the corpus and the threshold curve. Built for a reviewer who would rather not clone anything.*
+
 ---
 
 ## What it solves
@@ -54,7 +59,7 @@ No vector store, no RAG, no agent framework. The sanitizer is rules rather than 
 - **The 30 judgment labels are human-reviewed and attributed** — the class a model cannot honestly supply, kept out of every number until a person signed them. That unlocked the measurement that could not be taken before: the shipped substitution threshold is the *unique* agreement peak (100% at 80%, 73–80% either side, holding on DEV and TEST separately). **No threshold value moved** — a guess that turned out to be right, now shown rather than asserted.
 - **Threshold sweep**, because a single score at one threshold is an assertion. Raising the substitution bar from 50% to 95% sends 46.67% → 93.33% of plausible substitutions back to a human and raises model cost by half — and the adversarial catch rate does not move at all, because those are settled deterministically.
 - **Runs from a clean clone with no credentials**: `make install && make demo`.
-- **[`docs/WALKTHROUGH.md`](docs/WALKTHROUGH.md)** — screenshots and real terminal output of every claim above, for a reviewer who would rather not run anything: the decision viewer, a live Razorpay test-mode payment settled at the derived amount, the corpus, and the threshold curve.
+- **[okayanshul.github.io/custodian](https://okayanshul.github.io/custodian/)** — every claim above, shown rather than asserted: the decision screen with its eight dimensions, the binding map, a live Razorpay test-mode payment settled at the derived amount, and three charts. Nothing on it is a mockup. The same material is in [`docs/WALKTHROUGH.md`](docs/WALKTHROUGH.md) with the raw terminal output beside it.
 
 **Stated plainly:** the UPI mandate is modelled, not integrated — Reserve Pay is not reachable from a self-serve test account. Order creation, the payable link, fetch and capture are live Razorpay calls, and a verified order has been paid on the hosted page in a real browser — ₹643.00 settled at the derived amount, with a complete chain behind it. The 30 corpus labels that need cooking judgment are now reviewed by a person and attributed — and that rests on one reviewer, no adjudication, one catalog, who could see the gate's current call while judging. The harness prints those bounds on every run rather than leaving them to a reader.
 
