@@ -1,12 +1,39 @@
+<div align="center">
+
 # Custodian
 
-**Custodian makes an Indian merchant transactable by an AI buyer end to end — and then treats that buyer as an untrusted client.**
+### The purpose layer for agentic commerce
 
-Two halves, both measured.
+**Every layer of the stack proves an agent was _permitted_ to spend.**
+**None of them checks whether it bought what the human actually asked for.**
 
-**Transactable.** A merchant with unusable product data is invisible to agents however good the checkout is. Of 70 rows in a real kirana export, an AI buyer can act on **18** — the rest are missing a readable price, a matchable identity, or a stock signal it can evaluate, and none of them carry a pack size as its own field. After ingest: **69 of 70**.
+[![CI](https://github.com/OkayAnshul/custodian/actions/workflows/ci.yml/badge.svg)](https://github.com/OkayAnshul/custodian/actions/workflows/ci.yml)
+![tests](https://img.shields.io/badge/tests-556%20passing-1c5566)
+![coverage](https://img.shields.io/badge/coverage-93%25-1c5566)
+![python](https://img.shields.io/badge/python-3.12%2B-1c5566)
+![failures documented](https://img.shields.io/badge/failures%20documented-16-8a5d0a)
 
-**Untrusted.** Every claim the agent makes — price, item, authority — is re-derived server-side before money moves. Across a 120-order corpus:
+**[🔎 See it working](https://okayanshul.github.io/custodian/)** · [Screenshots & real output](docs/WALKTHROUGH.md) · [What broke](BROKE.md) · [Limitations](LIMITATIONS.md) · [Evaluation](EVALUATION.md)
+
+</div>
+
+---
+
+<div align="center">
+<img src="docs/img/hold-dimensions.png" width="880" alt="A Custodian decision: eight dimensions scored separately, seven passing and SCOPE_CREEP failing at 30.72%">
+<p><em>A real decision, re-derived from the ledger when the page loaded. The cart holds a ₹1,450 wok nobody asked for:<br>every arithmetic check passes, and it is still wrong.</em></p>
+</div>
+
+---
+
+## The two halves, both measured
+
+|  | Measured |
+|---|---|
+| **Transactable** — a merchant with unusable product data is invisible to agents, however good the checkout is | An AI buyer can act on **18 of 70** rows in a real kirana export. After ingest, **69 of 70** |
+| **Untrusted** — every claim the agent makes is re-derived server-side before money moves | **₹31,655** of mismatched purchases stopped or held across 120 orders, at **0% friction** on the 60 clean ones |
+| **Cheap** — deterministic checks settle first, so a rejected cart costs no tokens | **24 of 162** cart lines reach a model. **Zero** adversarial cases do |
+| **Provable** — every decision replays byte-for-byte from a hash-chained ledger | With the model client **mocked to raise if called** |
 
 ```
 ₹41,609  would settle unchecked, at the prices the agent asserted
@@ -19,36 +46,28 @@ Two halves, both measured.
 
 Every one of those numbers is printed by `make money`.
 
-> ### 📸 [**Seeing it work**](docs/WALKTHROUGH.md) — screenshots and real output, if you would rather not run anything
->
-> Every screen, every number, captured from an actual run: the decision viewer, a live Razorpay test-mode payment settled for the derived amount, the corpus, the money, the threshold curve.
-
 > **Why this and not a guardrail.** A guardrail inspects text and guesses. Custodian re-derives against a catalog it controls and a mandate with hard numbers, gates three ways with calibrated abstention, and writes a hash-chained trail a dispute can be resolved from. Different mechanism, different failure surface.
 >
 > **Why this and not Vulcan.** Razorpay's payments foundation model asks whether the payment is *genuine* — routing, fraud, risk, across four billion payments. Custodian asks whether the purchase was *what was asked for*. Different question, and nothing in the stack was answering it.
 
 ---
 
-## 1. The problem
+## 1. The gap
 
-The agentic commerce stack settled into four layers during 2025–26. Three of them are solved or being solved:
+The agentic commerce stack settled into four layers. Three are solved or being solved:
 
 | Layer | What it answers | Standards |
 |---|---|---|
 | Communication | How does the agent talk to systems? | MCP, A2A |
 | Commerce | How does it discover a catalog and build a cart? | UCP, ACP |
 | Authorization | Was the agent *permitted* to spend? | AP2, and in India NPCI's UAP |
-| Settlement | How does value move? | x402, MPP; in India UPI |
+| **Purpose** | **Was the purchase what was asked for?** | **nothing** |
 
-**There is no purpose layer.** AP2 proves a human mandated the spend within limits. It does not ask whether the cart matches the request. UAP is built the same way — NPCI's role stops at verifying that a payment request is genuine, without visibility into what is being purchased.
+AP2 proves a human mandated the spend within limits. It does not ask whether the cart matches the request, and UAP is built the same way — NPCI's role stops at verifying a payment request is genuine, without visibility into what is being bought. That is a deliberate scope boundary at the rail, which means the check has to happen somewhere else: **at the merchant.**
 
-That is not an oversight. It is a deliberate scope boundary at the rail, which means the check has to happen somewhere else: at the merchant and its aggregator.
+**And the liability is already assigned, on a product that is live.** Razorpay and Sarvam shipped a voice agent that completes payments without a PIN, with **Swiggy** as launch partner. Razorpay's stated position: *"the introduction of agentic shopping does not rewrite the rules of commercial liability."* Commercial disputes sit with the merchant.
 
-**And the liability is already assigned, on a product that is live.** Razorpay and Sarvam shipped a voice agent that completes payments without a PIN, with **Swiggy** as the launch partner. Razorpay's stated position: *"the introduction of agentic shopping does not rewrite the rules of commercial liability."* Commercial disputes sit with the merchant; payment security sits with Razorpay.
-
-So when that agent orders the wrong thing, Swiggy handles the dispute and the refund. The merchant now transacts with a counterparty they did not build, running on content they do not control, with no tooling to evaluate any given order. This is not a problem arriving later — it shipped in March.
-
-Agentic commerce asks whether this is the right agent, for the right person, under the right authorization, **for the right purpose**. The first three are handled. The fourth is open.
+So when that agent orders the wrong thing, Swiggy handles the dispute and the refund — against a counterparty they did not build, running on content they do not control, with no tooling to evaluate any given order. This is not a problem arriving later. It shipped in March.
 
 ---
 
@@ -56,7 +75,7 @@ Agentic commerce asks whether this is the right agent, for the right person, und
 
 Everything except one component is plumbing. That component is: **does this cart satisfy this intent?**
 
-Consider *"ingredients for a Thai curry, under ₹2,000."* Coconut milk is out of stock.
+*"Ingredients for a Thai curry, under ₹2,000."* Coconut milk is out of stock.
 
 | The agent… | Verdict |
 |---|---|
@@ -66,20 +85,16 @@ Consider *"ingredients for a Thai curry, under ₹2,000."* Coconut milk is out o
 | adds a ₹400 wok because the recipe mentions one | out of scope, within budget |
 | buys the right items from a merchant the user never named | authorized, wrong |
 
-There is no library for this and no benchmark.
-
-### The primitive the obvious approach reaches for does not work
-
-Lexical similarity is the natural first idea, and it cannot decide the example above:
+There is no library for this and no benchmark. And the primitive the obvious approach reaches for cannot decide it:
 
 ```
 jaccard({coconut, milk}, {coconut, cream}) = 1/3 = 0.3333   ->   faithful
 jaccard({coconut, milk}, {almond,  milk }) = 1/3 = 0.3333   ->   not faithful
 ```
 
-Identical scores, opposite ground truth. Containment gives 0.5 for both. A test asserts this, so the premise is checkable rather than argued.
+Identical scores, opposite ground truth. Containment gives 0.5 for both. **A test asserts this**, so the premise is checkable rather than argued.
 
-**Custodian decomposes instead.** Every product — in the catalog and in the request — is reduced to `(base, form, category)` against a hand-authored lexicon, and substitution is scored on identity first, then shape:
+**Custodian decomposes instead.** Every product — in the catalog and in the request — is reduced to `(base, form, category)` against a hand-authored lexicon of 58 bases and 18 form-compatibility pairs:
 
 ```
 coconut milk -> coconut cream    base coconut == coconut, form pair milk~cream = 8500   FAITHFUL
@@ -90,47 +105,34 @@ Both decided deterministically, with reason codes, **without calling a model**. 
 
 ---
 
-## 3. Three design commitments
+## 3. How one order is decided
 
-**Graded, not binary.** Satisfaction is a continuous score. The hold threshold is a tunable parameter with a measured cost curve, which turns the evaluation into an argument instead of a pass rate.
+The order of these steps *is* the design: cheap, certain checks run first and can refuse on their own authority, so a rejected cart never reaches a model. The six are **price integrity, budget, merchant scope, category scope, mandate fit and sanitizer state** — all re-derived server-side, all integer arithmetic and set membership.
 
-**Calibrated abstention.** The gate must know when it does not know. Low-confidence decisions route to `hold`, never to a guess. Confidence is *computed* from evidence coverage and threshold margin — never a model's self-report, which correlates with fluency rather than accuracy.
-
-**Decomposed scoring.** Alignment is not one number. Eight dimensions are scored separately, each with its own reason codes. Explainability is a byproduct of decomposition, not a feature bolted on top.
-
----
-
-## 4. Architecture
-
+```mermaid
+flowchart TD
+    CSV["messy merchant CSV<br/>prices in names, Hindi pack sizes"] --> ING["ingest + sanitize"]
+    ING --> SNAP["content-hashed snapshot<br/>+ narrow agent feed"]
+    H["human intent"] --> AG["buying agent<br/>(deliberately naive)"]
+    SNAP --> AG
+    AG --> CART["structured intent + cart<br/>asserted_unit_price_paise"]
+    CART --> DET{"six deterministic checks<br/>each can reject alone"}
+    DET -->|"any fails"| REJ["REJECT<br/>no model called"]
+    DET -->|"survivors only"| BIND["binding · substitution · scope creep"]
+    BIND -->|"genuine ties only"| LLM["model verdict<br/>recorded as an observation"]
+    BIND --> DEC["decide() — pure function<br/>8 dimensions, weighted"]
+    LLM --> DEC
+    DEC --> OUT["APPROVE · HOLD · REJECT"]
+    OUT --> LED["hash-chained ledger"]
+    LED --> PAY["Razorpay order for the<br/>DERIVED amount, never the asserted one"]
 ```
-messy catalog ──► ingest ──► sanitize ──► snapshot(hash) ──► agent feed
-                                                                  │
-human intent ──► naive buyer agent ──► structured intent + cart ──┘
-                                                    │
-                                    ┌───────────────▼─────────────────┐
-                                    │ deterministic — can reject alone │
-                                    │ price · budget · merchant ·      │
-                                    │ category · mandate · sanitizer   │
-                                    └───────────────┬─────────────────┘
-                                                    │ survivors only
-                                    ┌───────────────▼─────────────────┐
-                                    │ binding: cart line → intent item │
-                                    │ substitution: base/form/category │
-                                    │ scope creep: unbound cart value  │
-                                    └───────────────┬─────────────────┘
-                                          ties only │
-                                    ┌───────────────▼─────────────────┐
-                                    │ LLM #2 — strict JSON verdict     │
-                                    │ recorded, not authoritative      │
-                                    └───────────────┬─────────────────┘
-                                                    ▼
-                                       decide() ── PURE ──► approve │ hold │ reject
-                                                    │
-                                    hash-chained ledger ──► replay viewer
-                                                    │
-                                            approve ▼
-                                        Razorpay test-mode settlement
-```
+
+**One rule no weighting can override:** any dimension at `FAIL` or `UNCERTAIN` caps the outcome at hold. Weights decide how much a dimension *contributes*; they do not decide whether a failure *counts*.
+
+<div align="center">
+<img src="docs/img/hold-bindings.png" width="820" alt="Binding table: two cart lines bound to requested items, one line unbound">
+<p><em>Line <code>l3</code> binds to nothing anyone requested — scope creep <strong>by construction, not by detection</strong>.<br>There is no classifier to evade, because the item simply has no request behind it.</em></p>
+</div>
 
 ### Trust model
 
@@ -142,39 +144,35 @@ human intent ──► naive buyer agent ──► structured intent + cart ─�
 | Payment mandate | spending authority | whether the purchase was what was asked for |
 | Model | reading language, breaking substitution ties | any money-affecting decision |
 
-The agent's cart carries `asserted_unit_price_paise` — the only price-bearing field on the type, named so that trusting it looks wrong. A test asserts no naked `price` field exists.
+The agent's cart carries `asserted_unit_price_paise` — the only price-bearing field on the type, named so that trusting it looks wrong. **A test asserts no naked `price` field exists.**
 
 ---
 
-## 5. Where I chose not to use a model
+## 4. Where I chose *not* to use a model
 
-*The stated bar for the Open Track is "meaningful use of AI." This is the answer to it: meaningful means placed where it is load-bearing, and absent where a lookup is strictly better. The table is the argument, so it is stated in full rather than summarised.*
+*The stated bar for the track is "meaningful use of AI." Meaningful means placed where it is load-bearing, and absent where a lookup is strictly better.*
 
 | Task | Tool | Why |
 |---|---|---|
 | Price verification | Integer comparison | A model would be strictly worse and non-deterministic |
 | Budget / mandate arithmetic | Plain arithmetic | Must be auditable and reproducible from the ledger |
 | Merchant + category scope | Set membership | A stated rule, not a probability |
-| Unit normalization | Rules + lookup table | `250gm` = `1/4 kg` is a parsing problem, not a reasoning one |
-| Item substitution fidelity | Attribute decomposition, then LLM only on tie | Base identity and form compatibility are lookups; only the unlisted pairs need judgment |
-| Ambiguous natural-language intent | LLM, once, at parse time | The only place language understanding is genuinely required |
-| Sanitizer triage | Rules | Runs on every ingest; must be cheap. A classifier trained on our own fixtures and scored on the same corpus would be circular |
+| Unit normalization | Rules + lookup table | `250gm` = `1/4 kg` = `pav kilo` is parsing, not reasoning |
+| Sanitizer triage | Rules | Runs on every ingest. A classifier trained on our own fixtures and scored on the same corpus would be circular |
+| Item substitution fidelity | Attribute decomposition, **then a model only on ties** | Base identity and form compatibility are lookups; only unlisted pairs need judgment |
+| Ambiguous natural-language intent | **A model, once, at parse time** | The only place language understanding is genuinely required |
 
-**And the model is a component, not the system.** *Both* positions have two implementations — `ClaudeParser`/`GroqParser` and `ClaudeScorer`/`GroqScorer` — each pair behind one Protocol and graded by one contract suite. A test runs the same substitution through both scorers and asserts the resulting `Decision` is **byte-identical**, which is possible because the model id lives on the verdict rather than on the decision. Swap the provider; the decisions still replay.
+**The model is a component, not the system.** Both positions have two implementations — `ClaudeParser`/`GroqParser` and `ClaudeScorer`/`GroqScorer` — each pair behind one Protocol and graded by one contract suite. A test runs the same substitution through both scorers and asserts the resulting `Decision` is **byte-identical**, which is possible because the model id lives on the verdict rather than on the decision.
 
-A consequence worth stating: **the whole system runs on a free tier.** `make demo-groq` needs one `GROQ_API_KEY` and no paid account. That is not a cost argument — it is the swappability claim being cashed.
+A consequence worth stating: **the whole system runs on a free tier.** One `GROQ_API_KEY`, no paid account.
 
-**The LLM occupies exactly two positions**: intent parsing, and substitution ties the deterministic layer cannot break. Measured across the 120-case corpus: **24 of 162 cart lines (14.8%) escalate to a model**, concentrated in the benign-divergence class where they belong. **Zero adversarial cases reach a model** — the arithmetic settles them first, so a rejected cart costs no tokens. Among the classes with derived labels, 6 of 90 cases escalate.
-
-**And the answers being replayed are real ones.** 28 responses — 24 substitution verdicts and 4 intent parses — were recorded from `openai/gpt-oss-120b` on Groq and stored with provider, model, prompt digest and the question as sent. The first run against them broke an abstention guarantee that my own hand-written fixtures had preserved for the whole build (`BROKE.md` 012), which is the argument for recording them: a stand-in written by the person who also wrote the expectations agrees with them.
-
-Every money-affecting decision is re-runnable from the ledger without calling a model. That reproducibility is the point — an audit trail you cannot replay is decoration.
+**And the answers being replayed are real.** 28 responses recorded from `openai/gpt-oss-120b` with provider, model, prompt digest and the question exactly as sent. The first run against them broke an abstention guarantee that my own hand-written fixtures had preserved for the entire build ([`BROKE.md` 012](BROKE.md)) — which is the argument for recording them: *a stand-in written by the person who also wrote the expectations agrees with them.*
 
 ---
 
-## 6. Results
+## 5. Results
 
-120 hand-built cases across four classes. Thresholds are chosen on DEV and reported on TEST; the splits are disjoint and stratified, so the table below is the 38-case TEST half.
+120 hand-built cases, four classes, DEV/TEST split, stratified. Thresholds chosen on DEV, reported on TEST.
 
 ```
 TEST split, thresholds v1-reviewed
@@ -191,77 +189,73 @@ adversarial catch rate  100.00%    does it work?
 false-approval rate       0.00%    attacks that got through
 ```
 
-**What that number does not mean.** Three of those classes have labels that follow from how each case was built — a forged price is a rejection by construction. Scoring 100% says the implementation matches its specification. It does not say the specification is right.
+**What that does not mean.** Three of those classes have labels that follow from how each case was built — a forged price is a rejection by construction. Scoring 100% says the implementation matches its specification. It does not say the specification is right.
 
-**The class where that question lives is benign divergence**, and its 30 labels are now a person's judgment rather than a model's: reviewed case by case, attributed, with the reasoning recorded in `eval/corpus/decisions.txt`. For most of this project's life they were drafts and were kept out of every headline figure, because a model scored against labels it drafted is measuring its own consistency.
+**The class where that question lives is benign divergence**, and its 30 labels are now a person's judgment rather than a model's — reviewed case by case, attributed, with the reasoning committed in [`decisions.txt`](eval/corpus/decisions.txt).
 
 ### The result that review unlocked
 
-While the labels were drafts, no threshold setting could be scored for correctness — only for how much friction it bought. Now each one can be scored against a person's judgment, and the shipped default is the **unique** maximum:
+While the labels were drafts, no threshold could be scored for *correctness* — only for the friction it bought. Now each can be scored against a person's judgment, and the shipped default is the **unique** maximum:
 
-```
-substitution_faithful_bp   agreement with the reviewed labels
-        70%                        80.00%
-        80%  (default)            100.00%
-        85%                        93.33%
-        90%                        80.00%
-```
+<div align="center">
+<img src="docs/img/chart-threshold.png" width="720" alt="Agreement with the reviewed labels peaks at exactly the shipped 80% threshold and falls off on both sides">
+</div>
 
-Agreement falls off on both sides, so it is a peak and not a plateau — and it holds separately on DEV (n=20) and TEST (n=10). **Not one threshold value moved**; the version string went from `v0-untuned` to `v1-reviewed` because the numbers were checked and left alone, which is a different claim from tuned.
+Agreement falls off on **both** sides, so it is a peak and not a plateau — and it holds separately on DEV (n=20) and TEST (n=10). **Not one threshold value moved.** The version went from `v0-untuned` to `v1-reviewed` because the numbers were checked and left alone, which is a weaker and more honest claim than *tuned*.
 
-**And 100% agreement is exactly the shape of number that deserves suspicion**, so the harness prints its three bounds on every run: one reviewer with no adjudication, judging 15 distinct substitutions; the reviewer could see the gate's current call while judging, which makes anchoring possible; and it is one catalog. What it is, is a measurement where there was none. `EVALUATION.md` carries all of it, including the one question the review deliberately left open.
+> **100% agreement is exactly the shape of number that deserves suspicion**, so the harness argues against its own result on every run: one reviewer, no adjudication, 15 distinct substitutions, one catalog — and the reviewer could see the gate's current call while judging, which makes agreement cheaper than an independent blind pass. Those bounds are *printed by the tool*, not recited in prose.
 
-### What it is worth, and what it costs
+### The growth half
 
-```
-₹41,609  would settle unchecked, at the prices the agent asserted
-₹12,063  Custodian let through, at catalog prices
-₹31,655  stopped or held for a human — 72% of value
- ₹2,109  price the agent forged
-₹13,720  items nobody asked for: inside budget, correctly priced, still wrong
-      0  of 60 clean orders held — 0.00% friction
-     24  of 162 cart lines needed a model at all — 14.81%
-```
+<div align="center">
+<img src="docs/img/chart-transactability.png" width="760" alt="Catalog fields an agent can act on: 18 of 70 rows raw, 69 of 70 after ingest">
+</div>
 
-`make money`. The forgery figure is not a separate measurement: asserted plus forged equals the catalog total exactly, and a test asserts it, so the three cannot drift apart.
+Pack size is the sharpest column: not one row carries it as its own field — it lives inside the product name, in Hindi as often as not (`rice pav kilo loose` → `rice/whole 250g`).
 
-### The threshold sweep — the curve, not a point
+### What it is worth
 
-```
-substitution_faithful_bp   substitutions held   escalation rate   clean approval
-        50%                    46.67%              10.83%            100%
-        80%  (default)         73.33%              20.00%            100%
-        95%                    93.33%              25.83%             98.33%
-```
+<div align="center">
+<img src="docs/img/chart-money.png" width="760" alt="Of ₹43,718 catalog value, ₹12,063 let through and ₹31,655 stopped or held">
+</div>
 
-The adversarial catch rate **does not move across any dial**. Every attack in this corpus is settled by a deterministic check, so tightening a threshold spends friction and buys no safety. That is worth knowing before anyone tunes it upward hoping for protection it cannot provide.
+Both paths are runnable — *"without Custodian"* is this repository's own naive buyer reading an unsanitised feed with its asserted totals settling, not an estimate. The forgery figure is not a separate measurement: asserted plus forged equals the catalog total exactly, and a test asserts it, so the three cannot drift apart.
+
+---
+
+## 6. Real money moved, for the derived amount
+
+An approved order opens a Razorpay order for the figure Custodian re-derived. No API call makes a payment *happen* — a person completes it on a hosted page:
+
+<div align="center">
+<img src="docs/img/settled-chain.png" width="820" alt="Hash-chained ledger ending in PAYMENT_SETTLED">
+<p><em>The complete trail for a <strong>real test-mode payment</strong>, each event's <code>prev</code> being its predecessor's <code>hash</code>.</em></p>
+</div>
+
+**Walking this leg for real found two defects nothing else could.** The server could not serve its own documented checkout page — it ran on the fake gateway, so the walkthrough returned 409 at its third line for anyone who followed it ([015](BROKE.md)). And this Razorpay account captures automatically, so a genuinely settled payment left **no settlement event**: Custodian's own capture arrived second and was refused as a duplicate ([016](BROKE.md)). A fake gateway is not wrong about anything it models; it simply has no opinion about an account setting.
 
 ---
 
 ## 7. Running it
 
 ```bash
-make install                           # or: python3 -m venv .venv && .venv/bin/pip install -e ".[dev]"
-make test                              # 556 tests, +14 with Razorpay credentials
-make demo                              # all six demo scenarios
-make eval sweep                        # the corpus and the threshold curve
-make serve                             # http://127.0.0.1:8000
-
-# or directly:
-.venv/bin/pytest                       # 556 tests
-.venv/bin/python -m eval.harness --all # the corpus
-.venv/bin/python -m eval.sweep         # the threshold curve
-.venv/bin/python scripts/demo.py       # all six demo scenarios
+git clone https://github.com/OkayAnshul/custodian && cd custodian
+make install                           # virtualenv and dependencies
+make demo                              # all six scenarios — no credentials needed
+make eval                              # the corpus, DEV and TEST
+make money                             # the counterfactual, in rupees
+make check                             # everything CI runs
 ```
 
-Live Razorpay settlement needs test-mode credentials in `.env`:
+**556 tests** run from a clean clone with no credentials at all. With Razorpay test-mode keys in `.env`, 14 more run against the live API, `make demo` creates a real order and payable link, and `make serve` hosts the checkout page:
 
 ```
 RAZORPAY_KEY_ID=rzp_test_...
 RAZORPAY_KEY_SECRET=...
+GROQ_API_KEY=...                       # optional: make demo-groq calls the model live
 ```
 
-Fourteen tests then run against the live API — the payment-gateway contract suite, and the checkout page rendered against an order Razorpay actually issued. `RazorpayGateway` refuses any key not beginning `rzp_test_` at construction — the gate is not calibrated, and a live key here would move real money on a decision the project does not claim is tuned.
+`RazorpayGateway` refuses any key not beginning `rzp_test_` at construction — a live key here would move real money on a decision the project does not claim is calibrated.
 
 ---
 
@@ -273,7 +267,7 @@ Fourteen tests then run against the live API — the payment-gateway contract su
 | Subscription recovery | Shipped: Subscription Recovery Agent |
 | Chargeback evidence responder | Shipped: Dispute Auto-Responder, in Agent Studio |
 | Reconciliation / bookkeeping | Shipped: Bookkeeping Agent |
-| RTO / return-risk scoring | Shipped: RTO Shield — LLM address validation plus bad-pincode intelligence, blocking high-risk COD before it ships |
+| RTO / return-risk scoring | Shipped: RTO Shield |
 | Mandate enforcement | Shipped: UPI Reserve Pay |
 | Conversational checkout | Shipped: Agentic Payments on ChatGPT and Claude |
 | Vector DB / RAG / agent framework | Reaching for LangChain or a vector store would actively cost points on AI judgment. The deterministic core is the argument |
@@ -286,13 +280,12 @@ Custodian **consumes** the mandate as an input and **emits** what a dispute resp
 
 Stated plainly, because a reviewer will find them anyway and the honest version is shorter.
 
-- **The UPI mandate is modelled, not integrated.** Reserve Pay is not reachable from a self-serve test account. The mandate is constructed locally and checked deterministically. What this demonstrates is the layer *above* the mandate.
-- **Completing a payment needs a human, and one has.** Order creation, the payable link, fetch and capture are live Razorpay test-mode calls and the payment ids in the ledger are Razorpay's, but no API call makes a payment *happen*. A verified order has now been paid on `GET /checkout/{request_id}` in a real browser: Checkout's script executed, the callback's signature verified, and **₹643.00 settled — the derived amount, not the agent's asserted total** — leaving a complete chain that verifies. Walking it found two defects nothing else could, `BROKE.md` 015 and 016, the second of which had a settled payment leaving no settlement event.
-- **The 30 judgment labels rest on one reviewer.** They are human-signed and attributed now, and the honest reading is in §6: a single pass, no adjudication, and the reviewer could see the gate's current call while judging. A second independent reviewer is the most valuable thing anyone could add — `python -m eval.corpus.review --sheet` lays out the evidence per case, and `--as NAME` is required to write a label.
-- **The lexicon covers one merchant.** 58 bases, 18 form-compatibility pairs, 5 base equivalences, sized to a 70-item catalog. Coverage against a different merchant is unmeasured.
-- **No allergen control.** `benign-008` approves groundnut oil for sunflower oil under an `EQUIVALENT` policy, and groundnut is peanut. The gate re-derives price, purpose and authority; it does not know what will hurt someone. A merchant shipping this would need that check, and it is a different one.
-- **Single writer.** SQLite, one process. `Ledger` is the only thing that touches SQL, so the migration path is contained.
-- **Thresholds are `v1-reviewed`, which is weaker than tuned.** No value was ever fitted; the reviewed labels showed the shipped guess was already the agreement peak, so it was left alone. Real tuning would need more reviewers and more than one catalog.
+- **The UPI mandate is modelled, not integrated.** Reserve Pay is not reachable from a self-serve test account. What this demonstrates is the layer *above* the mandate.
+- **The 30 judgment labels rest on one reviewer.** Human-signed and attributed — and a single pass, no adjudication, one catalog, by someone who could see the gate's call while judging. A second independent reviewer is the most valuable thing anyone could add.
+- **Thresholds are `v1-reviewed`, which is weaker than tuned.** No value was ever fitted; the shipped guess turned out to be the agreement peak, so it was left alone.
+- **The lexicon covers one merchant.** 58 bases, 18 form pairs, 5 base equivalences, sized to a 70-item catalog. Coverage elsewhere is unmeasured — scaling it is authoring work, not engineering work.
+- **No allergen or dietary control.** One case approves groundnut oil for sunflower oil under an equivalence policy, and groundnut is peanut. This re-derives price, purpose and authority; it has no idea what will hurt someone.
+- **Single writer.** SQLite, one process. Safe under a threaded server; nothing here survives multiple processes writing one ledger.
 - **The buyer agent is deliberately naive.** It matches lexically — the primitive the gate rejects — so it will offer almond milk for coconut milk. That is the point: the agent's failure and the gate's correctness come from one example.
 
 ---
@@ -301,22 +294,36 @@ Stated plainly, because a reviewer will find them anyway and the honest version 
 
 | Document | What it holds |
 |---|---|
+| [**`BROKE.md`**](BROKE.md) | **Sixteen failures**, with root cause and what changed to prevent recurrence |
 | [`DECISIONS.md`](DECISIONS.md) | 33 ADRs, each with the alternatives that were rejected |
-| [`BROKE.md`](BROKE.md) | Sixteen failures, with root cause and what changed to prevent recurrence |
-| [`ENGINEERING_LOG.md`](ENGINEERING_LOG.md) | Session by session, written as it happened |
+| [`EVALUATION.md`](EVALUATION.md) | The corpus, what it measures, and the bounds on every number |
+| [`LIMITATIONS.md`](LIMITATIONS.md) | What is modelled, unfinished, out of scope, or deliberate |
 | [`ARCHITECTURE.md`](ARCHITECTURE.md) | Module map, contracts, ledger format, API |
 | [`THREAT_MODEL.md`](THREAT_MODEL.md) | Ten threats, and the architectural control for each |
-| [`EVALUATION.md`](EVALUATION.md) | The corpus, what it measures, and how to review the drafted labels |
-| [`LIMITATIONS.md`](LIMITATIONS.md) | What is modelled, unfinished, out of scope, or deliberate |
+| [`ENGINEERING_LOG.md`](ENGINEERING_LOG.md) | Session by session, with the two entries that were reconstructed marked as such |
 | [`DEMO.md`](DEMO.md) | Four-minute script, every number produced live |
-| [`DEFENSE.md`](DEFENSE.md) | Panel-round notes — the reasoning under each answer, not the answers |
-| [`SUBMISSION.md`](SUBMISSION.md) | Form answers, drafted to be pasted |
+| [`docs/WALKTHROUGH.md`](docs/WALKTHROUGH.md) | Screenshots and real output, for a reviewer who would rather not run anything |
 
-`BROKE.md` is worth reading first. Six entries are the interesting kind:
+**`BROKE.md` is worth reading first.** Six entries are the interesting kind:
 
-- **007** — the gate approved an order with a *failed dimension*. Seven passing dimensions outvoted the one that mattered. I had written "a constraint that can be outvoted by a good average is not a constraint" as a comment inside the function where exactly that happened.
+<details>
+<summary><strong>The six that matter</strong> — click to expand</summary>
+
+- **007** — the gate approved an order with a *failed dimension*. Seven passing dimensions outvoted the one that mattered. I had written *"a constraint that can be outvoted by a good average is not a constraint"* as a comment inside the function where exactly that happened.
 - **006** — the payment interface described a provider that does not exist. `FakeGateway` passed the whole contract, through every phase of the build, against an API I had imagined.
-- **009** — the ledger could not be called from a web server. I had reasoned about concurrency correctly, about a different failure mode — and having named one, stopped looking.
-- **011** — I fabricated the project timeline. The log recorded the dates the *plan* assigned to each phase rather than the dates work happened, spread across a week that had not occurred, while every commit was timestamped to one day. Corrected. It is the worst entry here, because everything else this project claims rests on its evidence being honest.
-- **012** — the first run on *real* model answers broke the abstention guarantee. Asked whether "Sparkle Glitter Pens 5 nos" substitutes for "glitter pens", the model said `FAITHFUL` at 95% — which is correct — and an item the taxonomy could not place approved. My hand-written fixture had said `UNSURE`, so the bug was invisible for as long as the model's answers were mine. A model can tell you two things are alike; it cannot tell you *what they are*.
-- **014** — the build was red for ten runs and I read it as noise. Every CI step passed except the one comparing the committed corpus against a fresh build, which *could not* pass: a rebuild dropped the machine-reviewed labels, so `cases.yaml` could never match its own generator. A check that cannot pass looks exactly like a check that always fails, and after the second red run I stopped reading it. `make check` now runs what CI runs, which the documents had been claiming while it skipped the failing step.
+- **009** — the ledger could not be called from a web server. I had reasoned about concurrency correctly, about a *different* failure mode — and having named one, stopped looking.
+- **011** — I fabricated the project timeline. The log recorded the dates the *plan* assigned to each phase rather than the dates work happened, while every commit was timestamped to one day. Corrected. It is the worst entry here, because everything else this project claims rests on its evidence being honest.
+- **012** — the first run on *real* model answers broke the abstention guarantee. Asked whether "Sparkle Glitter Pens 5 nos" substitutes for "glitter pens", the model said `FAITHFUL` at 95% — which is correct — and an item the taxonomy could not place approved. My hand-written fixture had said `UNSURE`. **A model can tell you two things are alike; it cannot tell you *what they are*.**
+- **016** — a payment settled and the ledger did not know. Auto-capture meant the provider settled it before Custodian's capture call, which was refused as a duplicate and wrote nothing. Money moved without a record — the one failure this ledger may not have.
+
+</details>
+
+---
+
+<div align="center">
+
+**[🔎 See it working](https://okayanshul.github.io/custodian/)** · [Screenshots & real output](docs/WALKTHROUGH.md) · [What broke](BROKE.md)
+
+<sub>Every figure and screenshot in this README was produced by running the code.</sub>
+
+</div>
