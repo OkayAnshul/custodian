@@ -49,7 +49,13 @@ SETTLE=$(curl -s -X POST "http://127.0.0.1:8000/v1/checkout/settle/$REQ")
 ORDER=$(printf '%s' "$SETTLE" | $PY -c "import json,sys;print(json.load(sys.stdin)['order']['order_id'])" 2>/dev/null)
 LINK=$(printf '%s' "$SETTLE"  | $PY -c "import json,sys;print(json.load(sys.stdin).get('payment_url') or '')" 2>/dev/null)
 [ -n "$ORDER" ] && step "✓" "$OK" "order $ORDER for ₹643.00 — the derived amount"
-[ -n "$LINK" ]  && step "✓" "$OK" "payable link $LINK"
+if [ -n "$LINK" ]; then
+  step "✓" "$OK" "payable link $LINK"
+else
+  step "!" "$WARN" "no payable link — test mode caps them at 30 and this account is there."
+  say "      ${DIM}Not a fault: settle returned 200 with payment_url null, which is the${OFF}"
+  say "      ${DIM}designed degradation. The checkout page below is the settlement path.${OFF}"
+fi
 
 # --- open the surfaces -----------------------------------------------------
 open_url() { (xdg-open "$1" >/dev/null 2>&1 &) ; }
@@ -72,7 +78,7 @@ ${DIM}────────────────────────�
     pitch mode     file://$PWD/docs/pitch.html
     decision       http://127.0.0.1:8000/view/$REQ
     checkout page  http://127.0.0.1:8000/checkout/$REQ
-    payable link   ${LINK:-（needs Razorpay keys）}
+    payable link   ${LINK:-none — test-mode cap reached; use the checkout page}
 
   If a screen fails   ${DIM}open docs/index.html and keep talking — same numbers${OFF}
 

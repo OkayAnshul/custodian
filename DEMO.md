@@ -20,10 +20,10 @@ set -a && . ./.env && set +a                        # live Razorpay test-mode or
 
 ```bash
 make check          # suite, corpus, counterfactual, demo — all four, clean
-make demo           # with .env sourced: a real order id AND a payable link
+make demo           # with .env sourced: a real order id (link only if under the cap)
 ```
 
-The payable link is the one to check twice. It failed on every run but the first for a while (`BROKE.md` 013), and it is the thing on screen when you say the amount is real.
+**Do not depend on the payable link.** Razorpay caps test-mode payment links at 30 per account and this one has reached it, so `payment_url` now comes back `null` — which is the designed degradation, not a fault: settle still returns 200 and the hosted checkout page is the settlement path. The thing to have on screen when you say the amount is real is `GET /checkout/<request_id>`.
 
 The first thirty seconds decide whether a judge files this under "AI guardrail" and stops reading. Spend them on the mechanism, not the problem.
 

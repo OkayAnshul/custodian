@@ -161,6 +161,82 @@ The agent's cart carries `asserted_unit_price_paise` — the only price-bearing 
 
 ---
 
+## The whole loop, in ten screenshots
+
+From the merchant's raw CSV to a settled payment, captured from one run of `make live` against the live Razorpay test-mode API. Nothing is staged — it is the terminal and the browser, as they came.
+
+
+**1. The merchant's export, unedited**
+
+<img src="docs/img/flow-1-merchant.png" width="820" alt="The merchant's export, unedited">
+
+70 rows out of a real kirana system. An empty price column, stock spelled four ways, pack sizes living inside the product name. **An AI buyer can act on 18 of these 70 rows.**
+
+
+**2. Ingest names every resolution it made**
+
+<img src="docs/img/flow-2-ingest.png" width="820" alt="Ingest names every resolution it made">
+
+70 rows in, 70 items out — and one item it *cannot* place. That one escalates rather than guessing, which is where calibrated abstention starts.
+
+
+**3. What the agent is allowed to see**
+
+<img src="docs/img/flow-3-feed.png" width="820" alt="What the agent is allowed to see">
+
+Narrower than the snapshot on purpose. No raw description — that is where prompt injection lives — and no sanitizer state. It sees what it needs to shop, not what it would need to reason about the checks.
+
+
+**4. An untrusted agent builds a cart**
+
+<img src="docs/img/flow-4-cart.png" width="820" alt="An untrusted agent builds a cart">
+
+It asserts **₹99** for an item the catalog prices at ₹199, and adds a ₹1,450 wok nobody asked for. Both are ordinary agent failures, not contrived ones.
+
+
+**5. Rejected — on arithmetic, not opinion**
+
+<img src="docs/img/flow-5-gate.png" width="820" alt="Rejected — on arithmetic, not opinion">
+
+The agent asserted ₹1,893; the catalog says ₹2,093. `PRICE_INTEGRITY` fails at zero and `SCOPE_CREEP` at 30.72%. **Nothing escalated to a model** — the arithmetic settled it, so the rejected cart cost no tokens.
+
+
+**6. A human cannot wave a rejection through**
+
+<img src="docs/img/flow-6-refused.png" width="820" alt="A human cannot wave a rejection through">
+
+The confirm is refused outright: a constraint a human can override is advisory. So the agent resubmits a corrected cart — the price is right now, the wok still is not — and **that** holds, because whether you want the wok is a judgment the human owns.
+
+
+**7. A real Razorpay order, for the derived amount**
+
+<img src="docs/img/flow-7-order.png" width="820" alt="A real Razorpay order, for the derived amount">
+
+The human confirms the hold and the record *still reads HOLD*, with a separate entry naming who overrode it. The order opens for **₹2,093 — what Custodian derived**, never the ₹1,893 the agent claimed.
+
+
+**8. Razorpay Checkout, test mode**
+
+<img src="docs/img/razorpay-checkout-modal.png" width="820" alt="Razorpay Checkout, test mode">
+
+The hosted page a payer completes the order on. No API call performs this step — a person puts a card in, which is the one honest gap in the loop.
+
+
+**9. Payment successful**
+
+<img src="docs/img/flow-10-paid.png" width="820" alt="Payment successful">
+
+`settled — pay_TXwPdtk3fa6g1X`. The callback's signature is verified as `HMAC-SHA256(order_id|payment_id)` before anything is captured, because the browser is an untrusted client too.
+
+
+**10. And the whole trail verifies**
+
+<img src="docs/img/flow-9-record.png" width="820" alt="And the whole trail verifies">
+
+Intent, snapshot, decision, the human's override, the order, the settled payment — each entry's hash is the next one's parent. **The chain is intact and the decision replays byte for byte**, with the model client mocked to raise if anything calls it.
+
+---
+
 ## 4. Where I chose *not* to use a model
 
 *The stated bar for the track is "meaningful use of AI." Meaningful means placed where it is load-bearing, and absent where a lookup is strictly better.*
@@ -260,7 +336,7 @@ make money                             # the counterfactual, in rupees
 make check                             # everything CI runs
 ```
 
-**556 tests** run from a clean clone with no credentials at all. With Razorpay test-mode keys in `.env`, 14 more run against the live API, `make demo` creates a real order and payable link, and `make serve` hosts the checkout page:
+**556 tests** run from a clean clone with no credentials at all. With Razorpay test-mode keys in `.env`, 14 more run against the live API, `make demo` creates a real order, and `make serve` hosts the checkout page a payer completes it on:
 
 ```
 RAZORPAY_KEY_ID=rzp_test_...

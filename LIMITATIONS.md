@@ -53,6 +53,8 @@ make demo-groq              # the same demo, calling live
 
 **No allergen or dietary control.** `benign-008` approves groundnut oil for sunflower oil under an `EQUIVALENT` policy, and groundnut is peanut. This system re-derives price, purpose and authority; it has no idea what will hurt someone. That is a different check and a merchant shipping this would need it.
 
+**Payment links are capped at 30 in test mode, and this account has reached it.** `payment_url` now returns `null` on every settle. That is the designed behaviour rather than a failure — `POST /v1/checkout/settle` still returns 200 with the order, because a convenience must not take down the settlement it decorates (ADR-031) — and the hosted checkout page remains the settlement path. Worth knowing before a demo: the link is not available to show, the page is.
+
 **No pitch recording.** `DEMO.md` is the script; it has not been performed.
 
 ## Things that are out of scope by declaration
